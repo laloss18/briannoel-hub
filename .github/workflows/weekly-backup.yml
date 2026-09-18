@@ -1,0 +1,45 @@
+---
+# Weekly schema+migrations backup of the Single Supabase project.
+# MVP has ONE project (PRD env collapse, 2026-09-18): tests run against the
+# in-memory transport + MSW, so no separate test/staging project exists yet.
+name: Weekly Supabase Backup
+on:
+  schedule:
+    - cron: '30 3 * * 0' # Sunday 03:30 UTC (00:30 Sao Paulo)
+  workflow_dispatch:
+
+env:
+  PNPM_VERSION: 11
+
+concurrency:
+  group: weekly-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Dump schema + migrations
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          mkdir -p .backup
+          supabase db dump \
+            --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}" \
+            --password "${{ secrets.SUPABASE_DB_PASSWORD }}" \
+            --schema public \
+            --file "$GITHUB_WORKSPACE/.backup/schema_$(date +%F).sql"
+
+      - name: Upload backup artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-weekly-${{ github.run_number }}
+          path: .backup/
+          retention-days: 30

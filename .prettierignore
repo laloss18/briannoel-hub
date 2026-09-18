@@ -1,0 +1,13 @@
+# Design/spec Prose that must not be reformatted by Prettier.
+PRD.md
+AGENTS.md
+
+# Build outputs + reports.
+node_modules
+**/dist
+**/coverage
+pnpm-lock.yaml
+
+# SQL migrations/seeds + env templates (no Prettier parser).
+supabase/
+.env.example

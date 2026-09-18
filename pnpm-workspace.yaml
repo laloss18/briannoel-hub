@@ -1,0 +1,6 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Single-developer repo: allow install-time build scripts (esbuild, tailwind oxide, etc.)
+dangerouslyAllowAllBuilds: true
