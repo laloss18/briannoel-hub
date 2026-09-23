@@ -7,15 +7,17 @@
 create extension if not exists "pgcrypto";
 
 -- Change-tracked mirror of every synced record across all entities.
+-- `id`/`op_id` are ULIDs generated client-side (sortable → sync cursor; AGENTS.md),
+-- so they must be text, not uuid (Postgres would reject ULID strings otherwise).
 create table if not exists public.server_records (
   entity          text                     not null,
-  id              uuid primary key,
+  id              text primary key,
   body            jsonb                    not null default '{}'::jsonb,
   client_created_at   timestamptz          not null,
   client_updated_at   timestamptz          not null,
   deleted_at          timestamptz,
   server_updated_at   timestamptz          not null default now(),
-  op_id               uuid,
+  op_id               text,
   constraint server_records_entity_id_uniq unique (entity, id)
 );
 
@@ -28,12 +30,12 @@ create index if not exists server_records_pull_idx
 -- server-side, matching the PRD idempotency rule (§5.4).
 create or replace function public.upsert_record(
   p_entity text,
-  p_id uuid,
+  p_id text,
   p_body jsonb,
   p_client_created_at timestamptz,
   p_client_updated_at timestamptz,
   p_deleted_at timestamptz default null,
-  p_op_id uuid default null
+  p_op_id text default null
 ) returns void
 language plpgsql as $$
 begin

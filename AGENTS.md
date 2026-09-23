@@ -26,3 +26,4 @@
 
 ## Conventions going forward
 - Branching/commits: `main` protected, feature branches, Conventional Commits. There are no test/lint scripts yet — they must be created as part of the scaffold in Phase 0, not assumed.
+- NOTE (2026-09-23): Git branch protection (required `verify` check + 1 PR approval on `main`) could not be enabled — GitHub returns 403 "Upgrade to GitHub Pro or make this repository public" for rulesets AND classic protection on private repos without Pro. Repo is private, so protection stays deferred; enforce the gates manually (always green `main`) until Pro or public.
