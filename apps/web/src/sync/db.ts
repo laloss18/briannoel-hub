@@ -1,4 +1,5 @@
 ﻿import Dexie, { type EntityTable } from 'dexie';
+import type { StoredState } from '@brian/pin-auth';
 import type {
   CursorStore,
   EventLog,
@@ -16,6 +17,7 @@ export const hub = new Dexie('briannoel-hub') as Dexie & {
   outbox: EntityTable<OutboxEntry & { entity: string }, 'op_id'>;
   cursors: EntityTable<{ entity: string; cursor: string | null }, 'entity'>;
   events: EntityTable<SyncEvent & { entity: string | null }, 'id'>;
+  pin: EntityTable<{ key: 'state'; state: StoredState }, 'key'>;
 };
 
 hub.version(1).stores({
@@ -23,6 +25,14 @@ hub.version(1).stores({
   outbox: 'op_id, entity, status, updated_at',
   cursors: 'entity',
   events: 'id, entity, created_at',
+});
+
+hub.version(2).stores({
+  records: 'id, entity, updated_at, deleted_at',
+  outbox: 'op_id, entity, status, updated_at',
+  cursors: 'entity',
+  events: 'id, entity, created_at',
+  pin: 'key',
 });
 
 /** LocalStore → Dexie (mirror local idempotente, PRD §5.2). */

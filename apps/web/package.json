@@ -13,6 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@brian/pin-auth": "workspace:*",
     "@brian/shared": "workspace:*",
     "@brian/sync-engine": "workspace:*",
     "@supabase/supabase-js": "^2.48.1",

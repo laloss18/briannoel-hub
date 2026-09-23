@@ -45,8 +45,13 @@ $$;
 revoke all on function public.pull_delta(text, timestamptz) from anon, authenticated;
 grant execute on function public.pull_delta(text, timestamptz) to anon, authenticated;
 
--- Idempotent bulk push: retransmitted ops (same entity+id) are dropped server-side
--- by upsert_record's ON CONFLICT DO NOTHING (PRD §5.4). Returns applied/duplicated.
+-- Idempotent bulk push with LWW guard (matches SyncTransport's MemoryTransport
+-- semantics: PRD §5.1, §5.4). A retransmitted duplicate (same updated_at, same
+-- deleted_at) is dropped; a legit update of an existing record applies ONLY if
+-- the incoming client_updated_at is strictly newer (or a fresh tombstone), so
+-- stale writes never clobber newer ones and replays never apply twice. Rows that
+-- fall outside the guard are counted as duplicates. server_updated_at refreshes
+-- so the row re-enters pull_delta for peer devices.
 create or replace function public.push_bulk(
   p_entries jsonb
 ) returns jsonb
@@ -71,7 +76,16 @@ begin
       nullif((entry ->> 'deleted_at'), '')::timestamptz,
       (entry ->> 'op_id')
     )
-    on conflict (entity, id) do nothing;
+    on conflict (entity, id) do update set
+      body = excluded.body,
+      client_created_at = excluded.client_created_at,
+      client_updated_at = excluded.client_updated_at,
+      deleted_at = excluded.deleted_at,
+      op_id = excluded.op_id,
+      server_updated_at = now()
+    where excluded.client_updated_at > public.server_records.client_updated_at
+       or (excluded.client_updated_at = public.server_records.client_updated_at
+           and excluded.deleted_at is distinct from public.server_records.deleted_at);
     if found then
       applied := applied + 1;
     else

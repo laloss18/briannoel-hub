@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Repo status (important)
-- **Greenfield.** No scaffold exists yet: the repo contains only `PRD.md` + `.git`. Do not assume code, configs, or scripts are present. Nothing has been implemented — Phase 0 has not started.
+- **Fase 1 en marcha (auth + configuración + bimoneda).** El scaffold (Fase 0) y la vuelta a Supabase están completos: monorepo pnpm, `stellar-drive` verde (41 tests), PWA web con SyncPanel, 1 proyecto Supabase con RPCs, CI verde. Fase 1 avanza: `packages/pin-auth` (PIN PBKDF2+lockout+sesión offline, 17 tests, 95% cov), migración `0003_auth.sql` aplicada, pantallas de login/PIN/unlock, bimoneda `app_config`. Falta terminar el gate completo de Fase 1 (commit de los cambios actuales + CI verde sobre ellos).
 - `PRD.md` is the **single source of truth** (version "v1.0 · revisado y mejorado"). Read it before proposing features, schemas, or scope changes. It defines: MVP modules, roles/permissions, sync rules, immutability, stock quality gates and coverage targets.
 
 ## Agreed architecture decisions (from plan; verify against PRD.md)
@@ -14,7 +14,7 @@
 - **Sync engine core rules** (`stellar-drive`, the Phase 0 deliverable):
   - Hybrid conflicts: critical entities (pagos, notas de crédito, despachos) = role-priority + specific rules; non-critical = **LWW by `updated_at` with deterministic tie-break by `id`**.
   - **Clock normalization**: compute device-server offset on every sync (`clockSync`) and correct timestamps before writing — BYOD clocks drift and would silently break LWW.
-  - Idempotency: server dedupes by `id` (`ON CONFLICT DO NOTHING`); duplicates must not apply twice (e.g. duplicate payment not re-credited).
+  - Idempotency: server dedupes by `id` with a **LWW guard** — a replayed duplicate (same `updated_at`/`deleted_at`) is dropped (never applied twice, e.g. no double-credited payment), while a legitimate newer `updated_at` still applies. Implemented in `push_bulk` as `ON CONFLICT ... DO UPDATE ... WHERE excluded.client_updated_at > client_updated_at`. Matches the engine's `MemoryTransport` semantics.
   - Sync: initial under-demand (§5.5), delta via `sync_cursor` (§5.6), auto on reconnect + manual button, failed ops flagged + audited.
   - Purge: outbox after **7 days**; audit/`sync_events` after **3 months**.
 - **Storage policy** (fits free tier): photos only, compressed client-side (~max 800px, JPEG q70, ~100–150 KB), uploaded only when online. PDFs (recibos, estados de cuenta) generated client-side, **never stored**. ID-photo capture optional + consent.

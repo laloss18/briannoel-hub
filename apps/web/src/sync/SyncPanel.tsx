@@ -24,7 +24,7 @@ export default function SyncPanel() {
         cursors: new DexieCursorStore(),
         events: new DexieEventLog(),
         clock: null,
-        entities: ['demo_clients'],
+        entities: ['app_users', 'app_config', 'demo_clients'],
       });
       await drive.measureClock();
       const res = await drive.syncAll();
