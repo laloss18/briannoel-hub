@@ -5,7 +5,6 @@ import { Brand, Monogram, StatusStrip } from '../ui/brand';
 import BimonedaCard from '../bimoneda/BimonedaCard';
 import BcvRateDialog from '../bimoneda/BcvRateDialog';
 import SyncButton from '../sync/SyncButton';
-import SyncPanel from '../sync/SyncPanel';
 import { useSync } from '../sync/useSync';
 import ClientesCard from '../clientes/ClientesCard';
 import ZonasCard from '../clientes/ZonasCard';
@@ -20,14 +19,14 @@ export interface HubScreenProps {
 }
 
 const MODULES: readonly ModuleDef[] = [
-  { id: 'config', name: 'Config + Bimoneda', phase: 1, status: 'listo' },
-  { id: 'clientes', name: 'Clientes + scoring', phase: 2, status: 'listo' },
-  { id: 'zonas', name: 'Zonas', phase: 2, status: 'listo' },
-  { id: 'ventas', name: 'Ventas / Despachos', phase: 3, status: 'pendiente' },
-  { id: 'cobranza', name: 'Cobranza / CxC', phase: 4, status: 'pendiente' },
-  { id: 'pagos', name: 'Pagos + FIFO', phase: 4, status: 'pendiente' },
-  { id: 'rutas', name: 'Rutas / Entregas', phase: 5, status: 'pendiente' },
-  { id: 'reportes', name: 'Reportes / Dashboard', phase: 6, status: 'pendiente' },
+  { id: 'config', name: 'Configuración', status: 'listo' },
+  { id: 'clientes', name: 'Clientes', status: 'listo' },
+  { id: 'zonas', name: 'Zonas', status: 'listo' },
+  { id: 'ventas', name: 'Ventas', status: 'pendiente' },
+  { id: 'cobranza', name: 'Cobranza', status: 'pendiente' },
+  { id: 'pagos', name: 'Pagos', status: 'pendiente' },
+  { id: 'rutas', name: 'Rutas', status: 'pendiente' },
+  { id: 'reportes', name: 'Reportes', status: 'pendiente' },
 ];
 
 /**
@@ -35,7 +34,8 @@ const MODULES: readonly ModuleDef[] = [
  * (izquierda, aporta clockSync como dato de instrumento). La home es rol-aware:
  * `view_kpis` (admin/supervisor §3.2) → dashboard con KPIs; el resto → histórico
  * de operaciones con CTA de venta rápida. El acceso a los módulos vive en el
- * menú (drawer) de la barra superior, no como índice en la home.
+ * menú (drawer) de la barra superior, no como índice en la home. Un módulo
+ * abierto reemplaza el resumen (nada apilado debajo).
  */
 export default function HubScreen({ email, roles, onLogout }: HubScreenProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -100,44 +100,37 @@ export default function HubScreen({ email, roles, onLogout }: HubScreenProps) {
             </p>
           </div>
 
-          <section aria-label="Resumen" className="rise-in mt-8">
-            {canViewKpis ? (
-              <HomeDashboard
-                roles={roles}
-                lastSync={last}
-                onNewCliente={() => setModule('clientes')}
-                onOpenBcv={() => setBcvOpen(true)}
-                onSync={() => void sync()}
-              />
-            ) : (
-              <HomeHistorial />
-            )}
-          </section>
+          {active ? (
+            <section aria-label={active.name} className="rise-in mt-8 flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-[12px] text-fog-300">módulo · {active.name}</p>
+                <button
+                  type="button"
+                  onClick={() => setModule(null)}
+                  className="font-mono text-[11px] text-fog-700 transition-colors hover:text-fog-500"
+                >
+                  volver
+                </button>
+              </div>
+              {active.id === 'config' && <BimonedaCard roles={roles} />}
+              {active.id === 'clientes' && <ClientesCard roles={roles} email={email} />}
+              {active.id === 'zonas' && <ZonasCard />}
+            </section>
+          ) : (
+            <section aria-label="Resumen" className="rise-in mt-8">
+              {canViewKpis ? (
+                <HomeDashboard
+                  roles={roles}
+                  onNewCliente={() => setModule('clientes')}
+                  onOpenBcv={() => setBcvOpen(true)}
+                />
+              ) : (
+                <HomeHistorial />
+              )}
+            </section>
+          )}
         </div>
       </div>
-
-      {active && (
-        <div className="rise-in flex flex-col gap-4">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-[12px] text-fog-300">módulo · {active.name}</p>
-            <button
-              type="button"
-              onClick={() => setModule(null)}
-              className="font-mono text-[11px] text-fog-700 transition-colors hover:text-fog-500"
-            >
-              cerrar módulo
-            </button>
-          </div>
-          {active.id === 'config' && (
-            <>
-              <BimonedaCard roles={roles} />
-              <SyncPanel busy={busy} last={last} error={error} onSync={() => void sync()} />
-            </>
-          )}
-          {active.id === 'clientes' && <ClientesCard roles={roles} email={email} />}
-          {active.id === 'zonas' && <ZonasCard />}
-        </div>
-      )}
 
       <StatusStrip />
 

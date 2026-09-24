@@ -13,8 +13,8 @@ export interface SyncState {
 
 /**
  * Sync compartida del hub: una sola fuente de verdad (botón de la barra
- * superior + SyncPanel del módulo de config). El reloj se mide en cada sync
- * antes de transferir (clockSync, PRD §5.4).
+ * superior del hub). El reloj se mide en cada sync antes de transferir
+ * (clockSync, PRD §5.4).
  */
 export function useSync() {
   const [busy, setBusy] = useState(false);

@@ -13,8 +13,7 @@ export type ModuleId =
 export interface ModuleDef {
   id: ModuleId;
   name: string;
-  phase: number;
-  status: 'listo' | 'siguiente' | 'pendiente';
+  status: 'listo' | 'pendiente';
 }
 
 interface ModuleMenuProps {
@@ -26,8 +25,8 @@ interface ModuleMenuProps {
 
 /**
  * Menú de módulos (drawer): panel desde la barra superior con el índice del MVP.
- * Solo los módulos `listo` navegan; el resto queda marcado con su fase. Semántica
- * `<button>` para acciones, Escape/fondo cierra (DESIGN §9, §10.10).
+ * Nombres cortos sin fase: solo los módulos `listo` navegan; el resto queda
+ * atenuado. Semántica `<button>` para acciones, Escape/fondo cierra (DESIGN §9).
  */
 export default function ModuleMenu({ open, modules, onClose, onSelect }: ModuleMenuProps) {
   useEffect(() => {
@@ -84,13 +83,6 @@ export default function ModuleMenu({ open, modules, onClose, onSelect }: ModuleM
                 }`}
               >
                 {m.name}
-              </span>
-              <span
-                className={`shrink-0 font-mono text-[10px] uppercase tracking-wider ${
-                  m.status === 'listo' ? 'text-ok' : 'text-fog-700'
-                }`}
-              >
-                fase {m.phase} · {m.status}
               </span>
             </button>
           ))}

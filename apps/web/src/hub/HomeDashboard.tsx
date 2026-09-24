@@ -1,42 +1,29 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { Role } from '@brian/shared';
-import { listClientes } from '../clientes/clientesRepo';
+import { listClientes, canEditClientes } from '../clientes/clientesRepo';
 import { listZonas } from '../clientes/zonasRepo';
 import { getAppConfig } from '../bimoneda/appConfig';
-import { DexieOutbox, hub } from '../sync/db';
-import { canEditClientes } from '../clientes/clientesRepo';
+import { DexieOutbox } from '../sync/db';
 
 interface HomeDashboardProps {
   roles: readonly Role[];
-  lastSync: string | null;
   onNewCliente: () => void;
   onOpenBcv: () => void;
-  onSync: () => void;
 }
 
 const GRADOS = ['A', 'B', 'C', 'D', 'E'] as const;
 
 /**
  * Dashboard de la home para quien tiene `view_kpis` (admin/supervisor, §3.2):
- * solo KPIs que ya tienen fuente real (clientes, zonas, scoring, bimoneda, sync).
- * Ventas/despachos aún no existen (Fase 3) → seccion "en próximas fases".
+ * KPIs con fuente real (clientes, zonas, scoring, bimoneda, outbox). El sync
+ * vive en la barra superior (clockSync); aquí solo las acciones de operación.
  */
-export default function HomeDashboard({
-  roles,
-  lastSync,
-  onNewCliente,
-  onOpenBcv,
-  onSync,
-}: HomeDashboardProps) {
+export default function HomeDashboard({ roles, onNewCliente, onOpenBcv }: HomeDashboardProps) {
   const clientes = useLiveQuery(() => listClientes(), []);
   const zonas = useLiveQuery(() => listZonas(), []);
   const config = useLiveQuery(() => getAppConfig(), []);
   const pendientes = useLiveQuery(() => new DexieOutbox().list('pending'), []);
   const fallidos = useLiveQuery(() => new DexieOutbox().list('failed'), []);
-  const events = useLiveQuery(
-    () => hub.events.orderBy('created_at').reverse().limit(1).toArray(),
-    [],
-  );
 
   const total = clientes?.length ?? 0;
   const conZona = clientes?.filter((c) => c.zona_id !== null).length ?? 0;
@@ -44,7 +31,6 @@ export default function HomeDashboard({
   const porGrado = (g: (typeof GRADOS)[number]) => conScore.filter((c) => c.score_grado === g).length;
   const canEdit = canEditClientes(roles);
   const rate = config?.bcv_rate;
-  const ultimaSync = events?.[0]?.created_at ?? lastSync;
 
   const kpis = [
     { label: 'clientes', value: total, hint: conZona ? `${conZona} con zona` : 'aún sin zona' },
@@ -109,7 +95,7 @@ export default function HomeDashboard({
         </div>
       </section>
 
-      <section aria-label="Acciones" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section aria-label="Acciones" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {canEdit && (
           <button
             type="button"
@@ -134,16 +120,6 @@ export default function HomeDashboard({
           </span>
           <span className="font-mono text-[10px] uppercase tracking-wider text-signal">
             bimoneda
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={onSync}
-          className="group flex min-h-20 flex-col items-start justify-between rounded-xl border border-ink-600 bg-ink-900 p-3.5 text-left transition-[transform,background-color,border-color] hover:border-signal active:scale-[0.98]"
-        >
-          <span className="text-[13px] font-medium leading-snug text-fog-100">Sincronizar</span>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-signal">
-            {ultimaSync ? `última ${ultimaSync}` : 'offline first'}
           </span>
         </button>
       </section>
