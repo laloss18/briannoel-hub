@@ -152,7 +152,9 @@ export class StellarDrive {
 
   async #pull(entity: string, startCursor: string | null): Promise<PullResult> {
     let cursor = startCursor;
-    let lastCursor: string | null = null;
+    // Preserve the previous cursor when the delta is empty: pulling a full page
+    // re-syncs from scratch on the next call (PRD §5.6 rides the cursor).
+    let lastCursor = startCursor ?? null;
     let applied = 0;
     let skipped = 0;
 

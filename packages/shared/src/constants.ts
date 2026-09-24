@@ -48,8 +48,13 @@ export const APPROVAL_STEPS: Record<Permission, Partial<Record<Role, number>>> =
 export const CREDIT_BLOCK_INDICATOR_ROLES = ['promotor'] as const;
 
 /** Entidades que el app sincroniza con el servidor. `sync_demo` es de Fase 0. */
-export const SYNC_ENTITIES = ['sync_demo', 'app_users', 'app_config'] as const;
+export const SYNC_ENTITIES = ['sync_demo', 'app_users', 'app_config', 'clientes', 'zonas'] as const;
 export type SyncEntityName = (typeof SYNC_ENTITIES)[number];
+
+/** Crédito por defecto de un cliente nuevo: 1 bolsa/pack (PRD §2.5). */
+export const DEFAULT_CREDITO_LIMITE = 1;
+/** Vencimiento por defecto del crédito: 15 días (flexible, PRD §2.5). */
+export const DEFAULT_CREDITO_DIAS = 15;
 
 export const OUTBOX_RETENTION_DAYS = 7;
 export const AUDIT_RETENTION_DAYS = 90;

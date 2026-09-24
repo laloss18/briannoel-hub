@@ -44,9 +44,15 @@ importers:
 
   apps/web:
     dependencies:
+      '@brian/clientes':
+        specifier: workspace:*
+        version: link:../../packages/clientes
       '@brian/pin-auth':
         specifier: workspace:*
         version: link:../../packages/pin-auth
+      '@brian/scoring':
+        specifier: workspace:*
+        version: link:../../packages/scoring
       '@brian/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -74,6 +80,9 @@ importers:
       react-dom:
         specifier: ^19.2.8
         version: 19.3.0(react@19.3.0)
+      ulidx:
+        specifier: ^2.4.1
+        version: 2.4.1
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.1.0
@@ -103,11 +112,45 @@ importers:
         specifier: ^1.0.0
         version: 1.3.0(supports-color@7.2.0)(vite@8.3.0(@types/node@24.13.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2))(workbox-build@7.4.1(supports-color@7.2.0))(workbox-window@7.4.1)
 
+  packages/clientes:
+    dependencies:
+      '@brian/scoring':
+        specifier: workspace:*
+        version: link:../scoring
+      '@brian/shared':
+        specifier: workspace:*
+        version: link:../shared
+      ulidx:
+        specifier: ^2.4.1
+        version: 2.4.1
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: ^3.0.0
+        version: 3.2.7(supports-color@7.2.0)(vitest@3.2.7(@types/node@24.13.5)(jiti@2.7.0)(lightningcss@1.33.0)(supports-color@7.2.0)(terser@5.51.2))
+      typescript:
+        specifier: ~6.0.2
+        version: 6.0.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.7(@types/node@24.13.5)(jiti@2.7.0)(lightningcss@1.33.0)(supports-color@7.2.0)(terser@5.51.2)
+
   packages/pin-auth:
     dependencies:
       '@brian/shared':
         specifier: workspace:*
         version: link:../shared
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: ^3.0.0
+        version: 3.2.7(supports-color@7.2.0)(vitest@3.2.7(@types/node@24.13.5)(jiti@2.7.0)(lightningcss@1.33.0)(supports-color@7.2.0)(terser@5.51.2))
+      typescript:
+        specifier: ~6.0.2
+        version: 6.0.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.7(@types/node@24.13.5)(jiti@2.7.0)(lightningcss@1.33.0)(supports-color@7.2.0)(terser@5.51.2)
+
+  packages/scoring:
     devDependencies:
       '@vitest/coverage-v8':
         specifier: ^3.0.0

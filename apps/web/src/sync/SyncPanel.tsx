@@ -1,55 +1,28 @@
-import { useCallback, useState } from 'react';
-import { StellarDrive } from '@brian/sync-engine';
-import { DexieLocalStore, DexieOutbox, DexieCursorStore, DexieEventLog } from './db';
-import { SupabaseTransport } from './transport';
-import { supabase } from './supabase';
+export interface SyncPanelProps {
+  busy: boolean;
+  last: string | null;
+  error: string | null;
+  onSync: () => void;
+}
 
-export default function SyncPanel() {
-  const [busy, setBusy] = useState(false);
-  const [last, setLast] = useState<string>('(nunca)');
-  const [error, setError] = useState<string | null>(null);
-
-  const sync = useCallback(async () => {
-    if (!supabase) {
-      setError('Falta VITE_SUPABASE_* en apps/web/.env.local');
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      const drive = new StellarDrive({
-        transport: new SupabaseTransport(),
-        store: new DexieLocalStore(),
-        outbox: new DexieOutbox(),
-        cursors: new DexieCursorStore(),
-        events: new DexieEventLog(),
-        clock: null,
-        entities: ['app_users', 'app_config', 'demo_clients'],
-      });
-      await drive.measureClock();
-      const res = await drive.syncAll();
-      setLast(
-        `${new Date().toLocaleTimeString()} · push ${res.push.pushed} ok · pull aplicados ${res.pulls.reduce((a, p) => a + p.applied, 0)}`,
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setBusy(false);
-    }
-  }, []);
-
+/**
+ * Estado de sync del módulo de config (PRD §5.7): refleja la última sync y
+ * errores. Es presentacional: la fuente de verdad vive en HubScreen (useSync),
+ * que la comparte con el botón de la barra superior y este panel.
+ */
+export default function SyncPanel({ busy, last, error, onSync }: SyncPanelProps) {
   return (
     <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium">Sync engine · stellar-drive</p>
-          <p className="mt-1 text-xs text-fog-500">Última sync: {last}</p>
+          <p className="mt-1 text-xs text-fog-500">Última sync: {last ?? '(nunca)'}</p>
           {error && <p className="mt-1 text-xs text-danger">{error}</p>}
         </div>
         <button
-          onClick={sync}
+          onClick={onSync}
           disabled={busy}
-          className="rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50"
+          className="rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-[transform,background-color] hover:bg-signal-soft disabled:opacity-50 active:scale-[0.98]"
         >
           {busy ? 'Sincronizando…' : 'Sincronizar'}
         </button>

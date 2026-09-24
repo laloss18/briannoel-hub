@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ROLES } from './constants';
+import { DEFAULT_CREDITO_DIAS, DEFAULT_CREDITO_LIMITE, ROLES } from './constants';
 
 const ulid = z.string().regex(/^[0-9A-HJKMNP-TV-Z]{26}$/, 'must be a valid ULID');
 
@@ -63,3 +63,54 @@ export const appConfigSchema = baseRecordSchema.omit({ id: true }).extend({
 });
 
 export type AppConfig = z.infer<typeof appConfigSchema>;
+
+/** Consentimiento informado del cliente (PRD §3.5): registrado al crear el
+ *  cliente y antes de capturar fotos. `foto_documento` = documento de
+ *  identidad (opcional, solo con aviso explícito). */
+export const consentimientoSchema = z
+  .object({
+    fecha: z.string().datetime(),
+    foto_casa: z.boolean().default(false),
+    foto_documento: z.boolean().default(false),
+    aviso_documento: z.boolean().default(false),
+  })
+  .refine((c) => !c.foto_documento || c.aviso_documento, {
+    message: 'foto_documento requiere aviso_documento (consentimiento previo, §3.5)',
+  });
+
+export type Consentimiento = z.infer<typeof consentimientoSchema>;
+
+/** Cliente del negocio (PRD §2.5): sincroniza por LWW (no crítica §5.1). El
+ *  crédito por defecto es 1 bolsa/pack con vencimiento de 15 días. */
+export const clienteSchema = baseRecordSchema.extend({
+  nombre: z.string().min(1).max(200),
+  documento: z.string().min(1).max(30).optional(),
+  telefono: z.string().min(1).max(30).optional(),
+  direccion: z.string().min(1).max(400).optional(),
+  lat: z.number().finite().nullable().optional(),
+  lng: z.number().finite().nullable().optional(),
+  plus_code: z.string().min(1).max(40).optional(),
+  zona_id: z.string().min(1).max(64).nullable().optional(),
+  consentimiento: consentimientoSchema,
+  credito_limite: z.number().positive().default(DEFAULT_CREDITO_LIMITE),
+  credito_dias: z.number().int().positive().default(DEFAULT_CREDITO_DIAS),
+  score: z.number().int().min(0).max(100).nullable().default(null),
+  score_override: z.number().int().min(0).max(100).nullable().default(null),
+  score_grado: z.enum(['A', 'B', 'C', 'D', 'E']).nullable().default(null),
+  created_by: z.string().min(1),
+  updated_by: z.string().min(1),
+});
+
+export type Cliente = z.infer<typeof clienteSchema>;
+
+/** Zona geográfica (PRD §2.8 módulo 3): zona → municipio → estado. */
+export const zonaSchema = baseRecordSchema.extend({
+  nombre: z.string().min(1).max(200),
+  municipio: z.string().min(1).max(200),
+  estado: z.string().min(1).max(200),
+  lat: z.number().finite().nullable().optional(),
+  lng: z.number().finite().nullable().optional(),
+  plus_code: z.string().min(1).max(40).optional(),
+});
+
+export type Zona = z.infer<typeof zonaSchema>;

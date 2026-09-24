@@ -29,5 +29,9 @@ jobs:
         run: pnpm -r test
       - name: Sync-engine coverage gate (≥90 line / ≥80 branch)
         run: pnpm --filter @brian/sync-engine test:coverage
+      - name: Scoring coverage gate (≥85 line / ≥80 branch, PRD §6.3)
+        run: pnpm --filter @brian/scoring test:coverage
+      - name: Clientes coverage gate (≥80 line / ≥75 branch, PRD §6.3)
+        run: pnpm --filter @brian/clientes test:coverage
       - name: Build (PWA + packages)
         run: pnpm -r build
