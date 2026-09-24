@@ -50,9 +50,11 @@ export class PinAuth {
     return this.store.read();
   }
 
-  /** ¿PIN configurado en este dispositivo? */
+  /** ¿PIN configurado en este dispositivo? Un estado sin hash (placeholder
+   *  creado por `cacheSession` antes del primer PIN) NO cuenta como PIN. */
   async hasPin(): Promise<boolean> {
-    return (await this.read()) !== null;
+    const state = await this.read();
+    return state !== null && state.hash !== '';
   }
 
   /** Snapshot de estado para la UI (sin exponer hash ni sesión). */
@@ -74,7 +76,7 @@ export class PinAuth {
       ? new Date(new Date(state.session.last_active_at).getTime() + SESSION_TTL_MS)
       : null;
     return {
-      has_pin: true,
+      has_pin: state.hash !== '',
       locked,
       attempts_left: Math.max(0, MAX_ATTEMPTS_LIMIT - state.attempts),
       has_session: state.session !== null,
@@ -82,10 +84,12 @@ export class PinAuth {
     };
   }
 
-  /** Crea el PIN por primera vez (tras login online). Falla si ya existe. */
+  /** Crea el PIN por primera vez (tras login online). Falla si ya existe.
+   *  Preserva la sesión offline cacheada por `cacheSession` (el login ocurre
+   *  antes que el PIN), en vez de pisarla con `session: null`. */
   async setPin(pin: string): Promise<void> {
     const existing = await this.read();
-    if (existing) throw new Error('pin already configured');
+    if (existing?.hash) throw new Error('pin already configured');
     const { hash, salt, iterations } = await hashPin(pin);
     await this.store.write({
       hash,
@@ -93,14 +97,14 @@ export class PinAuth {
       iterations,
       attempts: 0,
       lockout_until: null,
-      session: null,
+      session: existing?.session ?? null,
     });
   }
 
   /** Verifica el PIN (con lockout por intentos fallidos). No toca la sesión. */
   async verify(pin: string): Promise<VerifyOutcome> {
     const state = await this.read();
-    if (!state) throw new Error('pin not configured');
+    if (!state?.hash) throw new Error('pin not configured');
 
     const now = this.clock.now().getTime();
     if (state.lockout_until && now < new Date(state.lockout_until).getTime()) {
@@ -185,14 +189,14 @@ export class PinAuth {
   /** Desbloqueo por admin (recuperación §3.4): resetea intentos y lockout. */
   async adminUnlock(): Promise<void> {
     const state = await this.read();
-    if (!state) throw new Error('pin not configured');
+    if (!state?.hash) throw new Error('pin not configured');
     await this.store.write({ ...state, attempts: 0, lockout_until: null });
   }
 
   /** Cambio de PIN (requiere clave actual correcta). */
   async changePin(current: string, next: string): Promise<void> {
     const state = await this.read();
-    if (!state) throw new Error('pin not configured');
+    if (!state?.hash) throw new Error('pin not configured');
     const ok = await verifyPin(current, state);
     if (!ok) throw new Error('current pin is wrong');
     const { hash, salt, iterations } = await hashPin(next);

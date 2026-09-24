@@ -54,9 +54,9 @@ export default function BimonedaCard({ roles }: ConfigCardProps) {
 
   if (!config) {
     return (
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-zinc-100">
+      <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100">
         <p className="text-sm font-medium">Bimoneda · config</p>
-        <p className="mt-1 text-xs text-zinc-400">Inicializando configuración…</p>
+        <p className="mt-1 text-xs text-fog-500">Inicializando configuración…</p>
       </div>
     );
   }
@@ -65,21 +65,21 @@ export default function BimonedaCard({ roles }: ConfigCardProps) {
     config.bcv_rate !== undefined ? `${config.bcv_rate.toFixed(2)} Bs/USD` : 'Sin tasa configurada';
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-zinc-100">
+    <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium">Bimoneda · {config.base_currency}</p>
-          <p className="mt-1 text-xs text-zinc-400">
-            Tasa BCV: <span className="text-zinc-200">{rate}</span>
+          <p className="mt-1 text-xs text-fog-500">
+            Tasa BCV: <span className="text-fog-100">{rate}</span>
             {config.bcv_rate_source ? ` · origen: ${config.bcv_rate_source}` : ''}
           </p>
-          {message && <p className="mt-1 text-xs text-emerald-400">{message}</p>}
+          {message && <p className="mt-1 text-xs text-ok">{message}</p>}
         </div>
         {canEdit && (
           <button
             onClick={onClickRefresh}
             disabled={busy}
-            className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+            className="rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50"
           >
             {busy ? 'Cargando…' : 'Actualizar BCV'}
           </button>
@@ -94,12 +94,12 @@ export default function BimonedaCard({ roles }: ConfigCardProps) {
             placeholder="Tasa manual (fallback)"
             value={manualRate}
             onChange={(e) => setManualRate(e.target.value)}
-            className="w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 outline-none focus:border-blue-500"
+            className="w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
           />
           <button
             onClick={onClickManual}
             disabled={busy}
-            className="rounded-md bg-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-100 hover:bg-zinc-600 disabled:opacity-50"
+            className="rounded-md bg-ink-700 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:bg-ink-600 disabled:opacity-50"
           >
             Guardar
           </button>

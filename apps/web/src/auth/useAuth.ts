@@ -56,7 +56,7 @@ export function useAuth(): UseAuthResult {
       await auth.cacheSession(session);
       await refreshState();
       const s = await auth.getState();
-      setScreen(s.has_pin ? 'unlock' : 'setup-pin');
+      setScreen(s.has_pin ? 'home' : 'setup-pin');
     },
     [auth, refreshState],
   );
@@ -65,7 +65,7 @@ export function useAuth(): UseAuthResult {
     async (pin: string) => {
       await auth.setPin(pin);
       await refreshState();
-      setScreen('unlock');
+      setScreen('home');
     },
     [auth, refreshState],
   );
@@ -73,8 +73,13 @@ export function useAuth(): UseAuthResult {
   const unlock = useCallback(
     async (pin: string): Promise<boolean> => {
       const r = await auth.verify(pin);
-      if (r.ok) await auth.touch();
-      await refreshState();
+      if (r.ok) {
+        await auth.touch();
+        await refreshState();
+        setScreen('home');
+      } else {
+        await refreshState();
+      }
       return r.ok;
     },
     [auth, refreshState],

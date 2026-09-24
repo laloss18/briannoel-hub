@@ -178,6 +178,28 @@ describe('PinAuth', () => {
     expect(s.has_session).toBe(true);
     expect(s.session_expires_at).toBe('2024-05-06T00:00:00.000Z');
   });
+
+  it('cacheSession antes del PIN NO cuenta como PIN configurado (bug: solicitaba PIN sin haberlo creado)', async () => {
+    await auth.cacheSession(session);
+    expect(await auth.hasPin()).toBe(false);
+    const s = await auth.getState();
+    expect(s.has_pin).toBe(false);
+    expect(s.has_session).toBe(true);
+  });
+
+  it('setPin tras cacheSession (flujo login→setup) preserva la sesión cacheada', async () => {
+    await auth.cacheSession(session);
+    await auth.setPin('1234');
+    const s = await auth.getState();
+    expect(s.has_pin).toBe(true);
+    expect(s.has_session).toBe(true);
+    expect((await auth.session())?.user_id).toBe('user-1');
+  });
+
+  it('verify sin PIN real (solo sesión cacheada) lanza error y no revienta PBKDF2 con iterations=0', async () => {
+    await auth.cacheSession(session);
+    await expect(auth.verify('1234')).rejects.toThrow('not configured');
+  });
 });
 
 describe('PinAuth con session null desde el inicio', () => {

@@ -3,6 +3,7 @@
 ## Repo status (important)
 - **Fase 1 en marcha (auth + configuración + bimoneda).** El scaffold (Fase 0) y la vuelta a Supabase están completos: monorepo pnpm, `stellar-drive` verde (41 tests), PWA web con SyncPanel, 1 proyecto Supabase con RPCs, CI verde. Fase 1 avanza: `packages/pin-auth` (PIN PBKDF2+lockout+sesión offline, 17 tests, 95% cov), migración `0003_auth.sql` aplicada, pantallas de login/PIN/unlock, bimoneda `app_config`. Falta terminar el gate completo de Fase 1 (commit de los cambios actuales + CI verde sobre ellos).
 - `PRD.md` is the **single source of truth** (version "v1.0 · revisado y mejorado"). Read it before proposing features, schemas, or scope changes. It defines: MVP modules, roles/permissions, sync rules, immutability, stock quality gates and coverage targets.
+- `DESIGN.md` is the **single source of truth for visuals** (design read, tokens, type, layout, motion, copy, a11y, pre-flight checklist). Read it before designing or touching any UI. PRD.md defines what the product does; DESIGN.md defines how it looks and feels.
 
 ## Agreed architecture decisions (from plan; verify against PRD.md)
 - **Monorepo, pnpm workspaces**: `apps/web` (PWA React+Vite+TS) + `packages/sync-engine` (`stellar-drive` sync engine) + `packages/shared` (types/zod/constants). `packages/pin-auth` is Fase 1.
