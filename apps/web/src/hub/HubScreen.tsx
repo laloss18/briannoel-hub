@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Role } from '@brian/shared';
 import { hasPermission } from '@brian/shared';
+import { refreshBcvRateIfOnline } from '../bimoneda/appConfig';
 import { Brand, Monogram, StatusStrip } from '../ui/brand';
 import BimonedaCard from '../bimoneda/BimonedaCard';
 import BcvRateDialog from '../bimoneda/BcvRateDialog';
@@ -30,18 +31,23 @@ const MODULES: readonly ModuleDef[] = [
 ];
 
 /**
- * Pantalla de inicio del hub (§2.8): sesión activa + sync en la barra superior
- * (izquierda, aporta clockSync como dato de instrumento). La home es rol-aware:
- * `view_kpis` (admin/supervisor §3.2) → dashboard con KPIs; el resto → histórico
- * de operaciones con CTA de venta rápida. El acceso a los módulos vive en el
- * menú (drawer) de la barra superior, no como índice en la home. Un módulo
- * abierto reemplaza el resumen (nada apilado debajo).
+ * Pantalla de inicio del hub (§2.8): sesión activa en la barra superior con el
+ * menú de módulos a la izquierda y el CTA de sync a la derecha. La home es
+ * rol-aware: `view_kpis` (admin/supervisor §3.2) → dashboard con KPIs; el resto
+ * → histórico de operaciones con CTA de venta rápida. Un módulo abierto
+ * reemplaza el resumen (nada apilado debajo).
  */
 export default function HubScreen({ email, roles, onLogout }: HubScreenProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [module, setModule] = useState<ModuleId | null>(null);
   const [bcvOpen, setBcvOpen] = useState(false);
   const { busy, last, error, sync } = useSync();
+
+  /** Refresco global de la tasa BCV al abrir la app (§7.4): con red sobreescribe
+   * la tasa oficial del día si difiere; sin red conserva la manual vigente. */
+  useEffect(() => {
+    refreshBcvRateIfOnline().catch(() => undefined);
+  }, []);
 
   const active = MODULES.find((m) => m.id === module && m.status === 'listo');
   const canViewKpis = hasPermission('view_kpis', roles);
@@ -55,8 +61,15 @@ export default function HubScreen({ email, roles, onLogout }: HubScreenProps) {
     <div className="flex min-h-dvh flex-col justify-between gap-8 px-5 py-6 sm:py-10">
       <div>
         <header className="flex items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <SyncButton busy={busy} onSync={() => void sync()} />
+          <div className="flex min-w-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-haspopup="dialog"
+              className="shrink-0 rounded-md border border-ink-700 px-2.5 py-1 font-mono text-[11px] text-fog-100 transition-colors hover:border-ink-600"
+            >
+              menú
+            </button>
             <div className="hidden min-w-0 sm:block">
               {error ? (
                 <p className="truncate text-[11px] text-danger">{error}</p>
@@ -68,14 +81,6 @@ export default function HubScreen({ email, roles, onLogout }: HubScreenProps) {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setMenuOpen(true)}
-              aria-haspopup="dialog"
-              className="rounded-md border border-ink-700 px-2.5 py-1 font-mono text-[11px] text-fog-100 transition-colors hover:border-ink-600"
-            >
-              menú
-            </button>
             <Monogram />
             <button
               onClick={onLogout}
@@ -83,6 +88,7 @@ export default function HubScreen({ email, roles, onLogout }: HubScreenProps) {
             >
               salir
             </button>
+            <SyncButton busy={busy} onSync={() => void sync()} />
           </div>
         </header>
 

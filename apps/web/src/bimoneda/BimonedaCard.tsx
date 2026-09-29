@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ensureAppConfig, getAppConfig } from '../bimoneda/appConfig';
-import { fetchBcvRate } from '../bimoneda/api';
+import { getAppConfig } from '../bimoneda/appConfig';
 import { hasPermission, type Role } from '@brian/shared';
 import BcvRateDialog from '../bimoneda/BcvRateDialog';
 
@@ -19,10 +18,6 @@ export default function BimonedaCard({ roles }: ConfigCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const canEdit = hasPermission('view_kpis', roles);
-
-  useEffect(() => {
-    (fetchBcvRate() as Promise<number | null>).then((rate) => ensureAppConfig(rate));
-  }, []);
 
   if (!config) {
     return (

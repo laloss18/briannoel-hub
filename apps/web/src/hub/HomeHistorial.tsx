@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { OutboxEntry, SyncRecord, SyncEvent } from '@brian/sync-engine';
 import { hub } from '../sync/db';
@@ -38,17 +39,21 @@ function toEventLabel(e: SyncEvent): { label: string; detail: string } {
 /**
  * Histórico de operaciones de la home (roles sin `view_kpis`): las operaciones
  * reales que ya se pueden registrar hoy (outbox: clientes/zonas/config, sync
- * events). El CTA "Registrar venta" queda listo pero marcado fase 3 · pendiente
- * hasta construir el módulo de ventas/despachos.
+ * events). Muestra 5 registros con lazy loading (cargar más bajo demanda). El
+ * CTA "Registrar venta" queda listo pero marcado fase 3 · pendiente hasta
+ * construir el módulo de ventas/despachos.
  */
+const PAGE = 5;
+
 export default function HomeHistorial() {
   const outbox = useLiveQuery(() => hub.outbox.orderBy('updated_at').reverse().limit(30).toArray(), []);
   const events = useLiveQuery(
     () => hub.events.orderBy('created_at').reverse().limit(30).toArray(),
     [],
   );
+  const [visible, setVisible] = useState(PAGE);
 
-  const filas: Fila[] = [
+  const todas: Fila[] = [
     ...(outbox ?? []).map<Fila>((op) => {
       const t = toLabel(op);
       return {
@@ -69,9 +74,10 @@ export default function HomeHistorial() {
         state: 'evento' as const,
       };
     }),
-  ]
-    .sort((a, b) => b.at.localeCompare(a.at))
-    .slice(0, 40);
+  ].sort((a, b) => b.at.localeCompare(a.at));
+
+  const filas = todas.slice(0, visible);
+  const hasMore = todas.length > visible;
 
   return (
     <div className="flex flex-col gap-4">
@@ -125,6 +131,15 @@ export default function HomeHistorial() {
               </div>
             </div>
           ))}
+          {hasMore && (
+            <button
+              type="button"
+              onClick={() => setVisible((v) => v + PAGE)}
+              className="mt-1 self-start rounded-md border border-ink-700 px-3 py-1.5 font-mono text-[11px] text-fog-100 transition-colors hover:border-ink-600"
+            >
+              cargar más ({todas.length - visible} restantes)
+            </button>
+          )}
         </div>
       </section>
     </div>

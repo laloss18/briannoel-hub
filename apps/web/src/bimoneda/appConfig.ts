@@ -1,5 +1,6 @@
 import { createOutboxEntry } from '@brian/sync-engine';
 import { appConfigSchema, type AppConfig, SYNC_ENTITIES } from '@brian/shared';
+import { fetchBcvRate } from './api';
 import { DexieLocalStore, DexieOutbox, hub } from '../sync/db';
 
 const CONFIG_ID = 'global';
@@ -68,6 +69,30 @@ export async function ensureAppConfig(rate: number | null): Promise<void> {
     bcv_rate_updated_at: rate !== null ? new Date().toISOString() : undefined,
     bcv_rate_source: rate !== null ? 'BCV_API' : undefined,
   });
+}
+
+/**
+ * Tasa BCV vigente: el valor del mirror local (`app_config['global']`), o null
+ * si aún no hay tasa configurada. No toca la red: para actualizarla desde la
+ * API oficial o manualmente usa `saveBcvRate`/`ensureAppConfig`.
+ */
+export async function getBcvRate(): Promise<number | null> {
+  const config = await getAppConfig();
+  return config?.bcv_rate !== undefined && config.bcv_rate !== null ? config.bcv_rate : null;
+}
+
+/**
+ * Refresco global de la tasa (PRD §7.4 "API BCV oficial + fallback manual"):
+ * si hay red, consulta la tasa oficial y SOBREESCRIBE la vigente cuando
+ * difiere (origen BCV_API); sin red, retorna null y la config queda como esté
+ * (la manual que se haya ingresado se mantiene hasta el próximo refresco).
+ */
+export async function refreshBcvRateIfOnline(): Promise<number | null> {
+  const fetched = await fetchBcvRate();
+  if (fetched === null) return null;
+  const current = await getBcvRate();
+  if (current !== fetched) await saveBcvRate(fetched, 'BCV_API');
+  return fetched;
 }
 
 export const APP_CONFIG_ENTITY = SYNC_ENTITIES[2]!;
