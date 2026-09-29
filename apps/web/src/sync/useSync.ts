@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { StellarDrive } from '@brian/sync-engine';
+import { ConflictRegistry, StellarDrive } from '@brian/sync-engine';
 import { SYNC_ENTITIES } from '@brian/shared';
 import { DexieLocalStore, DexieOutbox, DexieCursorStore, DexieEventLog } from './db';
 import { SupabaseTransport } from './transport';
@@ -36,6 +36,9 @@ export function useSync() {
         cursors: new DexieCursorStore(),
         events: new DexieEventLog(),
         clock: null,
+        // Entidades críticas (§5.1): `despachos` resuelve conflictos por rol del
+        // editor (supervisor gana al promotor aunque edite antes); el resto LWW.
+        registry: new ConflictRegistry().register('despachos', 'rolePriority'),
         entities: [...SYNC_ENTITIES],
       });
       await drive.measureClock();

@@ -1,9 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { ConflictRegistry, UnsupportedStrategyError, lwwCompare, lwwWins } from '../src';
-import type { SyncRecord } from '../src';
+import {
+  ConflictRegistry,
+  lwwCompare,
+  lwwWins,
+  rolePriorityCompare,
+  rolePriorityWins,
+} from '../src';
+import type { SyncRecord, SyncRecordWithData } from '../src';
 
 function rec(id: string, updatedAt: string, deletedAt: string | null = null): SyncRecord {
   return { id, created_at: updatedAt, updated_at: updatedAt, deleted_at: deletedAt };
+}
+
+function roleRec(
+  id: string,
+  updatedAt: string,
+  role: string,
+  deletedAt: string | null = null,
+): SyncRecordWithData<{ editor_role: string }> {
+  return {
+    id,
+    created_at: updatedAt,
+    updated_at: updatedAt,
+    deleted_at: deletedAt,
+    editor_role: role,
+  };
 }
 
 describe('lwwCompare / lwwWins', () => {
@@ -52,10 +73,49 @@ describe('ConflictRegistry', () => {
   });
 });
 
-describe('UnsupportedStrategyError', () => {
-  it('carries the strategy and entity', () => {
-    const error = new UnsupportedStrategyError('rolePriority', 'pagos');
-    expect(error.message).toContain('rolePriority');
-    expect(error.message).toContain('pagos');
+describe('rolePriority (entidades críticas §5.1)', () => {
+  it('un rol superior gana aunque su updated_at sea más viejo', () => {
+    const promotor = roleRec('a', '2024-01-01T00:00:10.000Z', 'promotor');
+    const supervisor = roleRec('a', '2024-01-01T00:00:00.000Z', 'supervisor');
+    expect(rolePriorityWins(promotor, supervisor)).toBe(supervisor);
+    expect(rolePriorityCompare(promotor, supervisor)).toBeLessThan(0);
+  });
+
+  it('admin gana siempre (orden admin > supervisor > promotor > cobrador)', () => {
+    expect(rolePriorityWins(roleRec('a', 't', 'supervisor'), roleRec('a', 't', 'admin'))).toMatchObject(
+      { editor_role: 'admin' },
+    );
+    expect(rolePriorityWins(roleRec('a', 't', 'cobrador'), roleRec('a', 't', 'promotor'))).toMatchObject(
+      { editor_role: 'promotor' },
+    );
+  });
+
+  it('empate de rol cae a LWW (updated_at, tie-break id)', () => {
+    const a = roleRec('a', '2024-01-01T00:00:10.000Z', 'promotor');
+    const b = roleRec('a', '2024-01-01T00:00:00.000Z', 'promotor');
+    expect(rolePriorityWins(a, b)).toBe(a);
+
+    const x = roleRec('x-fixed-a', '2024-01-01T00:00:00.000Z', 'promotor');
+    const y = roleRec('y-fixed-b', '2024-01-01T00:00:00.000Z', 'promotor');
+    expect(rolePriorityWins(x, y)).toBe(y);
+  });
+
+  it('sin editor_role (registro heredado) cae a LWW', () => {
+    const sinRol = rec('a', '2024-01-01T00:00:00.000Z');
+    const promotor = roleRec('a', '2024-01-01T00:00:10.000Z', 'promotor');
+    expect(rolePriorityWins(sinRol, promotor)).toBe(promotor);
+  });
+
+  it('soporta un resolver de rol custom', () => {
+    const roleOf = (r: SyncRecord) => String((r as { by?: string }).by ?? '');
+    const a: SyncRecordWithData<{ by: string }> = {
+      ...rec('a', '2024-01-01T00:00:10.000Z'),
+      by: 'supervisor',
+    };
+    const b: SyncRecordWithData<{ by: string }> = {
+      ...rec('a', '2024-01-01T00:00:00.000Z'),
+      by: 'admin',
+    };
+    expect(rolePriorityWins(a, b, roleOf)).toBe(b);
   });
 });

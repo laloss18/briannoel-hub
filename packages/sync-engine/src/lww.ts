@@ -1,3 +1,4 @@
+import { ROLE_PRIORITY } from '@brian/shared';
 import type { SyncRecord } from './types';
 
 /**
@@ -19,14 +20,52 @@ export function lwwWins(a: SyncRecord, b: SyncRecord): SyncRecord {
   return lwwCompare(a, b) >= 0 ? a : b;
 }
 
+/** Extrae el rol del editor desde el payload opaco de la entidad (PRD §3.2/§5.1). */
+export function editorRoleOf(record: SyncRecord): string | undefined {
+  const role = (record as { editor_role?: unknown }).editor_role;
+  return typeof role === 'string' ? role : undefined;
+}
+
+export type RoleResolver = (record: SyncRecord) => string | undefined;
+
+/**
+ * Role-priority comparison for CRITICAL entities (PRD §5.1): pagos, notas de
+ * crédito y despachos. El registro editado por un rol superior gana **aunque su
+ * timestamp sea más viejo** (protege la inmutabilidad: un promotor offline no
+ * puede pisar la entrega de un supervisor). Si falta el rol o hay empate de
+ * prioridad, cae a LWW por `updated_at` con tie-break por `id`.
+ */
+export function rolePriorityCompare(
+  a: SyncRecord,
+  b: SyncRecord,
+  roleOf: RoleResolver = editorRoleOf,
+): number {
+  const ra = roleOf(a);
+  const rb = roleOf(b);
+  if (ra !== undefined && rb !== undefined && ra !== rb) {
+    const pa = ROLE_PRIORITY[ra as keyof typeof ROLE_PRIORITY] ?? 0;
+    const pb = ROLE_PRIORITY[rb as keyof typeof ROLE_PRIORITY] ?? 0;
+    if (pa !== pb) return pa > pb ? 1 : -1;
+  }
+  return lwwCompare(a, b);
+}
+
+export function rolePriorityWins(
+  a: SyncRecord,
+  b: SyncRecord,
+  roleOf: RoleResolver = editorRoleOf,
+): SyncRecord {
+  return rolePriorityCompare(a, b, roleOf) >= 0 ? a : b;
+}
+
 /** Conflict resolution strategy per entity (PRD §5.1 hybrid model). */
 export const CONFLICT_STRATEGIES = ['lww', 'rolePriority'] as const;
 export type ConflictStrategy = (typeof CONFLICT_STRATEGIES)[number];
 
 /**
  * Registry mapping entity -> conflict strategy so each module can opt in.
- * Phase 0 implements `lww`; `rolePriority` (critical entities: pagos, notas de
- * crédito, despachos) is the extension point wired in Fase 4.
+ * `lww` es el default para entidades no críticas; `rolePriority` (pagos, notas
+ * de crédito, despachos, §5.1) resuelve por rol con caída a LWW.
  */
 export class ConflictRegistry {
   #strategies = new Map<string, ConflictStrategy>();
@@ -41,11 +80,5 @@ export class ConflictRegistry {
 
   strategyFor(entity: string): ConflictStrategy {
     return this.#strategies.get(entity) ?? 'lww';
-  }
-}
-
-export class UnsupportedStrategyError extends Error {
-  constructor(strategy: string, entity: string) {
-    super(`Conflict strategy '${strategy}' not implemented yet for entity '${entity}'`);
   }
 }

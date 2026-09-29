@@ -9,6 +9,7 @@ import SyncButton from '../sync/SyncButton';
 import { useSync } from '../sync/useSync';
 import ClientesCard from '../clientes/ClientesCard';
 import ZonasCard from '../clientes/ZonasCard';
+import VentaCard from '../ventas/VentaCard';
 import ModuleMenu, { type ModuleDef, type ModuleId } from './ModuleMenu';
 import HomeDashboard from './HomeDashboard';
 import HomeHistorial from './HomeHistorial';
@@ -23,7 +24,7 @@ const MODULES: readonly ModuleDef[] = [
   { id: 'config', name: 'Configuración', status: 'listo' },
   { id: 'clientes', name: 'Clientes', status: 'listo' },
   { id: 'zonas', name: 'Zonas', status: 'listo' },
-  { id: 'ventas', name: 'Ventas', status: 'pendiente' },
+  { id: 'ventas', name: 'Ventas', status: 'listo' },
   { id: 'cobranza', name: 'Cobranza', status: 'pendiente' },
   { id: 'pagos', name: 'Pagos', status: 'pendiente' },
   { id: 'rutas', name: 'Rutas', status: 'pendiente' },
@@ -121,6 +122,7 @@ export default function HubScreen({ email, roles, onLogout }: HubScreenProps) {
               {active.id === 'config' && <BimonedaCard roles={roles} />}
               {active.id === 'clientes' && <ClientesCard roles={roles} email={email} />}
               {active.id === 'zonas' && <ZonasCard />}
+              {active.id === 'ventas' && <VentaCard roles={roles} email={email} />}
             </section>
           ) : (
             <section aria-label="Resumen" className="rise-in mt-8">
@@ -129,9 +131,10 @@ export default function HubScreen({ email, roles, onLogout }: HubScreenProps) {
                   roles={roles}
                   onNewCliente={() => setModule('clientes')}
                   onOpenBcv={() => setBcvOpen(true)}
+                  onRegistrarVenta={() => setModule('ventas')}
                 />
               ) : (
-                <HomeHistorial />
+                <HomeHistorial onRegistrarVenta={() => setModule('ventas')} />
               )}
             </section>
           )}

@@ -2,6 +2,18 @@ export const ROLES = ['admin', 'supervisor', 'promotor', 'cobrador'] as const;
 export type Role = (typeof ROLES)[number];
 
 /**
+ * Prioridad de rol para entidades críticas (PRD §5.1): mayor = gana el conflicto
+ * (admin > supervisor > promotor > cobrador). Empate de prioridad → LWW by
+ * `updated_at` con tie-break por `id`.
+ */
+export const ROLE_PRIORITY: Record<Role, number> = {
+  admin: 4,
+  supervisor: 3,
+  promotor: 2,
+  cobrador: 1,
+};
+
+/**
  * Permisos del PRD §3.3. `authorize_credit` y `discount` distinguen la cantidad
  * de pasos de aprobación por rol (admin = 1, supervisor = 2); la UI lo resuelve
  * con `approvalSteps(permission, roles)`.
@@ -14,6 +26,9 @@ export const PERMISSIONS = [
   'view_saldos',
   'view_kpis',
   'discount',
+  'deliver_dispatch',
+  'record_sale',
+  'manage_items',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -28,8 +43,11 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'view_saldos',
     'view_kpis',
     'discount',
+    'deliver_dispatch',
+    'record_sale',
+    'manage_items',
   ],
-  promotor: ['delete_dispatch_pending'],
+  promotor: ['delete_dispatch_pending', 'record_sale'],
   cobrador: ['close_route', 'view_saldos'],
 };
 
@@ -42,13 +60,24 @@ export const APPROVAL_STEPS: Record<Permission, Partial<Record<Role, number>>> =
   close_route: {},
   view_saldos: {},
   view_kpis: {},
+  deliver_dispatch: {},
+  record_sale: {},
+  manage_items: {},
 };
 
 /** Cualquier usuario con ≥1 de estos roles ve el indicador "crédito bloqueado". */
 export const CREDIT_BLOCK_INDICATOR_ROLES = ['promotor'] as const;
 
 /** Entidades que el app sincroniza con el servidor. `sync_demo` es de Fase 0. */
-export const SYNC_ENTITIES = ['sync_demo', 'app_users', 'app_config', 'clientes', 'zonas'] as const;
+export const SYNC_ENTITIES = [
+  'sync_demo',
+  'app_users',
+  'app_config',
+  'clientes',
+  'zonas',
+  'items',
+  'despachos',
+] as const;
 export type SyncEntityName = (typeof SYNC_ENTITIES)[number];
 
 /** Crédito por defecto de un cliente nuevo: 1 bolsa/pack (PRD §2.5). */

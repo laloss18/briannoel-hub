@@ -9,6 +9,7 @@ interface HomeDashboardProps {
   roles: readonly Role[];
   onNewCliente: () => void;
   onOpenBcv: () => void;
+  onRegistrarVenta: () => void;
 }
 
 const GRADOS = ['A', 'B', 'C', 'D', 'E'] as const;
@@ -18,7 +19,7 @@ const GRADOS = ['A', 'B', 'C', 'D', 'E'] as const;
  * KPIs con fuente real (clientes, zonas, scoring, bimoneda, outbox). El sync
  * vive en la barra superior (clockSync); aquí solo las acciones de operación.
  */
-export default function HomeDashboard({ roles, onNewCliente, onOpenBcv }: HomeDashboardProps) {
+export default function HomeDashboard({ roles, onNewCliente, onOpenBcv, onRegistrarVenta }: HomeDashboardProps) {
   const clientes = useLiveQuery(() => listClientes(), []);
   const zonas = useLiveQuery(() => listZonas(), []);
   const config = useLiveQuery(() => getAppConfig(), []);
@@ -110,6 +111,18 @@ export default function HomeDashboard({ roles, onNewCliente, onOpenBcv }: HomeDa
             </span>
           </button>
         )}
+        <button
+          type="button"
+          onClick={onRegistrarVenta}
+          className="group flex min-h-20 flex-col items-start justify-between rounded-xl border border-signal bg-ink-900 p-3.5 text-left transition-transform active:scale-[0.98]"
+        >
+          <span className="text-[13px] font-medium leading-snug text-fog-100">
+            Registrar venta
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-signal">
+            despachos
+          </span>
+        </button>
         <button
           type="button"
           onClick={onOpenBcv}

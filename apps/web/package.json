@@ -18,6 +18,7 @@
     "@brian/scoring": "workspace:*",
     "@brian/shared": "workspace:*",
     "@brian/sync-engine": "workspace:*",
+    "@brian/ventas": "workspace:*",
     "@fontsource-variable/archivo": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@supabase/supabase-js": "^2.48.1",

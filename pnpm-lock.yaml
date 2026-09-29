@@ -59,6 +59,9 @@ importers:
       '@brian/sync-engine':
         specifier: workspace:*
         version: link:../../packages/sync-engine
+      '@brian/ventas':
+        specifier: workspace:*
+        version: link:../../packages/ventas
       '@fontsource-variable/archivo':
         specifier: ^5.3.0
         version: 5.3.0
@@ -177,6 +180,28 @@ importers:
 
   packages/sync-engine:
     dependencies:
+      '@brian/shared':
+        specifier: workspace:*
+        version: link:../shared
+      ulidx:
+        specifier: ^2.4.1
+        version: 2.4.1
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: ^3.0.0
+        version: 3.2.7(supports-color@7.2.0)(vitest@3.2.7(@types/node@24.13.5)(jiti@2.7.0)(lightningcss@1.33.0)(supports-color@7.2.0)(terser@5.51.2))
+      typescript:
+        specifier: ~6.0.2
+        version: 6.0.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.7(@types/node@24.13.5)(jiti@2.7.0)(lightningcss@1.33.0)(supports-color@7.2.0)(terser@5.51.2)
+
+  packages/ventas:
+    dependencies:
+      '@brian/scoring':
+        specifier: workspace:*
+        version: link:../scoring
       '@brian/shared':
         specifier: workspace:*
         version: link:../shared

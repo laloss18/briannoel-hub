@@ -114,3 +114,74 @@ export const zonaSchema = baseRecordSchema.extend({
 });
 
 export type Zona = z.infer<typeof zonaSchema>;
+
+/**
+ * ítem del catálogo de venta (PRD §2.2): sin inventario (§2.3 fuera del MVP),
+ * catálogo configurable por admin con precio según condición (crédito/contado)
+ * y canal (mayor/detal). Sincroniza por LWW (no crítica §5.1).
+ */
+export const itemSchema = baseRecordSchema.extend({
+  nombre: z.string().min(1).max(200),
+  precio_credito_mayor: z.number().positive(),
+  precio_credito_detal: z.number().positive(),
+  precio_contado_mayor: z.number().positive(),
+  precio_contado_detal: z.number().positive(),
+});
+
+export type Item = z.infer<typeof itemSchema>;
+
+/** Condición de pago de un despacho (PRD §2.2): crédito o contado. */
+export const CONDICIONES = ['credito', 'contado'] as const;
+export type Condicion = (typeof CONDICIONES)[number];
+
+/** Canal de venta (PRD §2.2): mayor o detal. */
+export const CANALES = ['mayor', 'detal'] as const;
+export type Canal = (typeof CANALES)[number];
+
+/**
+ * Estado de un despacho (PRD §2.6 inmutabilidad): `pedido` (promotor toma el
+ * pedido), `entregado` (inmutable, se revierte con nota de crédito en Fase 4),
+ * `anulado` (fase 4 nota de débito/crédito). Eliminable solo en `pedido`
+ * (permiso `delete_dispatch_pending`).
+ */
+export const DESPACHO_ESTADOS = ['pedido', 'entregado', 'anulado'] as const;
+export type DespachoEstado = (typeof DESPACHO_ESTADOS)[number];
+
+/** Línea de un despacho: ítem + cantidad + precio unitario de la condición/canal. */
+export const despachoItemSchema = z.object({
+  item_id: z.string().min(1).max(64),
+  nombre: z.string().min(1).max(200),
+  cantidad: z.number().int().positive(),
+  precio_unitario: z.number().positive(),
+});
+
+export type DespachoItem = z.infer<typeof despachoItemSchema>;
+
+/**
+ * Despacho / nota de entrega (PRD §2.6, entidad crítica §5.1): venta tomada por
+ * el promotor y entregada por el supervisor. Modelado preparado para facturación
+ * electrónica (totales, tasa BCV snapshot, nº de control). `editor_role` es la
+ * prioridad por rol para conflictos de sync (regla crítica ≠ LWW).
+ */
+export const despachoSchema = baseRecordSchema.extend({
+  nro_control: z.string().min(1).max(40),
+  cliente_id: z.string().min(1).max(64),
+  cliente_nombre: z.string().min(1).max(200),
+  condicion: z.enum(CONDICIONES),
+  canal: z.enum(CANALES),
+  lineas: z.array(despachoItemSchema).min(1),
+  subtotal: z.number().nonnegative(),
+  tasa_bcv: z.number().positive(),
+  total: z.number().nonnegative(),
+  estado: z.enum(DESPACHO_ESTADOS).default('pedido'),
+  /** Aprobación de descuento (§3.3): admin 1 paso, supervisor 2. Null = sin descuento. */
+  descuento_pct: z.number().min(0).max(100).default(0),
+  descuento_aprobado_por: z.string().nullable().default(null),
+  descuento_pasos: z.number().int().positive().nullable().default(null),
+  created_by: z.string().min(1),
+  updated_by: z.string().min(1),
+  editor_role: z.enum(ROLES).default('promotor'),
+  entregado_at: z.string().datetime().nullable().default(null),
+});
+
+export type Despacho = z.infer<typeof despachoSchema>;

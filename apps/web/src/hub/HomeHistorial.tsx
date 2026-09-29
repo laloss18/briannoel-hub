@@ -14,6 +14,7 @@ interface Fila {
 /** El payload de la operación se esparce en el registro (createOutboxEntry). */
 interface ClienteOp extends SyncRecord {
   nombre?: string;
+  cliente_nombre?: string;
 }
 
 function toLabel(op: OutboxEntry): { label: string; detail: string } {
@@ -22,11 +23,15 @@ function toLabel(op: OutboxEntry): { label: string; detail: string } {
       ? 'cliente'
       : op.entity === 'zonas'
         ? 'zona'
-        : op.entity === 'app_config'
-          ? 'configuración'
-          : op.entity;
+        : op.entity === 'items'
+          ? 'ítem'
+          : op.entity === 'despachos'
+            ? 'despacho'
+            : op.entity === 'app_config'
+              ? 'configuración'
+              : op.entity;
   const accion = op.operation === 'create' ? 'creado' : op.operation === 'update' ? 'editado' : op.operation;
-  const nombre = (op as ClienteOp).nombre;
+  const nombre = (op as ClienteOp).nombre ?? (op as ClienteOp).cliente_nombre;
   return { label: `${entidad} ${accion}`, detail: nombre ? nombre : '' };
 }
 
@@ -45,7 +50,11 @@ function toEventLabel(e: SyncEvent): { label: string; detail: string } {
  */
 const PAGE = 5;
 
-export default function HomeHistorial() {
+interface HomeHistorialProps {
+  onRegistrarVenta: () => void;
+}
+
+export default function HomeHistorial({ onRegistrarVenta }: HomeHistorialProps) {
   const outbox = useLiveQuery(() => hub.outbox.orderBy('updated_at').reverse().limit(30).toArray(), []);
   const events = useLiveQuery(
     () => hub.events.orderBy('created_at').reverse().limit(30).toArray(),
@@ -85,12 +94,10 @@ export default function HomeHistorial() {
         <p className="text-sm font-medium text-fog-100">Registrar venta</p>
         <button
           type="button"
-          disabled
-          aria-disabled="true"
-          className="cursor-default rounded-md border border-ink-700/50 px-3 py-1.5 text-sm font-medium text-fog-700"
-          title="El módulo de ventas/despachos es la Fase 3"
+          onClick={onRegistrarVenta}
+          className="rounded-md border border-signal px-3 py-1.5 text-sm font-medium text-signal transition-colors hover:bg-signal hover:text-ink-950"
         >
-          fase 3 · pendiente
+          registrar venta
         </button>
       </div>
 

@@ -10,4 +10,10 @@ export type {
   Cliente,
   Consentimiento,
   Zona,
+  Item,
+  Condicion,
+  Canal,
+  DespachoEstado,
+  DespachoItem,
+  Despacho,
 } from './schemas';

@@ -1,6 +1,10 @@
 import { MAX_OUTBOX_ATTEMPTS, MAX_PUSH_BATCH } from '@brian/shared';
 import { measureClockOffset, normalizeTimestamp } from './clock';
-import { ConflictRegistry, lwwWins, UnsupportedStrategyError } from './lww';
+import {
+  ConflictRegistry,
+  lwwWins,
+  rolePriorityWins,
+} from './lww';
 import { markAttempted, toFailed, toPending } from './outbox';
 import type { CursorStore, EventLog, LocalStore, OutboxStore, SyncTransport } from './ports';
 import type {
@@ -205,8 +209,11 @@ export class StellarDrive {
     if (strategy === 'lww') {
       winner = lwwWins(existing, incoming);
     } else if (strategy === 'rolePriority') {
-      // Extension point wired in Fase 4 (pagos, notas de crédito, despachos).
-      throw new UnsupportedStrategyError(strategy, entity);
+      // Entidades críticas (pagos, notas de crédito, despachos, PRD §5.1): el rol
+      // del editor viaja en el payload (`editor_role`) y el superior gana el
+      // conflicto; empate de rol cae a LWW. Protege la inmutabilidad (un
+      // promotor offline no pisa la entrega de un supervisor).
+      winner = rolePriorityWins(existing, incoming);
     } else {
       winner = lwwWins(existing, incoming);
     }

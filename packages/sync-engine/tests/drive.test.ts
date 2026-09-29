@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { StellarDrive, createOutboxEntry, UnsupportedStrategyError } from '../src';
-import type { ClockState } from '../src';
+import { StellarDrive, createOutboxEntry } from '../src';
+import type { ClockState, SyncRecordWithData } from '../src';
 import {
   MemoryCursors,
   MemoryEvents,
@@ -208,26 +208,32 @@ describe('pullDelta / cursor', () => {
     expect((await store.get('sync_demo', 'a'))?.deleted_at).toBe('2024-01-01T00:00:08.000Z');
   });
 
-  it('rejects rolePriority conflicts until the strategy lands in Fase 4', async () => {
+  it('resolves rolePriority conflicts by editor role, not by LWW', async () => {
     const t = new MemoryTransport();
     const { drive, store } = makeDrive(t);
     drive.registry.register('sync_demo', 'rolePriority');
-    await store.upsert('sync_demo', {
+    const local: SyncRecordWithData<{ editor_role: string }> = {
       id: 'a',
       updated_at: '2024-01-01T00:00:05.000Z',
       created_at: '2024-01-01T00:00:00.000Z',
       deleted_at: null,
-    });
-    t.seed('sync_demo', [
-      {
-        id: 'a',
-        created_at: '2024-01-01T00:00:00.000Z',
-        updated_at: '2024-01-01T00:00:10.000Z',
-        deleted_at: null,
-      },
-    ]);
+      editor_role: 'promotor',
+    };
+    await store.upsert('sync_demo', local);
+    const remote: SyncRecordWithData<{ editor_role: string }> = {
+      id: 'a',
+      created_at: '2024-01-01T00:00:00.000Z',
+      updated_at: '2024-01-01T00:00:00.000Z',
+      deleted_at: null,
+      editor_role: 'supervisor',
+    };
+    t.seed('sync_demo', [remote]);
 
-    await expect(drive.pullDelta('sync_demo')).rejects.toBeInstanceOf(UnsupportedStrategyError);
+    await drive.pullDelta('sync_demo');
+
+    const after = (await store.get('sync_demo', 'a')) as SyncRecordWithData<{ editor_role: string }>;
+    expect(after?.updated_at).toBe('2024-01-01T00:00:00.000Z');
+    expect(after?.editor_role).toBe('supervisor');
   });
 });
 
