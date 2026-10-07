@@ -30,8 +30,10 @@ revoke all on table public.server_records from anon, authenticated;
 
 -- ───────────────────────────── 2) Seed de zonas ─────────────────────────────
 -- Zona → municipio → estado. lat/lng ~ centroides para haversine (ZONA_RADIO_KM).
+-- Timestamps del seed = ahora servidor (referencia; los edits posteriores del admin
+-- escriben client_updated_at real y ganan por LWW).
 insert into public.server_records (entity, id, body, client_created_at, client_updated_at, deleted_at)
-select * from (values
+select entity, id, body::jsonb, now(), now(), null from (values
   -- Carabobo (Valencia y alrededores)
   ('zonas', '01M3A2XTGYZRSEJ4GV1FXVVYTY', '{"nombre":"Carmen","municipio":"Valencia","estado":"Carabobo","lat":10.1621,"lng":-68.0077}'),
   ('zonas', '01M3A2XTH3R4SKYTCZH0KPJP5D', '{"nombre":"San Blas","municipio":"Valencia","estado":"Carabobo","lat":10.1378,"lng":-68.0136}'),

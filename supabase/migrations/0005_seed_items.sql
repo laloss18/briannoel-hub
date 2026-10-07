@@ -10,7 +10,7 @@
 -- el mayor es menor al detal (PRD §2.2). El admin ajusta con la app.
 
 insert into public.server_records (entity, id, body, client_created_at, client_updated_at, deleted_at)
-select * from (values
+select entity, id, body::jsonb, now(), now(), null from (values
   -- Harina de maíz precocida (unidad del crédito: 1 bolsa/pack, §2.5)
   ('items', '01M3AJ7X9W6V4D4N5H6J7K8L9Q', '{"nombre":"Bolsa Harina PAN 1kg","precio_credito_mayor":1.35,"precio_credito_detal":1.55,"precio_contado_mayor":1.20,"precio_contado_detal":1.45}'),
   ('items', '01M3AJ7XA29R9E5O9P7Q8R9S0T', '{"nombre":"Caja Harina Harina P.A.N. 3x1kg","precio_credito_mayor":3.60,"precio_credito_detal":4.10,"precio_contado_mayor":3.30,"precio_contado_detal":3.85}'),
