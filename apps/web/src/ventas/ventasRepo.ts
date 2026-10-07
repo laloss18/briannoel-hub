@@ -1,9 +1,14 @@
 import { createOutboxEntry } from '@brian/sync-engine';
 import {
+  corregirDespacho as corregirDespachoDomain,
   crearDespacho as crearDespachoDomain,
+  editarDespachoPendiente as editarDespachoPendienteDomain,
   eliminarDespachoPendiente as eliminarDespachoPendienteDomain,
   entregarDespacho as entregarDespachoDomain,
+  type CorregirDespachoInput,
   type CrearDespachoInput,
+  type DescuentoAprobado,
+  type EditarDespachoInput,
 } from '@brian/ventas';
 import {
   despachoSchema,
@@ -62,10 +67,14 @@ export async function persistDespacho(
 export interface NuevaVentaRepoInput {
   cliente: Cliente;
   condicion: 'credito' | 'contado';
-  canal: 'mayor' | 'detal';
   lineas: { item: Item; cantidad: number }[];
-  tasa_bcv: number;
-  descuento?: { pct: number; aprobado_por: string; pasos: number };
+  /** Tasa BCV (Bs/USD) vigente al registrar; 0 si aún no configurada (§2.6). */
+  tasa_bcv?: number;
+  descuento?: DescuentoAprobado;
+  /** Promotor que captó al cliente (nombre del roster `personal`), opcional. */
+  promotor?: string | null;
+  /** Supervisor a cargo (nombre del roster o identidad de quien registra). */
+  supervisor?: string | null;
   vendedor: string;
   editor_role: Role;
 }
@@ -75,14 +84,43 @@ export async function crearDespachoLocal(input: NuevaVentaRepoInput): Promise<De
   const despacho = crearDespachoDomain({
     cliente: input.cliente,
     condicion: input.condicion,
-    canal: input.canal,
     lineas: input.lineas,
     tasa_bcv: input.tasa_bcv,
     descuento: input.descuento,
+    promotor: input.promotor,
+    supervisor: input.supervisor,
     vendedor: input.vendedor,
     editor_role: input.editor_role,
   } satisfies CrearDespachoInput);
   await persistDespacho(despacho, 'create');
+  return despacho;
+}
+
+export interface EditarVentaRepoInput {
+  cliente?: Cliente;
+  condicion: 'credito' | 'contado';
+  lineas: { item: Item; cantidad: number }[];
+  tasa_bcv?: number;
+  descuento?: DescuentoAprobado;
+  vendedor: string;
+  editor_role: Role;
+}
+
+/** Edita un despacho en `pedido` (solo admin; el entregado es inmutable §2.6). */
+export async function editarDespachoLocal(
+  prev: Despacho,
+  input: EditarVentaRepoInput,
+): Promise<Despacho> {
+  const despacho = editarDespachoPendienteDomain(prev, {
+    cliente: input.cliente,
+    condicion: input.condicion,
+    lineas: input.lineas,
+    tasa_bcv: input.tasa_bcv,
+    descuento: input.descuento,
+    editor: input.vendedor,
+    editor_role: input.editor_role,
+  } satisfies EditarDespachoInput);
+  await persistDespacho(despacho, 'update');
   return despacho;
 }
 
@@ -104,6 +142,16 @@ export async function eliminarDespachoPendienteLocal(
 ): Promise<Despacho> {
   const despacho = eliminarDespachoPendienteDomain(prev, editor);
   await persistDespacho(despacho, 'softDelete');
+  return despacho;
+}
+
+/** Corrección admin: cambio de estado (rectificar) y/o reasignación de promotor/entrega. */
+export async function corregirDespachoLocal(
+  prev: Despacho,
+  input: Omit<CorregirDespachoInput, 'clock'>,
+): Promise<Despacho> {
+  const despacho = corregirDespachoDomain(prev, input);
+  await persistDespacho(despacho, 'update');
   return despacho;
 }
 

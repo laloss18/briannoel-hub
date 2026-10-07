@@ -2,16 +2,25 @@ import type { CachedSession } from '@brian/shared';
 import type { AuthGateway } from '@brian/pin-auth';
 import type { User } from '@supabase/supabase-js';
 import { requireSupabase } from '../sync/supabase';
-import { ROLES, type Role } from '@brian/shared';
+import { ROLES, usernameSchema, type Role } from '@brian/shared';
 
 function toSession(user: User, accessToken: string, refreshToken: string): CachedSession {
   const raw = user.app_metadata?.roles as string[] | undefined;
   const roles: Role[] = Array.isArray(raw)
     ? raw.filter((r): r is Role => (ROLES as readonly string[]).includes(r))
     : ['promotor'];
+  // Username = identidad visible (PRD §3.4). Lo escribe el admin en
+  // `user_metadata.username` (RPC 0009); si no hay o es inválido, la sesión
+  // degrada al email en vez de romper el arranque.
+  const rawUsername = user.user_metadata?.username;
+  const username =
+    typeof rawUsername === 'string' && usernameSchema.safeParse(rawUsername).success
+      ? rawUsername
+      : undefined;
   return {
     user_id: user.id,
     email: user.email ?? '',
+    ...(username ? { username } : {}),
     roles: roles.length ? roles : ['promotor'],
     access_token: accessToken,
     refresh_token: refreshToken,

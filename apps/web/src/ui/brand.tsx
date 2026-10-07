@@ -27,7 +27,7 @@ export function Brand() {
       <Monogram />
       <div className="leading-tight">
         <p className="text-[15px] font-semibold tracking-tight text-fog-100">Brian Noel</p>
-        <p className="text-[11px] text-fog-500">hub de operaciones · offline first</p>
+        <p className="text-[11px] text-fog-500">hub de operaciones</p>
       </div>
     </div>
   );
@@ -46,6 +46,7 @@ export function Clock() {
   return (
     <span className="font-mono text-xs tabular-nums text-fog-500">
       {hh}:{mm}
+      <span className="text-fog-500">:</span>
       <span className="text-signal">{ss}</span>
     </span>
   );

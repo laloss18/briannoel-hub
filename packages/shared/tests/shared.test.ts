@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { hasPermission, approvalSteps } from '../src/permissions';
 import { ROLE_PERMISSIONS, type Permission, type Role } from '../src/constants';
-import { appConfigSchema, sessionSchema } from '../src/schemas';
+import { appConfigSchema, appUserSchema, identidadDe, sessionSchema, usernameSchema, type IdentidadIndice } from '../src/schemas';
 
 const ROLES: readonly Role[] = ['admin', 'supervisor', 'promotor', 'cobrador'];
 
@@ -120,5 +120,58 @@ describe('schemas Fase 1', () => {
       deleted_at: null,
     });
     expect(minimal.success).toBe(true);
+  });
+});
+
+describe('identidad por nombre de usuario (PRD §3.4)', () => {
+  it('usernameSchema acepta alfanuméricos con punto, guion y guion bajo', () => {
+    for (const ok of ['luis', 'brian.noel', 'admin_1', 'Ana-03']) {
+      expect(usernameSchema.safeParse(ok).success, ok).toBe(true);
+    }
+  });
+
+  it('usernameSchema rechaza espacios, acentos, símbolos y longitudes extremas', () => {
+    for (const bad of ['luis perez', 'ánimo', 'user@host', 'ab', '', 'a'.repeat(25), 'con espacio ']) {
+      expect(usernameSchema.safeParse(bad).success, JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  it('sessionSchema acepta sesión con y sin username (compatibilidad offline)', () => {
+    const base = {
+      user_id: 'u-1',
+      email: 'luis@brian.com',
+      roles: ['admin'],
+      access_token: 'a',
+      refresh_token: 'r',
+      last_active_at: '2024-01-01T00:00:00.000Z',
+    };
+    expect(sessionSchema.safeParse({ ...base, username: 'luis' }).success).toBe(true);
+    expect(sessionSchema.safeParse(base).success).toBe(true);
+    expect(sessionSchema.safeParse({ ...base, username: 'luis perez' }).success).toBe(false);
+  });
+
+  it('identidadDe resuelve el username y cae al email si no hay índice o no está', () => {
+    const indice: IdentidadIndice = new Map([['luis@brian.com', 'luis']]);
+    expect(identidadDe(indice, 'luis@brian.com')).toBe('luis');
+    expect(identidadDe(indice, 'Luis@Brian.com')).toBe('luis');
+    expect(identidadDe(indice, 'otro@brian.com')).toBe('otro@brian.com');
+    expect(identidadDe(undefined, 'otro@brian.com')).toBe('otro@brian.com');
+    expect(identidadDe(indice, null)).toBe('—');
+  });
+
+  it('appUserSchema exige username y roles válidos en el perfil del admin', () => {
+    const base = {
+      id: '09ce4f19-0130-4184-a5da-22f2c1b61c3f',
+      user_id: '09ce4f19-0130-4184-a5da-22f2c1b61c3f',
+      email: 'luis@brian.com',
+      roles: ['admin'],
+      active: true,
+      created_at: '2024-01-01T00:00:00.000Z',
+      updated_at: '2024-01-01T00:00:00.000Z',
+      deleted_at: null,
+    };
+    expect(appUserSchema.safeParse({ ...base, username: 'luis' }).success).toBe(true);
+    expect(appUserSchema.safeParse(base).success).toBe(false);
+    expect(appUserSchema.safeParse({ ...base, username: 'l' }).success).toBe(false);
   });
 });

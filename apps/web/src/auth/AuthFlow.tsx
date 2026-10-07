@@ -14,7 +14,7 @@ export default function AuthFlow({ auth }: { auth: UseAuthResult }) {
     return (
       <div className="flex min-h-dvh flex-col justify-between gap-8 px-5 py-6 sm:py-10">
         <Brand />
-        <p className="font-mono text-[11px] text-fog-700">leyendo dispositivo…</p>
+        <p className="font-mono text-[11px] text-fog-600">leyendo dispositivo…</p>
         <StatusStrip />
       </div>
     );
@@ -75,7 +75,7 @@ function LoginScreen({ auth }: { auth: UseAuthResult }) {
   };
 
   const input =
-    'w-full rounded-md bg-ink-900 px-3.5 py-2.5 text-[14px] text-fog-100 placeholder:text-fog-700 caret-signal outline-none transition-colors hover:bg-ink-800';
+    'w-full rounded-md bg-ink-900 px-3.5 py-2.5 text-[14px] text-fog-100 placeholder:text-fog-600 caret-signal outline-none transition-colors hover:bg-ink-800';
 
   return (
     <Card title="Entrar a tu operación" hint="Sesión cifrada y guardada en este dispositivo.">
@@ -297,7 +297,7 @@ function UnlockScreen({ auth }: { auth: UseAuthResult }) {
         <button
           type="button"
           onClick={auth.logout}
-          className="text-center font-mono text-[11px] text-fog-700 transition-colors hover:text-fog-500"
+          className="text-center font-mono text-[11px] text-fog-600 transition-colors hover:text-fog-500"
         >
           salir y borrar datos locales
         </button>

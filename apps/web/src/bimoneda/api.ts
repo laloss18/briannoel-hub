@@ -4,9 +4,11 @@
  * oficial"). Si falla (offline/red no disponible) retorna null — la app usa
  * entonces el ingreso manual como fallback.
  */
-export async function fetchBcvRate(): Promise<number | null> {
+export async function fetchBcvRate(signal?: AbortSignal): Promise<number | null> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8_000);
+  const onAbort = () => controller.abort();
+  signal?.addEventListener('abort', onAbort, { once: true });
   try {
     const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial/bcv', {
       signal: controller.signal,
@@ -20,5 +22,6 @@ export async function fetchBcvRate(): Promise<number | null> {
     return null;
   } finally {
     clearTimeout(timer);
+    signal?.removeEventListener('abort', onAbort);
   }
 }

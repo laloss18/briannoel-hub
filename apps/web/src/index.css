@@ -18,6 +18,9 @@
   --color-fog-100: #e7eaf0;
   --color-fog-300: #c2cad8;
   --color-fog-500: #8b94a8;
+  /* AA sobre ink-950/ink-900 (5.3:1 / 4.9:1): meta texto y micro-labels. */
+  --color-fog-600: #7f88a0;
+  /* Sólo decorativo/bordes: 3.2:1 NO cumple AA para texto. */
   --color-fog-700: #5b6479;
 
   --color-danger: #e26d6d;
@@ -35,6 +38,7 @@
     font-family: var(--font-sans);
     color: var(--color-fog-100);
     background-color: var(--color-ink-950);
+    color-scheme: dark;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -43,9 +47,10 @@
     background: color-mix(in srgb, var(--color-signal) 30%, transparent);
   }
 
-  :focus-visible {
-    outline: 2px solid var(--color-signal);
-    outline-offset: 2px;
+  button,
+  [role='button'] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -83,4 +88,21 @@
       animation: none;
     }
   }
+}
+
+/* Fuera de `@layer` a propósito: `.outline-none` y demás utilidades de
+   Tailwind v4 viven en `@layer utilities` y ganarían a una regla de
+   `@layer base`. Sin capa, el anillo de foco de teclado siempre gana. */
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+}
+
+/* Objetivo táctil mínimo 44px (iOS 44pt / Android 48dp ≈ 44 web) en todo
+   control interactivo. Los checkboxes/radios/file se excluyen porque su label
+   envolvente ya es el target. Sin capa: gana a utilidades `h-*`/`size-*`. */
+button,
+select,
+input:not([type='checkbox']):not([type='radio']):not([type='file']) {
+  min-block-size: 2.75rem;
 }

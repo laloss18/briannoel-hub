@@ -95,4 +95,38 @@ export async function refreshBcvRateIfOnline(): Promise<number | null> {
   return fetched;
 }
 
+function esDeHoy(iso?: string): boolean {
+  if (!iso) return false;
+  return new Date(iso).toDateString() === new Date().toDateString();
+}
+
+/**
+ * Tasa de la "primera venta del día" (PRD §7.4): si la vigente ya es de hoy y
+ * viene de la API oficial se conserva; si no (falta, manual o de otro día) se
+ * intenta la API, y quien tiene red usa la tasa oficial. Sin red devuelve la
+ * última conocida (o null) para que la venta se complete con captura manual.
+ */
+export async function refreshBcvSiNoEsDeHoy(): Promise<number | null> {
+  const config = await getAppConfig();
+  const actual = config?.bcv_rate ?? null;
+  const vigenteDeHoy =
+    config !== null &&
+    actual !== null &&
+    config.bcv_rate_source === 'BCV_API' &&
+    esDeHoy(config.bcv_rate_updated_at);
+  if (vigenteDeHoy) return actual;
+  const fetched = await fetchBcvRate();
+  if (fetched === null) return actual;
+  if (actual !== fetched) await saveBcvRate(fetched, 'BCV_API');
+  return fetched;
+}
+
+/** Guarda la tasa manual solo si no hay una de hoy (no pisa la del día). */
+export async function guardarBcvSiNoEsDeHoy(rate: number): Promise<boolean> {
+  const config = await getAppConfig();
+  if (config?.bcv_rate != null && esDeHoy(config.bcv_rate_updated_at)) return false;
+  await saveBcvRate(rate, 'manual');
+  return true;
+}
+
 export const APP_CONFIG_ENTITY = SYNC_ENTITIES[2]!;

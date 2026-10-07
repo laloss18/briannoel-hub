@@ -59,3 +59,31 @@ export async function crearZonaLocal(input: NuevoZonaInput): Promise<Zona> {
 }
 
 export const ZONAS_ENTITY = ENTITY;
+
+export async function editarZonaLocal(zona: Zona, input: NuevoZonaInput): Promise<Zona> {
+  const now = new Date().toISOString();
+  const actualizado: Zona = {
+    ...zona,
+    nombre: input.nombre.trim(),
+    municipio: input.municipio.trim(),
+    estado: input.estado.trim(),
+    lat: input.lat ?? zona.lat ?? null,
+    lng: input.lng ?? zona.lng ?? null,
+    plus_code: input.plus_code ?? zona.plus_code,
+    updated_at: now,
+  };
+  await new DexieLocalStore().upsert(ENTITY, { ...actualizado });
+  await new DexieOutbox().add(
+    createOutboxEntry({
+      entity: ENTITY,
+      operation: 'update',
+      id: actualizado.id,
+      created_at: zona.created_at,
+      updated_at: now,
+      deleted_at: null,
+      data: { ...actualizado },
+    }),
+  );
+  return actualizado;
+}
+

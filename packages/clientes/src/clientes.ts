@@ -26,8 +26,14 @@ export interface NuevoClienteInput {
   nombre: string;
   documento?: string;
   telefono?: string;
+  telefono2?: string;
+  notas_referencia?: string;
   direccion?: string;
   geo?: GeoRef;
+  /** Fotos comprimidas (data URL JPEG): fachada, cliente y cédula (§8.6). */
+  foto_fachada?: string;
+  foto_cliente?: string;
+  foto_cedula?: string;
   consentimiento: Consentimiento;
   creator: string;
 }
@@ -36,8 +42,13 @@ export interface EditarClientePatch {
   nombre?: string;
   documento?: string;
   telefono?: string;
+  telefono2?: string;
+  notas_referencia?: string;
   direccion?: string;
   geo?: GeoRef;
+  foto_fachada?: string;
+  foto_cliente?: string;
+  foto_cedula?: string;
   consentimiento?: Consentimiento;
   editor: string;
 }
@@ -128,12 +139,17 @@ export function crearCliente(
     nombre: input.nombre.trim(),
     documento: input.documento?.trim() || undefined,
     telefono: input.telefono?.trim() || undefined,
+    telefono2: input.telefono2?.trim() || undefined,
+    notas_referencia: input.notas_referencia?.trim() || undefined,
     direccion: input.direccion?.trim() || undefined,
     lat: input.geo?.lat ?? null,
     lng: input.geo?.lng ?? null,
     plus_code: input.geo?.plus_code || undefined,
     zona_id: zona?.id ?? null,
     consentimiento: input.consentimiento,
+    foto_fachada: input.foto_fachada,
+    foto_cliente: input.foto_cliente,
+    foto_cedula: input.foto_cedula,
     credito_limite: DEFAULT_CREDITO_LIMITE,
     credito_dias: DEFAULT_CREDITO_DIAS,
     score: null,
@@ -167,6 +183,12 @@ export function editarCliente(
     nombre: patch.nombre?.trim() || prev.nombre,
     documento: patch.documento !== undefined ? patch.documento.trim() || undefined : prev.documento,
     telefono: patch.telefono !== undefined ? patch.telefono.trim() || undefined : prev.telefono,
+    telefono2:
+      patch.telefono2 !== undefined ? patch.telefono2.trim() || undefined : prev.telefono2,
+    notas_referencia:
+      patch.notas_referencia !== undefined
+        ? patch.notas_referencia.trim() || undefined
+        : prev.notas_referencia,
     direccion: patch.direccion !== undefined ? patch.direccion.trim() || undefined : prev.direccion,
     lat: patch.geo?.lat !== undefined ? patch.geo.lat : prev.lat,
     lng: patch.geo?.lng !== undefined ? patch.geo.lng : prev.lng,
@@ -174,6 +196,9 @@ export function editarCliente(
       patch.geo?.plus_code !== undefined ? patch.geo.plus_code || undefined : prev.plus_code,
     zona_id: zonaId,
     consentimiento: patch.consentimiento ?? prev.consentimiento,
+    foto_fachada: patch.foto_fachada !== undefined ? patch.foto_fachada : prev.foto_fachada,
+    foto_cliente: patch.foto_cliente !== undefined ? patch.foto_cliente : prev.foto_cliente,
+    foto_cedula: patch.foto_cedula !== undefined ? patch.foto_cedula : prev.foto_cedula,
   };
 }
 

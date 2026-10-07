@@ -4,6 +4,8 @@ export * from './schemas';
 export type {
   SyncDemo,
   CachedSession,
+  AppUser,
+  IdentidadIndice,
   PinState,
   AuthStatus,
   AppConfig,
@@ -12,7 +14,6 @@ export type {
   Zona,
   Item,
   Condicion,
-  Canal,
   DespachoEstado,
   DespachoItem,
   Despacho,

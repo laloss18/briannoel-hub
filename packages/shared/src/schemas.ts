@@ -18,10 +18,23 @@ export const syncDemoSchema = baseRecordSchema.extend({
 
 export type SyncDemo = z.infer<typeof syncDemoSchema>;
 
-/** Sesión de usuario cacheada offline (PRD §3.4: indispensble offline, expira por inactividad 5 días). */
+/** Nombre de usuario: identidad visible de la app (PRD §3.4). Alfanumérico,
+ *  sin espacios ni acentos (3–24), para poder escribirlo en un formulario y
+ *  mostrarlo en cualquier lugar sin formato. */
+export const usernameSchema = z
+  .string()
+  .trim()
+  .min(3, 'el usuario necesita al menos 3 caracteres')
+  .max(24, 'el usuario admite hasta 24 caracteres')
+  .regex(/^[a-zA-Z0-9._-]+$/, 'solo letras, números, punto, guion y guion bajo');
+
+/** Sesión de usuario cacheada offline (PRD §3.4: indispensble offline, expira por inactividad 5 días).
+ *  `username` es opcional: las sesiones cacheadas antes del alta por admin no lo traen y
+ *  la UI degrada al email. El email es la clave de auditoría, nunca cambia (PRD §3.4). */
 export const sessionSchema = z.object({
   user_id: z.string(),
   email: z.string().email(),
+  username: usernameSchema.optional(),
   roles: z.array(z.enum(ROLES)),
   access_token: z.string().min(1),
   refresh_token: z.string().min(1),
@@ -29,6 +42,37 @@ export const sessionSchema = z.object({
 });
 
 export type CachedSession = z.infer<typeof sessionSchema>;
+
+/** Perfil de usuario materializado por la RPC `upsert_app_user` (entidad `app_users`,
+ *  solo en servidor; nunca en la outbox del dispositivo — lo escribe el admin).
+ *  `id` es el `user_id` de auth (uuid en texto), no un ULID: así el perfil y la
+ *  cuenta comparten clave. */
+export const appUserSchema = z.object({
+  id: z.string().min(1),
+  user_id: z.string().min(1),
+  email: z.string().email(),
+  username: usernameSchema,
+  name: z.string().trim().optional(),
+  roles: z.array(z.enum(ROLES)),
+  active: z.boolean(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
+  deleted_at: z.string().datetime().nullable(),
+});
+
+export type AppUser = z.infer<typeof appUserSchema>;
+
+/** Username → email: índice de display para pintar identidades sin tocar el
+ *  dominio (los documentos guardan email, no username). La app lo mantiene en
+ *  memoria; `identidadDe` resuelve con fallback al email si aún no llegó. */
+export type IdentidadIndice = ReadonlyMap<string, string>;
+
+/** Nombre a mostrar para un email: el username si está en el índice, el email si no. */
+export function identidadDe(indice: IdentidadIndice | undefined, email: string | null | undefined): string {
+  if (!email) return '—';
+  const username = indice?.get(email.toLowerCase());
+  return username ?? email;
+}
 
 /** Estado local del PIN: hash PBKDF2 + contador de intentos + lockout. */
 export const pinStateSchema = z.object({
@@ -86,12 +130,19 @@ export const clienteSchema = baseRecordSchema.extend({
   nombre: z.string().min(1).max(200),
   documento: z.string().min(1).max(30).optional(),
   telefono: z.string().min(1).max(30).optional(),
+  telefono2: z.string().min(1).max(30).optional(),
+  notas_referencia: z.string().min(1).max(400).optional(),
   direccion: z.string().min(1).max(400).optional(),
   lat: z.number().finite().nullable().optional(),
   lng: z.number().finite().nullable().optional(),
   plus_code: z.string().min(1).max(40).optional(),
   zona_id: z.string().min(1).max(64).nullable().optional(),
   consentimiento: consentimientoSchema,
+  /** Fotos comprimidas del registro del cliente (fachada, cliente, cédula):
+   *  data URL JPEG ~800px q70, viajan dentro de la entidad con la sync (§8.6). */
+  foto_fachada: z.string().optional(),
+  foto_cliente: z.string().optional(),
+  foto_cedula: z.string().optional(),
   credito_limite: z.number().positive().default(DEFAULT_CREDITO_LIMITE),
   credito_dias: z.number().int().positive().default(DEFAULT_CREDITO_DIAS),
   score: z.number().int().min(0).max(100).nullable().default(null),
@@ -117,26 +168,36 @@ export type Zona = z.infer<typeof zonaSchema>;
 
 /**
  * ítem del catálogo de venta (PRD §2.2): sin inventario (§2.3 fuera del MVP),
- * catálogo configurable por admin con precio según condición (crédito/contado)
- * y canal (mayor/detal). Sincroniza por LWW (no crítica §5.1).
+ * catálogo configurable por admin con precio según la condición (crédito/contado).
+ * Sincroniza por LWW (no crítica §5.1). (El canal mayor/detal se retiró en Fase 3.)
  */
 export const itemSchema = baseRecordSchema.extend({
   nombre: z.string().min(1).max(200),
-  precio_credito_mayor: z.number().positive(),
-  precio_credito_detal: z.number().positive(),
-  precio_contado_mayor: z.number().positive(),
-  precio_contado_detal: z.number().positive(),
+  precio_contado: z.number().positive(),
+  precio_credito: z.number().positive(),
 });
 
 export type Item = z.infer<typeof itemSchema>;
 
+/**
+ * Persona de la operación (promotor/entregador, PRD §3.1 roster): lista que el
+ * admin gestiona (alta/edición/baja) y se sincroniza para que al tomar/corregir
+ * un pedido se elija QUIÉN captó el cliente y quién lo entregó. Entidad LWW.
+ */
+export const personalSchema = baseRecordSchema.extend({
+  nombre: z.string().min(1).max(120),
+  telefono: z.string().min(1).max(30).optional(),
+  email: z.string().email().optional(),
+  rol: z.enum(ROLES).default('promotor'),
+  created_by: z.string().min(1),
+  updated_by: z.string().min(1),
+});
+
+export type Personal = z.infer<typeof personalSchema>;
+
 /** Condición de pago de un despacho (PRD §2.2): crédito o contado. */
 export const CONDICIONES = ['credito', 'contado'] as const;
 export type Condicion = (typeof CONDICIONES)[number];
-
-/** Canal de venta (PRD §2.2): mayor o detal. */
-export const CANALES = ['mayor', 'detal'] as const;
-export type Canal = (typeof CANALES)[number];
 
 /**
  * Estado de un despacho (PRD §2.6 inmutabilidad): `pedido` (promotor toma el
@@ -147,7 +208,7 @@ export type Canal = (typeof CANALES)[number];
 export const DESPACHO_ESTADOS = ['pedido', 'entregado', 'anulado'] as const;
 export type DespachoEstado = (typeof DESPACHO_ESTADOS)[number];
 
-/** Línea de un despacho: ítem + cantidad + precio unitario de la condición/canal. */
+/** Línea de un despacho: ítem + cantidad + precio unitario de la condición. */
 export const despachoItemSchema = z.object({
   item_id: z.string().min(1).max(64),
   nombre: z.string().min(1).max(200),
@@ -168,20 +229,34 @@ export const despachoSchema = baseRecordSchema.extend({
   cliente_id: z.string().min(1).max(64),
   cliente_nombre: z.string().min(1).max(200),
   condicion: z.enum(CONDICIONES),
-  canal: z.enum(CANALES),
   lineas: z.array(despachoItemSchema).min(1),
   subtotal: z.number().nonnegative(),
-  tasa_bcv: z.number().positive(),
+  /** Snapshot de la tasa BCV (Bs/USD) solo útil para registrar pagos (§2.6);
+   *  si no hay tasa configurada el despacho se cierra igual (0 = sin snapshot). */
+  tasa_bcv: z.number().nonnegative().default(0),
   total: z.number().nonnegative(),
   estado: z.enum(DESPACHO_ESTADOS).default('pedido'),
-  /** Aprobación de descuento (§3.3): admin 1 paso, supervisor 2. Null = sin descuento. */
+  /** Aprobación de descuento (§3.3): admin 1 paso, supervisor 2. Null = sin descuento.
+   *  `descuento_pct` aplica en modo porcentaje; `descuento_monto_usd` en modo
+   *  monto fijo (una u otra, nunca ambas). */
   descuento_pct: z.number().min(0).max(100).default(0),
+  descuento_monto_usd: z.number().nonnegative().nullable().default(null),
   descuento_aprobado_por: z.string().nullable().default(null),
   descuento_pasos: z.number().int().positive().nullable().default(null),
+  /** Quién captó al cliente (nombre del roster `personal`): se elige al
+   *  registrar la venta; fallback de visualización = `cliente.created_by`. */
+  promotor: z.string().nullable().default(null),
+  /** Supervisor a cargo del pedido (se elige al registrar; auto si quien
+   *  registra es supervisor). Solo ese supervisor (o el admin) gestiona el
+   *  pedido: editar, entregar, eliminar. */
+  supervisor: z.string().nullable().default(null),
   created_by: z.string().min(1),
   updated_by: z.string().min(1),
   editor_role: z.enum(ROLES).default('promotor'),
   entregado_at: z.string().datetime().nullable().default(null),
+  /** Quién entregó el despacho (nombre del roster `personal` o email de quien
+   *  marcó la entrega). */
+  entregado_por: z.string().nullable().default(null),
 });
 
 export type Despacho = z.infer<typeof despachoSchema>;

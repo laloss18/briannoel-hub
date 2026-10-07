@@ -1,19 +1,24 @@
+import { useLiveQuery } from 'dexie-react-hooks';
+import { DexieOutbox } from '../sync/db';
+
 export interface SyncButtonProps {
   busy: boolean;
   onSync: () => void;
 }
 
-/**
- * CTA primario del hub (barra superior, izquierda): sincroniza desde el
- * dispositivo (PRD §5.7). Ámbar = única acción primaria de la pantalla.
- */
 export default function SyncButton({ busy, onSync }: SyncButtonProps) {
+  const pendientes = useLiveQuery(() => new DexieOutbox().list('pending'), []);
+  const fallidos = useLiveQuery(() => new DexieOutbox().list('failed'), []);
+  const hayCambios = (pendientes?.length ?? 0) + (fallidos?.length ?? 0) > 0;
+  const cls = hayCambios ? 'border-signal bg-signal text-ink-950' : 'border-ink-700 text-fog-100';
   return (
     <button
       onClick={onSync}
       disabled={busy}
       aria-label={busy ? 'Sincronizando datos' : 'Sincronizar datos'}
-      className="flex items-center gap-2 rounded-md bg-signal px-3.5 py-2 text-sm font-semibold text-ink-950 transition-[transform,background-color] hover:bg-signal-soft disabled:cursor-wait disabled:opacity-60 active:scale-[0.98]"
+      aria-busy={busy}
+      title={hayCambios ? 'Hay cambios por sincronizar' : 'Sincronizar'}
+      className={`flex size-11 items-center justify-center rounded-md border transition-colors hover:brightness-95 disabled:cursor-wait disabled:opacity-60 ${cls}`}
     >
       <svg
         viewBox="0 0 24 24"
@@ -28,7 +33,7 @@ export default function SyncButton({ busy, onSync }: SyncButtonProps) {
         <path d="M21 12a9 9 0 1 1-2.64-6.36" />
         <path d="M21 3v6h-6" />
       </svg>
-      {busy ? 'Sincronizando…' : 'Sincronizar'}
+      <span className="sr-only">{busy ? 'Sincronizando…' : 'Sincronizar'}</span>
     </button>
   );
 }

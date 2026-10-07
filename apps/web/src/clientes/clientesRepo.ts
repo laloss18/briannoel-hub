@@ -45,51 +45,82 @@ export interface NuevoClienteRepoInput {
   nombre: string;
   documento?: string;
   telefono?: string;
+  telefono2?: string;
+  notas_referencia?: string;
   direccion?: string;
   lat?: number | null;
   lng?: number | null;
   plus_code?: string;
+  foto_fachada?: string;
+  foto_cliente?: string;
+  foto_cedula?: string;
   consentimiento: Consentimiento;
   creado_por: string;
 }
 
-/** Crea y persiste un cliente (reglas de dominio + outbox para la próxima sync). */
+/** Crea y persiste un cliente (reglas de dominio + outbox para la próxima sync).
+ *  `zonaOverride` permite fijar la zona elegida en la venta cuando la geo no
+ *  coincide automáticamente (el dominio igual calcula la zona por cercanía). */
 export async function crearClienteLocal(
   input: NuevoClienteRepoInput,
   zonas: Zona[],
+  zonaOverride?: string | null,
 ): Promise<Cliente> {
   const cliente = crearCliente(
     {
       nombre: input.nombre,
       documento: input.documento,
       telefono: input.telefono,
+      telefono2: input.telefono2,
+      notas_referencia: input.notas_referencia,
       direccion: input.direccion,
       geo: {
         lat: input.lat,
         lng: input.lng,
         plus_code: input.plus_code,
       },
+      foto_fachada: input.foto_fachada,
+      foto_cliente: input.foto_cliente,
+      foto_cedula: input.foto_cedula,
       consentimiento: input.consentimiento,
       creator: input.creado_por,
     },
     zonas,
   );
-  await persistLocal(cliente);
-  return cliente;
+  const final =
+    zonaOverride !== undefined && zonaOverride !== null && cliente.zona_id !== zonaOverride
+      ? { ...cliente, zona_id: zonaOverride }
+      : cliente;
+  await persistLocal(final);
+  return final;
 }
 
-/** Reasigna la zona por geo si cambió la dirección/ubicación (§3.3). */
+/** Reasigna la zona por geo si cambió la dirección/ubicación (§3.3) y permite
+ *  editar los datos principales del cliente. */
 export async function editarClienteLocal(
   prev: Cliente,
   editor: string,
   zonas: Zona[],
-  patch: { direccion?: string; lat?: number | null; lng?: number | null; telefono?: string },
+  patch: {
+    nombre?: string;
+    documento?: string;
+    telefono?: string;
+    telefono2?: string;
+    notas_referencia?: string;
+    direccion?: string;
+    lat?: number | null;
+    lng?: number | null;
+  },
 ): Promise<Cliente> {
   const updated = editarCliente(
     prev,
     {
       editor,
+      nombre: patch.nombre,
+      documento: patch.documento,
       telefono: patch.telefono,
+      telefono2: patch.telefono2,
+      notas_referencia: patch.notas_referencia,
       direccion: patch.direccion,
       geo:
         patch.lat !== undefined || patch.lng !== undefined

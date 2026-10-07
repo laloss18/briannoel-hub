@@ -98,6 +98,23 @@ describe('matchZona', () => {
     const lejos = { lat: 10.1817 + ZONA_RADIO_KM * 0.05, lng: -68.0031 };
     expect(matchZona(lejos, [ZONA])).toBeNull();
   });
+
+  it('sugiere la zona con la lat/lng del dispositivo (sin crear la zona)', () => {
+    // Verificación §2.8: tomar "usar mi ubicación" en el campo es suficiente
+    // para sugerir la zona inmediatamente por haversine (situación real con
+    // varias zonas sembradas: 10.1817,-68.0031 es el centroide "Centro").
+    const dispositivos = [
+      { lat: 10.1872, lng: -67.9905 }, // ~1.4 km al este de Centro
+      { lat: 10.176, lng: -68.0117 }, // ~1.1 km al oeste-suroeste de Centro
+    ];
+    const naguanagua: Zona = { ...ZONA, id: 'NAG', nombre: 'Naguanagua', lat: 10.2765, lng: -68.0106 };
+    const sanBlas: Zona = { ...ZONA, id: 'SBL', nombre: 'San Blas', lat: 10.153, lng: -68.02 };
+    for (const punto of dispositivos) {
+      expect(matchZona(punto, [naguanagua, sanBlas, ZONA])?.id).toBe(ZONA.id);
+      // El despeje del select (zonaId == '') NO debe anular la sugerencia.
+      expect(matchZona(punto, [naguanagua, sanBlas, ZONA])?.nombre).toBe('Centro');
+    }
+  });
 });
 
 describe('crearCliente', () => {

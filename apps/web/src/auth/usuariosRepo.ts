@@ -1,0 +1,98 @@
+import { useLiveQuery } from 'dexie-react-hooks';
+import { appUserSchema, type AppUser, ROLES, type Role } from '@brian/shared';
+import { hub } from '../sync/db';
+import { supabase } from '../sync/supabase';
+
+const ENTITY = 'app_users';
+
+/**
+ * Perfiles de usuario (`app_users`, PRD §3.4). El alta/edición NO pasa por el
+ * outbox: la entidad es server-only y la escriben las RPC de admin (0009) —
+ * escribirla desde el dispositivo la borraría el `admin_delete` de cada push.
+ * Solo se lee el espejo local (baja por delta) para resolver identidades.
+ */
+export async function listAppUsers(): Promise<AppUser[]> {
+  const rows = await hub.records
+    .where('entity')
+    .equals(ENTITY)
+    .toArray();
+  return rows
+    .map((r) => appUserSchema.safeParse(r))
+    .filter((r) => r.success)
+    .map((r) => r.data)
+    .sort((a, b) => (a.username ?? a.email).localeCompare(b.username ?? b.email));
+}
+
+export async function getAppUserByUsername(username: string): Promise<AppUser | null> {
+  const u = (await listAppUsers()).find((x) => x.username === username.toLowerCase());
+  return u ?? null;
+}
+
+/** Suscripción para la UI (índice de identidades, panel de usuarios). */
+export function useAppUsers(): AppUser[] {
+  return useLiveQuery(() => listAppUsers(), []) ?? [];
+}
+
+export interface AltaUsuario {
+  email: string;
+  username: string;
+  password: string;
+  roles: readonly Role[];
+  name?: string;
+}
+
+async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
+  if (!supabase) throw new Error('Supabase no configurado (VITE_SUPABASE_*)');
+  const { data, error } = await supabase.rpc(fn, args);
+  if (error) throw new Error(error.message);
+  return data as T;
+}
+
+/** Alta de una cuenta (solo admin, §3.4). La RPC es `SECURITY DEFINER`: el
+ *  gate de admin vive en el servidor, no en la UI. */
+export async function adminCrearUsuario(alta: AltaUsuario): Promise<string> {
+  return rpc<string>('admin_create_app_user', {
+    p_email: alta.email,
+    p_username: alta.username,
+    p_password: alta.password,
+    p_roles: [...alta.roles],
+    p_name: alta.name ?? null,
+  });
+}
+
+export interface EdicionUsuario {
+  user_id: string;
+  username?: string;
+  roles?: readonly Role[];
+  name?: string;
+  active?: boolean;
+}
+
+/** Username/roles/nombre/estado de una cuenta. Los campos omitidos se conservan. */
+export async function adminEditarUsuario(edicion: EdicionUsuario): Promise<void> {
+  await rpc<null>('admin_update_app_user', {
+    p_user_id: edicion.user_id,
+    p_username: edicion.username ?? null,
+    p_roles: edicion.roles ? [...edicion.roles] : null,
+    p_name: edicion.name ?? null,
+    p_active: edicion.active ?? null,
+  });
+}
+
+/** Contraseña inicial o reseteo. El MVP no tiene "olvidé mi contraseña". */
+export async function adminCambiarPassword(userId: string, password: string): Promise<void> {
+  await rpc<null>('admin_set_app_user_password', {
+    p_user_id: userId,
+    p_password: password,
+  });
+}
+
+/** Baja lógica (conserva la auditoría) o reactivación. */
+export async function adminCambiarActivo(userId: string, activo: boolean): Promise<void> {
+  await rpc<null>(activo ? 'admin_reactivate_app_user' : 'admin_deactivate_app_user', {
+    p_user_id: userId,
+  });
+}
+
+export const APP_USERS_ENTITY = ENTITY;
+export { ROLES };
