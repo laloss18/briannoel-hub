@@ -6,18 +6,18 @@
 > siente. Ambos son de lectura obligatoria; este define qué hace el producto,
 > el otro define su cara.
 >
-> Bases: skills instalados en `.agents/skills/` — `frontend-design`,
-> `design-taste-frontend`, `web-design-guidelines` (fuente en vivo:
-> `vercel-labs/web-interface-guidelines`), `design-mobile-apps`. Los tokens
-> reales viven en `apps/web/src/index.css` (Tailwind v4 `@theme`): **edítalos
-> allí, nunca dupliques valores en componentes.**
+> Bases: skills instalados en `.agents/skills/` — `ui-ux-pro-max` (guías de
+> UI/UX, paletas, tipografía, icons y búsqueda local) y `ui-walkthrough`
+> (recorrido de pantallas para revisión). Los tokens reales viven en
+> `apps/web/src/index.css` (Tailwind v4 `@theme`): **edítalos allí, nunca
+> dupliques valores en componentes.**
 
 ---
 
 ## 1. Lectura de diseño (design read)
 
-> Regla del skill `design-taste-frontend` §0.B: declarar la lectura en UNA línea
-> antes de diseñar, y volver a ella al revisar.
+> Regla de proceso: declarar la lectura en UNA línea antes de diseñar, y
+> volver a ella al revisar.
 
 **Lectura:** _Producto móvil-primero (PWA), herramienta de operación en campo
 para una distribuidora venezolana — bimoneda USD/BS, cobranza, rutas, sin
@@ -91,7 +91,7 @@ Reglas:
 | Display UI           | **Archivo Variable** (`--font-sans`)        | Todo texto de interfaz; display en pesos 600/700 con `tracking-tight`.            |
 | Datos de instrumento | **JetBrains Mono Variable** (`--font-mono`) | Cifras (montos, tasas), reloj, timestamps, labels de campo, códigos, teclado PIN. |
 
-Reglas (combinan skills + directrices Vercel):
+Reglas (combinan `ui-ux-pro-max` + directrices Vercel):
 
 1. **Una sola sans + una sola mono.** No se importan familias nuevas sin pasar
    por este documento. Fuentes autohospedadas vía `@fontsource` (PWA offline;
@@ -181,7 +181,8 @@ nativo del móvil es superior y accesible.
 
 ## 8. Copy (voz de la UI)
 
-Skills `frontend-design` + Vercel, adaptados a español venezolano sobrio:
+Adaptado de `frontend-design` (Anthropic, skill retirado 2026-10-07) + las
+directrices de Vercel, a español venezolano sobrio:
 
 1. **Voz activa y directa** ("Entrar", "Guardar PIN", "Sincronizar") — el
    botón dice exactamente lo que hace; misma palabra en CTA y en confirmación.
@@ -220,7 +221,7 @@ Skills `frontend-design` + Vercel, adaptados a español venezolano sobrio:
 
 ## 10. Anti-patrones (AI tells a evitar)
 
-De los skills, prohibido por defecto:
+De los skills de diseño (retirados 2026-10-07), prohibido por defecto:
 
 1. **Inter + slate-900** como stack por defecto (ya no: Archivo + JetBrains Mono + tinta).
 2. **Gradientes púrpura/AI** y "buttons con glow". CTA = ámbar sólido, sin brillo.
@@ -257,11 +258,12 @@ esto:
 [ ] COPY  — voz activa, 2ª persona, "…" correcto, sin emojis, error con siguiente paso.
 [ ] DIALS — variance ≤4, motion ≤3, densidad 6-7; sin parallax/marquee/scroll-reveal.
 [ ] CONTRAST — CTA ámbar con texto ink-950; texto secundario ≥4.5:1.
-[ ] VERIFY — build + lint + tests en verde; revisar con el skill web-design-guidelines incluida esta checklist en .agents/skills/.
+[ ] VERIFY — build + lint + tests en verde; revisar con el skill ui-ux-pro-max incluida esta checklist.
 ```
 
-> Invocación: al terminar una tarea de UI, correr la checklist (o el skill
-> `web-design-guidelines`) y reportar en el resumen qué ítems se chequearon.
+> Invocación: al terminar una tarea de UI, correr la checklist (con
+> `ui-ux-pro-max` para guías/contraste y `ui-walkthrough` para recorrer las
+> pantallas) y reportar en el resumen qué ítems se chequearon.
 
 ---
 
@@ -269,5 +271,5 @@ esto:
 
 - Tokens reales: `apps/web/src/index.css` (`@theme`).
 - Canon auth: `apps/web/src/auth/AuthFlow.tsx`, `apps/web/src/auth/useAuth.ts`.
-- Skills fuente: `.agents/skills/{frontend-design,design-taste-frontend,web-design-guidelines,design-mobile-apps}/SKILL.md`.
+- Skills fuente: `.agents/skills/{ui-ux-pro-max,ui-walkthrough}/SKILL.md`.
 - Normas de producto: `PRD.md`; normas de repo/proceso: `AGENTS.md`.
