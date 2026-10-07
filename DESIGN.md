@@ -68,7 +68,8 @@ coherente (regla `color-consistency-lock`).
 | `fog-100`     | `#e7eaf0` | Texto primario.                                                                  |
 | `fog-300`     | `#c2cad8` | Texto secundario.                                                                |
 | `fog-500`     | `#8b94a8` | Texto terciario/labels.                                                          |
-| `fog-700`     | `#5b6479` | Texto mínima legibilidad (footer, timestamps).                                   |
+| `fog-600`     | `#7f88a0` | Meta texto/micro-labels (mono): 5.3:1 sobre `ink-950`, 4.9:1 sobre `ink-900`.      |
+| `fog-700`     | `#5b6479` | **Sólo decorativo/bordes**: 3.2:1 NO cumple AA → nunca para texto legible.         |
 | `danger`      | `#e26d6d` | Errores, destructive.                                                            |
 | `ok`          | `#4cbf8f` | Éxito, conectado.                                                                |
 
@@ -113,18 +114,28 @@ Reglas (combinan skills + directrices Vercel):
 1. **Contenedor**: `mx-auto max-w-2xl` en móvil/tablet; en desktop `.agent` y
    dashboards pueden usar **CSS Grid** (`grid-cols-1 md:grid-cols-N`), NUNCA
    matematiquería con `w-[calc()]` ni flex percentages (regla `grid-over-flex`).
-2. **Altura completa**: `min-h-dvh` (NUNCA `h-screen` — regla `viewport-stability`).
-3. **Safe areas**: fondos full-bleed usan `env(safe-area-inset-*)` para notch.
-4. **Radios**: una sola escala — botones/interactivos `rounded-md` (6px),
+   **Shell autenticado:** en `md+` el layout usa ese grid con sidebar colapsable
+   (`w-56` ↔ `w-14`) + columna de contenido a ancho completo; `max-w-2xl` aplica a la
+   columna en móvil/tablet.
+2. **Header:** marca a la izquierda; a la derecha el botón de menú (esquina superior derecha)
+   con el de sincronización justo a su izquierda. En `md+` el menú colapsa/expande el sidebar;
+   en móvil abre el drawer.
+3. **Altura completa**: `min-h-dvh` (NUNCA `h-screen` — regla `viewport-stability`).
+4. **Safe areas**: fondos full-bleed usan `env(safe-area-inset-*)` para notch.
+5. **Radios**: una sola escala — botones/interactivos `rounded-md` (6px),
    tarjetas `rounded-xl` (12px), inputs `rounded-md`. **Se mantiene en TODA la
    app** (regla `shape-consistency-lock`).
-5. **Tarjetas solo cuando hay jerarquía real** que comunicar; en listas densas
+6. **Tarjetas solo cuando hay jerarquía real** que comunicar; en listas densas
    preferir `divide-y` de `ink-700` o aire negativo. Se permite la tarjeta
    estándar `border-ink-700 bg-ink-900 rounded-xl p-4` para tarjetas de
    dato/estado (BimonedaCard, SyncPanel).
-6. **Estados de vacío / carga / error siempre presentes** (regla
+7. **Estados de vacío / carga / error siempre presentes** (regla
    `full-state-cycle`): skeletons del mismo shape del contenido, error inline
    bajo el campo, vacío con instrucción de cómo llenarlo.
+8. **Formularios son PÁGINAS, no modales**: alta y edición viven en su ruta
+   (`#/ventas/nueva`, `#/clientes/:id/editar`, …) dentro de `PageShell`
+   (título + volver). El único diálogo permitido es `NuevaZonaDialog`, creación
+   rápida anidada dentro de un formulario donde navegar perdería el estado.
 
 ## 6. Interacción, motion y feedback
 
@@ -137,9 +148,15 @@ Reglas (combinan skills + directrices Vercel):
 3. **Reduced motion**: TODO se desactiva bajo `prefers-reduced-motion: reduce`
    — definido por defecto en `index.css`, no lo repitas mal.
 4. **Focus visible**: `:focus-visible` global en `index.css` (outline ámbar)
-   - 2px offset. Nunca `outline-none`. En campos de formulario usar `caret-signal`.
+   -2px offset. **La regla vive FUERA de `@layer`** a propósito: `.outline-none`
+   es una utilidad de Tailwind v4 (`@layer utilities`) y ganaría si estuviera en
+   `@layer base`. Nunca volver a meterla en una capa. En campos de formulario
+   usar además `caret-signal`.
 5. **touch**: `touch-action: manipulation` en botones; `-webkit-tap-highlight-color`
    explícito; `overscroll-behavior: contain` en sheets/modales/Drawer.
+   **Target mínimo 44px** en `button`/`select`/`input` (regla global en
+   `index.css`, fuera de capa); los icon-only cuadrados usan `size-11`.
+   Checkboxes/radios quedan excluidos: su `<label>` envolvente es el target.
 6. **AutoFocus**: solo en desktop y sobre UN input primario (regla Vercel) —
    el login móvil NO usa `autoFocus`.
 
@@ -181,6 +198,8 @@ Skills `frontend-design` + Vercel, adaptados a español venezolano sobrio:
    evitar traducción automática corrupta.
 8. Mantener **un solo registro**: operativo, sobrio, sin emojis en la UI (los
    indicadores usan puntos/íconos de sistema).
+9. La UI habla de **secciones**, nunca de "módulo": la palabra "módulo" no aparece en copy
+   visible (títulos, labels, estados de carga).
 
 ## 9. Accesibilidad (reglas Vercel imprescindibles)
 
@@ -197,6 +216,7 @@ Skills `frontend-design` + Vercel, adaptados a español venezolano sobrio:
 | Imágenes           | `width`+`height` explícitos (CLS=0), `loading="lazy"` bajo el fold                                                                                        |
 | Zoom               | NUNCA `maximum-scale=1` ni `user-scalable=no`                                                                                                             |
 | Paste              | nunca bloquear `onPaste` en inputs (regla UX del PIN: se permite pegar)                                                                                   |
+| Targets táctiles   | ≥44px en `button`/`select`/`input` (regla global de `index.css`); icon-only cuadrado `size-11`; gap ≥8px entre targets adyacentes                         |
 
 ## 10. Anti-patrones (AI tells a evitar)
 
@@ -231,6 +251,7 @@ esto:
 [ ] MOTION— Solo rise-in (entrada) y :active/:hover; sin transition: all; prefers-reduced-motion cubierto.
 [ ] FORMS — label visible + htmlFor + name + autocomplete; type/inputmode correctos; error inline role="alert" bajo el campo; sin placeholder-como-label; mutación con confirmación o undo.
 [ ] A11Y  — botones aria-label si icon-only; div onClick⇒<button>; aria-hidden en iconos decorativos; focus-visible en todo interactivo; sin outline-none.
+[ ] TOUCH — botones/selects/inputs ≥44px (regla global index.css intacta y FUERA de @layer); icon-only cuadrado size-11; sin controles fijos por debajo de 44.
 [ ] DATA  — cifras con tabular-nums/mono; Intl para fecha/moneda; nombres largos truncados con min-w-0; imágenes con dimensiones.
 [ ] LAYOUT — min-h-dvh; grid antes que calc(); un solo radio (md/xl); tarjetas solo con jerarquía real; estado vacío/carga/error definidos.
 [ ] COPY  — voz activa, 2ª persona, "…" correcto, sin emojis, error con siguiente paso.

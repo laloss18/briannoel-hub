@@ -139,9 +139,17 @@ No se manejan aún → **fuera del MVP**.
 - **Reasignación de zona:** automática al editar dirección del cliente.
 - **Descuentos:** Admin (1 paso) · Supervisor (2 pasos).
 - **Ver KPIs globales:** Admin, Supervisor.
+- **Gestionar usuarios (alta y edición de cuentas):** Admin (`manage_personal`).
 
 ### 3.4. Autenticación
 - Login: usuario + contraseña.
+- **Alta de usuarios: solo por el Administrador** (no hay signup público). El admin da de alta
+  cada cuenta con correo, contraseña inicial, **nombre de usuario** y roles; el usuario luego
+  entra con correo + contraseña.
+- **Identidad visible:** el **nombre de usuario** es lo que la app muestra (header, detalles,
+  auditoría en pantalla). El **correo sigue siendo la clave de auditoría** (`created_by`,
+  `updated_by`, propiedad del despacho) y no cambia; la UI resuelve correo → nombre de usuario
+  solo para mostrar.
 - PIN en móvil tras primer login.
 - Sin biometría.
 - Recuperación por admin.
@@ -179,6 +187,7 @@ No se manejan aún → **fuera del MVP**.
 | PDF | pdfmake / jsPDF (cliente) |
 | WhatsApp | Deep link `wa.me/` (manual) |
 | Tasa BCV | API BCV oficial + fallback manual |
+| Tasa BCV obligatoria | La app **no entra al hub sin tasa configurada**: al abrir, si no hay tasa vigente, muestra la pantalla de tasa (auto-fetch de la API oficial + captura manual). Quien no tenga `view_kpis` la ve en solo lectura y continúa con la tasa disponible |
 | Plus Code | `open-location-code` (Google) |
 | Mapas | Leaflet + OpenStreetMap |
 | CI/CD | GitHub Actions |
