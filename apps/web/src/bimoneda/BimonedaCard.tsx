@@ -1,61 +1,82 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { getAppConfig } from './appConfig';
+import { useState } from 'react';
 import { hasPermission, type Role } from '@brian/shared';
 import { Link } from 'react-router-dom';
 import { Icon } from '../ui/icons';
+import { useTasaGate } from '../app/RequireBcvRateGate';
+import { haceRelativo } from '../ui/tiempo';
 
 interface BimonedaCardProps {
   roles: readonly Role[];
 }
 
 /**
- * Bimoneda (PRD §7.4): resumen de la moneda base y la tasa BCV de `app_config`.
- * Editar ya no es un modal: lleva a la página `#/config/tasa`, que es también la
- * pantalla del gate de entrada. Quien no tiene `view_kpis` la ve en solo lectura.
+ * Bimoneda (PRD §7.4): resumen de la tasa BCV con su origen y antigüedad.
+ * Botón de refresco directo (llama a la misma cadena de fuentes que el gate);
+ * el lápiz lleva a `#/config/tasa` para la captura manual y el detalle.
  */
 export default function BimonedaCard({ roles }: BimonedaCardProps) {
-  const config = useLiveQuery(() => getAppConfig(), []);
+  const { tasa, source, actualizadoEn, refrescar, refrescando } = useTasaGate();
   const canEdit = hasPermission('view_kpis', roles);
+  const [aviso, setAviso] = useState<string | null>(null);
 
-  if (!config) {
-    return (
-      <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100">
-        <p className="text-sm font-medium">Bimoneda</p>
-        <p className="mt-1 text-xs text-fog-500">Inicializando configuración…</p>
-      </div>
-    );
-  }
+  const onRefrescar = async () => {
+    setAviso(null);
+    const v = await refrescar();
+    setAviso(v === null ? 'Sin respuesta de la API oficial' : `Tasa actualizada: ${v.toFixed(2)} Bs/USD`);
+  };
 
-  const rate =
-    config.bcv_rate !== undefined ? `${config.bcv_rate.toFixed(2)} Bs/USD` : 'Sin tasa configurada';
   const origen =
-    config.bcv_rate_source === 'BCV_API'
-      ? 'tasa oficial'
-      : config.bcv_rate_source === 'manual'
-        ? 'captura manual'
-        : null;
+    source === 'BCV_API' ? 'api oficial' : source === 'manual' ? 'captura manual' : 'sin origen';
 
   return (
-    <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100">
-      <div className="flex items-center justify-between gap-4">
+    <div className="card-lift rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-card">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium">Bimoneda · {config.base_currency}</p>
-          <p className="mt-1 truncate text-xs text-fog-500">
-            Tasa BCV: <span className="font-mono tabular-nums text-fog-100">{rate}</span>
-            {origen ? ` · ${origen}` : ''}
+          <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+            Tasa BCV · {origen}
+          </p>
+          <p className="mt-1 font-mono text-2xl tabular-nums text-fog-100">
+            {tasa !== null ? tasa.toFixed(2) : '—'}
+            <span className="ml-1.5 font-sans text-xs font-medium text-fog-500">Bs/USD</span>
+          </p>
+          <p className="mt-1 text-2xs text-fog-500">
+            {actualizadoEn ? `actualizada ${haceRelativo(actualizadoEn)}` : 'sin actualizar aún'}
           </p>
         </div>
-        <Link
-          to="/config/tasa"
-          aria-label="Configurar tasa BCV"
-          className="flex size-11 shrink-0 items-center justify-center rounded-md border border-ink-600 text-fog-100 transition-colors hover:border-signal"
-        >
-          <Icon name="pencil" />
-        </Link>
-        {!canEdit && (
-          <p className="text-[11px] text-fog-600">Solo lectura</p>
-        )}
+
+        <div className="flex shrink-0 items-center gap-2">
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => void onRefrescar()}
+              disabled={refrescando}
+              aria-label="Actualizar tasa desde la API oficial"
+              title="Actualizar desde la API oficial"
+              aria-busy={refrescando}
+              className="btn-lift flex size-11 items-center justify-center rounded-md border border-ink-600 text-fog-100 hover:border-signal hover:text-signal disabled:opacity-60"
+            >
+              <Icon name="refresh" className={refrescando ? 'animate-spin' : undefined} />
+            </button>
+          )}
+          <Link
+            to="/config/tasa"
+            aria-label="Configurar tasa BCV"
+            title="Configurar tasa"
+            className="btn-lift flex size-11 items-center justify-center rounded-md border border-ink-600 text-fog-100 hover:border-signal hover:text-signal"
+          >
+            <Icon name="pencil" />
+          </Link>
+        </div>
       </div>
+
+      {aviso && (
+        <p role="status" className="mt-2 text-2xs text-fog-500">
+          {aviso}
+        </p>
+      )}
+      {!canEdit && (
+        <p className="mt-2 text-2xs text-fog-600">Solo lectura: tu rol no modifica la tasa.</p>
+      )}
     </div>
   );
 }

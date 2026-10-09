@@ -90,9 +90,10 @@ export async function getBcvRate(): Promise<number | null> {
 export async function refreshBcvRateIfOnline(): Promise<number | null> {
   const fetched = await fetchBcvRate();
   if (fetched === null) return null;
+  const tasa = fetched.tasa;
   const current = await getBcvRate();
-  if (current !== fetched) await saveBcvRate(fetched, 'BCV_API');
-  return fetched;
+  if (current !== tasa) await saveBcvRate(tasa, 'BCV_API');
+  return tasa;
 }
 
 function esDeHoy(iso?: string): boolean {
@@ -117,8 +118,8 @@ export async function refreshBcvSiNoEsDeHoy(): Promise<number | null> {
   if (vigenteDeHoy) return actual;
   const fetched = await fetchBcvRate();
   if (fetched === null) return actual;
-  if (actual !== fetched) await saveBcvRate(fetched, 'BCV_API');
-  return fetched;
+  if (actual !== fetched.tasa) await saveBcvRate(fetched.tasa, 'BCV_API');
+  return fetched.tasa;
 }
 
 /** Guarda la tasa manual solo si no hay una de hoy (no pisa la del día). */

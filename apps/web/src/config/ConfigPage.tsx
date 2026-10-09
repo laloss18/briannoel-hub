@@ -1,22 +1,13 @@
-import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useSesion } from '../app/sesion';
-import { Icon, type IconName } from '../ui/icons';
+import { useTema } from '../app/tema';
+import { Icon } from '../ui/icons';
 import { usernameSchema } from '@brian/shared';
 import BimonedaCard from '../bimoneda/BimonedaCard';
 import { supabase } from '../sync/supabase';
 
-interface Item {
-  label: string;
-  to: string;
-  icon: IconName;
-}
-
-const LINKS: readonly Item[] = [
-  { label: 'Tasa BCV', to: '/config/tasa', icon: 'coins' },
-];
-
-/** Configuración del hub: acceso a tasa, cuentas, catálogo y zonas. */
+/** Configuración del hub: la tasa BCV vive en la tarjeta bimoneda (con acceso
+ *  de edición para admin/supervisor), apariencia y perfil. */
 export default function ConfigPage() {
   const { roles } = useSesion();
 
@@ -29,22 +20,43 @@ export default function ConfigPage() {
         </h1>
       </header>
 
-      <nav aria-label="Ajustes" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {LINKS.map((l) => (
-          <Link
-            key={l.to}
-            to={l.to}
-            className="flex items-center gap-2 rounded-md border border-ink-700 bg-ink-900 px-3 py-2.5 text-[13px] text-fog-100 transition-colors hover:border-ink-600 active:scale-[0.98]"
-          >
-            <Icon name={l.icon} className="size-4 shrink-0 text-signal" />
-            <span className="truncate">{l.label}</span>
-          </Link>
-        ))}
-      </nav>
-
+      <Apariencia />
       <BimonedaCard roles={roles} />
       <MiPerfil />
     </div>
+  );
+}
+
+/** Tema dual (DESIGN §3): claro por defecto, oscuro opcional. */
+function Apariencia() {
+  const [tema, cambiarTema] = useTema();
+
+  return (
+    <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-fog-100">Tema</p>
+          <p className="mt-0.5 text-xs text-fog-500">Claro por defecto; oscuro para poca luz.</p>
+        </div>
+        <div role="group" aria-label="Tema de la interfaz" className="flex gap-1">
+          {(['claro', 'oscuro'] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              aria-pressed={tema === t}
+              aria-label={t === 'claro' ? 'Tema claro' : 'Tema oscuro'}
+              title={t === 'claro' ? 'Tema claro' : 'Tema oscuro'}
+              onClick={() => cambiarTema(t)}
+              className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border transition-colors ${
+                tema === t ? 'border-signal bg-signal text-ink-950' : 'border-ink-600 text-fog-300 hover:bg-ink-800 hover:text-fog-100'
+              }`}
+            >
+              <Icon name={t === 'claro' ? 'sun' : 'moon'} />
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -93,7 +105,7 @@ function MiPerfil() {
       </div>
       <div className="mt-3 flex flex-col gap-2">
         <label className="flex flex-col gap-1">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-fog-500">email</span>
+          <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">email</span>
           <input
             type="email"
             value={sesion.email}
@@ -102,7 +114,7 @@ function MiPerfil() {
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-fog-500">username</span>
+          <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">username</span>
           <input
             type="text"
             value={uname}
@@ -114,7 +126,7 @@ function MiPerfil() {
         <button
           onClick={onGuardar}
           disabled={busy}
-          className="mt-1 self-start rounded-md border border-ink-600 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 disabled:opacity-50"
+          className="btn-lift mt-1 self-start rounded-md border border-ink-600 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 disabled:opacity-50"
         >
           {busy ? 'Guardando…' : 'Guardar username'}
         </button>
