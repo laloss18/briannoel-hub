@@ -152,9 +152,11 @@ export function crearCliente(
     foto_cedula: input.foto_cedula,
     credito_limite: DEFAULT_CREDITO_LIMITE,
     credito_dias: DEFAULT_CREDITO_DIAS,
-    score: null,
+    /* Score inicial referencial: D (sin historial de pagos ni compras aún). El
+     * recálculo automático ocurre con cada venta (§2.5) y el override respeta. */
+    score: 40,
     score_override: null,
-    score_grado: null,
+    score_grado: 'D',
     created_by: input.creator,
     updated_by: input.creator,
   };

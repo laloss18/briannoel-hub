@@ -58,6 +58,14 @@ export interface DescuentoAprobado {
   pasos: number;
 }
 
+/** Recargo por mora de una venta a crédito: solo UNO de `pct` o `monto_usd`. */
+export interface RecargoMora {
+  /** Modo porcentaje sobre el subtotal: 0 < pct ≤ 100. */
+  pct?: number;
+  /** Modo monto fijo en USD: 0 < monto_usd ≤ subtotal. */
+  monto_usd?: number;
+}
+
 export interface CrearDespachoInput {
   cliente: Cliente;
   condicion: Condicion;
@@ -66,6 +74,10 @@ export interface CrearDespachoInput {
   tasa_bcv?: number;
   /** Descuento con aprobación (§3.3): porcentaje o monto fijo en USD. */
   descuento?: DescuentoAprobado;
+  /** Recargo por mora (solo crédito, §recargo): % sobre subtotal o monto fijo. */
+  mora?: RecargoMora;
+  /** IVA (%) sobre la base con recargo; 0 = sin IVA. */
+  iva_pct?: number;
   /** Quien toma el pedido (creador). */
   vendedor: string;
   /** Promotor que captó al cliente (nombre del roster `personal`); se elige al
@@ -116,10 +128,17 @@ interface DescuentoResuelto {
   pasos: number | null;
 }
 
+/** Recargo por mora resuelto (solo crédito) + IVA en %. */
+interface RecargoResuelto {
+  monto: number;
+  pct: number;
+  iva: number;
+}
+
 /** Valida líneas, descuento (% o monto USD) y tasa opcional; devuelve {lineas, subtotal, tasa, d}. */
 function validarEntrada(
-  input: Pick<CrearDespachoInput, 'lineas' | 'condicion' | 'descuento' | 'tasa_bcv'>,
-): { lineas: DespachoItem[]; subtotal: number; tasa: number; d: DescuentoResuelto } {
+  input: Pick<CrearDespachoInput, 'lineas' | 'condicion' | 'descuento' | 'tasa_bcv' | 'mora' | 'iva_pct'>,
+): { lineas: DespachoItem[]; subtotal: number; tasa: number; d: DescuentoResuelto; rec: RecargoResuelto } {
   if (!input.lineas || input.lineas.length === 0) {
     throw new Error('Un despacho requiere al menos una línea de ítem.');
   }
@@ -155,6 +174,34 @@ function validarEntrada(
   }
 
   const descuentoMonto = pct > 0 ? round2(subtotal * (pct / 100)) : monto > 0 ? round2(monto) : 0;
+
+  /* Recargo por mora (solo crédito) e IVA. */
+  const mora = input.mora;
+  const moraPct = mora?.pct ?? 0;
+  const moraMonto = mora?.monto_usd ?? 0;
+  if (input.condicion !== 'credito' && (moraPct > 0 || moraMonto > 0)) {
+    throw new Error('El recargo por mora solo aplica a ventas a crédito.');
+  }
+  if (moraPct > 0 && moraMonto > 0) {
+    throw new Error('Elige un solo tipo de recargo por mora: porcentaje o monto fijo en USD.');
+  }
+  if (moraPct < 0 || moraPct > 100) {
+    throw new Error('El porcentaje de recargo por mora debe estar entre 0 y 100.');
+  }
+  if (moraMonto < 0) {
+    throw new Error('El monto de recargo por mora no puede ser negativo.');
+  }
+  if (moraMonto > subtotal) {
+    throw new Error('El monto de recargo por mora no puede superar el subtotal del despacho.');
+  }
+  const moraMontoCalculado =
+    moraPct > 0 ? round2(subtotal * (moraPct / 100)) : moraMonto > 0 ? round2(moraMonto) : 0;
+
+  const iva = input.iva_pct ?? 0;
+  if (iva < 0 || iva > 100) {
+    throw new Error('El porcentaje de IVA debe estar entre 0 y 100.');
+  }
+
   return {
     lineas,
     subtotal,
@@ -165,6 +212,7 @@ function validarEntrada(
       aprobadoPor: activo ? desc!.aprobado_por : null,
       pasos: activo ? desc!.pasos : null,
     },
+    rec: { monto: moraMontoCalculado, pct: moraPct, iva },
   };
 }
 
@@ -176,9 +224,10 @@ function validarEntrada(
  * Estado inicial: `pedido`.
  */
 export function crearDespacho(input: CrearDespachoInput): Despacho {
-  const { lineas, subtotal, tasa, d } = validarEntrada(input);
-  const descuentoMonto = d.monto;
-  const total = round2(subtotal - descuentoMonto);
+  const { lineas, subtotal, tasa, d, rec } = validarEntrada(input);
+  const base = round2(subtotal - d.monto);
+  const ivaMonto = rec.iva > 0 ? round2((base + rec.monto) * (rec.iva / 100)) : 0;
+  const total = round2(base + rec.monto + ivaMonto);
 
   const clock = input.clock ?? realClock;
   const now = clock.now();
@@ -203,6 +252,11 @@ export function crearDespacho(input: CrearDespachoInput): Despacho {
     descuento_monto_usd: d.pct === 0 && d.monto > 0 ? d.monto : null,
     descuento_aprobado_por: d.aprobadoPor,
     descuento_pasos: d.pasos,
+    mora_pct: rec.pct,
+    mora_monto_usd: rec.pct === 0 && rec.monto > 0 ? round2(rec.monto) : null,
+    mora_total_usd: round2(rec.monto),
+    iva_pct: rec.iva,
+    iva_total_usd: ivaMonto,
     promotor: input.promotor?.trim() || null,
     supervisor: input.supervisor?.trim() || null,
     created_by: input.vendedor,
@@ -220,6 +274,10 @@ export interface EditarDespachoInput {
   lineas: DespachoLineaInput[];
   tasa_bcv?: number;
   descuento?: DescuentoAprobado;
+  /** Recargo por mora (solo crédito, §recargo): % sobre subtotal o monto fijo. */
+  mora?: RecargoMora;
+  /** IVA (%) sobre la base con recargo; 0 = sin IVA. */
+  iva_pct?: number;
   /** Quien edita (auditoría updated_by). */
   editor: string;
   editor_role: Role;
@@ -238,8 +296,10 @@ export function editarDespachoPendiente(
   if (prev.estado !== 'pedido') {
     throw new Error(`Solo un despacho en 'pedido' puede editarse (estado actual: ${prev.estado}).`);
   }
-  const { lineas, subtotal, tasa, d } = validarEntrada(input);
-  const total = round2(subtotal - d.monto);
+  const { lineas, subtotal, tasa, d, rec } = validarEntrada(input);
+  const base = round2(subtotal - d.monto);
+  const ivaMonto = rec.iva > 0 ? round2((base + rec.monto) * (rec.iva / 100)) : 0;
+  const total = round2(base + rec.monto + ivaMonto);
   const now = (input.clock ?? realClock).now();
 
   return {
@@ -258,6 +318,11 @@ export function editarDespachoPendiente(
     descuento_monto_usd: d.pct === 0 && d.monto > 0 ? d.monto : null,
     descuento_aprobado_por: d.aprobadoPor,
     descuento_pasos: d.pasos,
+    mora_pct: rec.pct,
+    mora_monto_usd: rec.pct === 0 && rec.monto > 0 ? round2(rec.monto) : null,
+    mora_total_usd: round2(rec.monto),
+    iva_pct: rec.iva,
+    iva_total_usd: ivaMonto,
   };
 }
 

@@ -156,6 +156,13 @@ describe('crearCliente', () => {
     const c = crearCliente(baseInput(), [ZONA], clock);
     expect(c.zona_id).toBeNull();
   });
+
+  it('score inicial referencial: D (40) sin historial de ventas', () => {
+    const c = crearCliente(baseInput(), [ZONA], clock);
+    expect(c.score).toBe(40);
+    expect(c.score_grado).toBe('D');
+    expect(c.score_override).toBeNull();
+  });
 });
 
 describe('editarCliente', () => {

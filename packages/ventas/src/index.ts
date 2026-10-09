@@ -16,5 +16,6 @@ export type {
   DescuentoAprobado,
   DespachoLineaInput,
   EditarDespachoInput,
+  RecargoMora,
   VentaClock,
 } from './ventas';

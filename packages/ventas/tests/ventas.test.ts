@@ -73,6 +73,11 @@ function despachoBase(overrides: Partial<Despacho> = {}): Despacho {
     descuento_monto_usd: null,
     descuento_aprobado_por: null,
     descuento_pasos: null,
+    mora_pct: 0,
+    mora_monto_usd: null,
+    mora_total_usd: 0,
+    iva_pct: 0,
+    iva_total_usd: 0,
     promotor: null,
     supervisor: null,
     created_by: 'promotor@briannoel.com',
@@ -486,5 +491,127 @@ describe('crédito (§2.2/§2.5/§3.2)', () => {
       despachoBase({ lineas: [{ ...LINEA, cantidad: 3 }] }),
     ];
     expect(creditoUsado(CLIENTE, abiertos)).toEqual({ unidades: 5, limite: 1 });
+  });
+});
+
+describe('recargo por mora e IVA (§recargo)', () => {
+  it('recargo por mora en porcentaje sobre el subtotal, solo crédito', () => {
+    const d = crearDespacho(
+      baseInput({
+        condicion: 'credito',
+        lineas: [{ item: ITEM, cantidad: 2 }], // subtotal 5.00
+        mora: { pct: 10 },
+      }),
+    );
+    expect(d.mora_pct).toBe(10);
+    expect(d.mora_monto_usd).toBeNull();
+    expect(d.mora_total_usd).toBe(0.5);
+    expect(d.total).toBe(5.5);
+  });
+
+  it('recargo por mora en monto fijo (USD)', () => {
+    const d = crearDespacho(
+      baseInput({
+        condicion: 'credito',
+        lineas: [{ item: ITEM, cantidad: 2 }],
+        mora: { monto_usd: 1.25 },
+      }),
+    );
+    expect(d.mora_pct).toBe(0);
+    expect(d.mora_monto_usd).toBe(1.25);
+    expect(d.mora_total_usd).toBe(1.25);
+    expect(d.total).toBe(6.25);
+  });
+
+  it('IVA se calcula sobre la base con recargo y queda incluido en el total', () => {
+    const d = crearDespacho(
+      baseInput({
+        condicion: 'credito',
+        lineas: [{ item: ITEM, cantidad: 2 }], // subtotal 5.00
+        mora: { pct: 10 }, // 0.50 → base con recargo 5.50
+        iva_pct: 16, // 0.88
+      }),
+    );
+    expect(d.iva_pct).toBe(16);
+    expect(d.iva_total_usd).toBe(0.88);
+    expect(d.total).toBe(6.38);
+  });
+
+  it('IVA se calcula sobre la base sin descuento + recargo (en orden)', () => {
+    const d = crearDespacho(
+      baseInput({
+        condicion: 'credito',
+        lineas: [{ item: ITEM, cantidad: 2 }],
+        descuento: { pct: 10, aprobado_por: 'admin@briannoel.com', pasos: 1 }, // base 4.50
+        mora: { monto_usd: 0.5 }, // 5.00
+        iva_pct: 10, // 0.50
+      }),
+    );
+    expect(d.descuento_pct).toBe(10);
+    expect(d.mora_total_usd).toBe(0.5);
+    expect(d.iva_total_usd).toBe(0.5);
+    expect(d.total).toBe(5.5);
+  });
+
+  it('sin mora ni IVA el total coincide con subtotal − descuento (retro-compat)', () => {
+    const d = crearDespacho(
+      baseInput({
+        condicion: 'credito',
+        lineas: [{ item: ITEM, cantidad: 2 }],
+      }),
+    );
+    expect(d.mora_pct).toBe(0);
+    expect(d.mora_monto_usd).toBeNull();
+    expect(d.mora_total_usd).toBe(0);
+    expect(d.iva_pct).toBe(0);
+    expect(d.iva_total_usd).toBe(0);
+    expect(d.total).toBe(5);
+  });
+
+  it('rechaza recargo por mora en una venta de contado', () => {
+    expect(() =>
+      crearDespacho(
+        baseInput({ condicion: 'contado', lineas: [{ item: ITEM, cantidad: 2 }], mora: { pct: 10 } }),
+      ),
+    ).toThrow(/solo aplica a ventas a crédito/i);
+  });
+
+  it('rechaza combinar porcentaje y monto fijo de mora a la vez', () => {
+    expect(() =>
+      crearDespacho(
+        baseInput({ condicion: 'credito', mora: { pct: 5, monto_usd: 3 } }),
+      ),
+    ).toThrow(/un solo tipo de recargo/i);
+  });
+
+  it('rechaza porcentaje fuera de rango o monto mayor al subtotal', () => {
+    expect(() =>
+      crearDespacho(baseInput({ condicion: 'credito', mora: { pct: 101 } })),
+    ).toThrow(/0 y 100/i);
+    expect(() =>
+      crearDespacho(baseInput({ condicion: 'credito', lineas: [{ item: ITEM, cantidad: 1 }], mora: { monto_usd: 999 } })),
+    ).toThrow(/no puede superar el subtotal/i);
+  });
+
+  it('rechaza IVA fuera de rango', () => {
+    expect(() =>
+      crearDespacho(baseInput({ condicion: 'credito', iva_pct: 120 })),
+    ).toThrow(/0 y 100/i);
+  });
+
+  it('la edición de un pedido recalcula recargo e IVA con las nuevas reglas', () => {
+    const prev = despachoBase();
+    const editado = editarDespachoPendiente(prev, {
+      condicion: 'credito',
+      lineas: [{ item: ITEM, cantidad: 2 }],
+      mora: { pct: 10 },
+      iva_pct: 10,
+      editor: 'admin@briannoel.com',
+      editor_role: 'admin',
+    });
+    expect(editado.mora_pct).toBe(10);
+    expect(editado.mora_total_usd).toBe(0.5);
+    expect(editado.iva_total_usd).toBe(0.55);
+    expect(editado.total).toBe(6.05);
   });
 });

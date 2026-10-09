@@ -243,6 +243,16 @@ export const despachoSchema = baseRecordSchema.extend({
   descuento_monto_usd: z.number().nonnegative().nullable().default(null),
   descuento_aprobado_por: z.string().nullable().default(null),
   descuento_pasos: z.number().int().positive().nullable().default(null),
+  /** Recargo por mora de una venta a crédito (a elección del vendedor al
+   *  registrar; aplica SOLO a condición `credito`). `mora_pct` en modo
+   *  porcentaje sobre el subtotal; `mora_monto_usd` monto fijo. Nunca ambos. */
+  mora_pct: z.number().min(0).max(100).default(0),
+  mora_monto_usd: z.number().nonnegative().nullable().default(null),
+  /** IVA (%) aplicado sobre la base con recargo (base = subtotal − descuento). */
+  iva_pct: z.number().min(0).max(100).default(0),
+  /** Montos calculados al registrar (para pantalla/impresión sin recalcular). */
+  mora_total_usd: z.number().nonnegative().default(0),
+  iva_total_usd: z.number().nonnegative().default(0),
   /** Quién captó al cliente (nombre del roster `personal`): se elige al
    *  registrar la venta; fallback de visualización = `cliente.created_by`. */
   promotor: z.string().nullable().default(null),
