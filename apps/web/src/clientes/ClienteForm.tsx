@@ -1,10 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import type { Role, Zona } from '@brian/shared';
 import type { NuevoClienteRepoInput } from './clientesRepo';
 import { matchZona } from './clientesRepo';
 import { GeoBoton } from '../ui/geo';
+import { obtenerCoords } from '../lib/geo';
+import { compressImage } from '../lib/photo';
+import { MiniFoto } from '../ui/fotos';
 import { CrearZonaBoton } from '../ui/zonas';
 import { NuevaZonaDialog } from './NuevaZonaDialog';
+import { FieldError, FormErrorSummary } from '../ui/form';
+import { fieldAria, useFormErrors } from '../ui/formErrors';
 
 /** Campos que reúne el formulario; `creado_por` lo inyecta quien lo invoca. */
 export type ClienteFormInput = Omit<NuevoClienteRepoInput, 'creado_por'>;
@@ -29,18 +34,25 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
   const [nombre, setNombre] = useState('');
   const [documento, setDocumento] = useState('');
   const [telefono, setTelefono] = useState('');
+  const [telefono2, setTelefono2] = useState('');
+  const [notas, setNotas] = useState('');
   const [direccion, setDireccion] = useState('');
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
   const [zonaId, setZonaId] = useState('');
   const [zonaDialogOpen, setZonaDialogOpen] = useState(false);
   const [geoBusy, setGeoBusy] = useState(false);
+  const [fotoFachada, setFotoFachada] = useState('');
+  const [fotoCliente, setFotoCliente] = useState('');
+  const [fotoCedula, setFotoCedula] = useState('');
+  const [fotoError, setFotoError] = useState('');
   const [fotoCasa, setFotoCasa] = useState(false);
   const [fotoDocumento, setFotoDocumento] = useState(false);
   const [avisoDocumento, setAvisoDocumento] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { errors, fail, clear, summaryRef } = useFormErrors();
 
   // En Fase 2 la edición solo la autoriza quien tenga `edit_client` (§3.2).
   const canEdit = roles.includes('admin') || roles.includes('supervisor');
@@ -55,46 +67,49 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
   );
   const zonaFinal = zonas.find((z) => z.id === (zonaId || zonaMatch?.id || '')) ?? null;
 
-  const usarMiUbicacion = () => {
-    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
-      setMessage({ kind: 'error', text: 'Tu dispositivo no tiene geolocalización.' });
+  const usarMiUbicacion = async () => {
+    setGeoBusy(true);
+    const coords = await obtenerCoords();
+    setGeoBusy(false);
+    if (coords) {
+      setLat(String(coords.lat));
+      setLng(String(coords.lng));
+      setZonaId('');
+      clear('geo');
       return;
     }
-    setGeoBusy(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(String(pos.coords.latitude));
-        setLng(String(pos.coords.longitude));
-        setZonaId('');
-        setGeoBusy(false);
-      },
-      () => {
-        setGeoBusy(false);
-        setMessage({
-          kind: 'error',
-          text: 'No se pudo obtener la ubicación. Escríbela manualmente en latitud y longitud.',
-        });
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
-    );
+    // Con lat/lng ya cargadas NO se avisa: el cliente ya tiene su ubicación.
+    if (!lat.trim() && !lng.trim()) {
+      fail({
+        geo: 'No se pudo obtener la ubicación. Escríbela manualmente en latitud y longitud.',
+      });
+    }
+  };
+
+  const onFoto = async (e: ChangeEvent<HTMLInputElement>, set: (data: string) => void) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      set(await compressImage(file));
+      setFotoError('');
+    } catch {
+      setFotoError('No se pudo leer la foto elegida. Intenta con otra.');
+    }
   };
 
   const onClickGuardar = async () => {
-    if (!nombre.trim()) {
-      setMessage({ kind: 'error', text: 'Escribe el nombre del cliente.' });
-      return;
-    }
-    if (zonas.length > 0 && !zonaFinal) {
-      setMessage({
-        kind: 'error',
-        text: 'Elige o crea la zona del cliente (se sugiere por cercanía).',
-      });
-      return;
-    }
-    if (!fotoCasa && !fotoDocumento) {
-      setMessage({ kind: 'error', text: 'Marca una opción de consentimiento para continuar.' });
-      return;
-    }
+    const hayConsentimiento = fotoCasa || fotoDocumento || fotoFachada !== '' || fotoCedula !== '';
+    const nuevos = {
+      ...(nombre.trim() ? {} : { nombre: 'Escribe el nombre del cliente.' }),
+      ...(zonas.length > 0 && !zonaFinal
+        ? { zona: 'Elige o crea la zona del cliente (se sugiere por cercanía).' }
+        : {}),
+      ...(hayConsentimiento
+        ? {}
+        : { consentimiento: 'Marca una opción de consentimiento para continuar.' }),
+    };
+    if (!fail(nuevos)) return;
     setBusy(true);
     setMessage(null);
     try {
@@ -103,14 +118,19 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
           nombre,
           documento: documento || undefined,
           telefono: telefono || undefined,
+          telefono2: telefono2 || undefined,
+          notas_referencia: notas || undefined,
           direccion: direccion || undefined,
           lat: lat ? Number(lat) : null,
           lng: lng ? Number(lng) : null,
+          foto_fachada: fotoFachada || undefined,
+          foto_cliente: fotoCliente || undefined,
+          foto_cedula: fotoCedula || undefined,
           consentimiento: {
             fecha: new Date().toISOString(),
-            foto_casa: fotoCasa,
-            foto_documento: fotoDocumento,
-            aviso_documento: fotoDocumento ? avisoDocumento : false,
+            foto_casa: fotoCasa || fotoFachada !== '',
+            foto_documento: fotoDocumento || fotoCedula !== '',
+            aviso_documento: fotoDocumento || fotoCedula !== '' ? avisoDocumento : false,
           },
         },
         zonaFinal?.id,
@@ -120,7 +140,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
       onSuccess();
     } catch (err) {
       setBusy(false);
-      setMessage({ kind: 'error', text: err instanceof Error ? err.message : String(err) });
+      fail({ general: err instanceof Error ? err.message : String(err) });
     }
   };
 
@@ -138,15 +158,21 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-3 text-fog-100">
+      <FormErrorSummary errors={errors} summaryRef={summaryRef} />
       <label className={labelCls}>
         Nombre del cliente *
         <input
           ref={inputRef}
           type="text"
           value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
+          onChange={(e) => {
+            setNombre(e.target.value);
+            clear('nombre');
+          }}
           className={inputCls}
+          {...fieldAria('nombre', errors)}
         />
+        <FieldError name="nombre" error={errors.nombre} />
       </label>
       <div className="grid grid-cols-2 gap-2">
         <label className={labelCls}>
@@ -167,6 +193,15 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
             className={inputCls}
           />
         </label>
+        <label className={`${labelCls} col-span-2`}>
+          Teléfono 2 (opcional)
+          <input
+            type="tel"
+            value={telefono2}
+            onChange={(e) => setTelefono2(e.target.value)}
+            className={inputCls}
+          />
+        </label>
       </div>
       <label className={labelCls}>
         Dirección
@@ -175,6 +210,16 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
           value={direccion}
           onChange={(e) => setDireccion(e.target.value)}
           className={inputCls}
+        />
+      </label>
+      <label className={labelCls}>
+        Notas de referencia
+        <textarea
+          value={notas}
+          onChange={(e) => setNotas(e.target.value)}
+          rows={2}
+          placeholder="Puntos de referencia para llegar, horarios, etc."
+          className={`${inputCls} resize-none`}
         />
       </label>
 
@@ -191,6 +236,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
             onChange={(e) => {
               setLat(e.target.value);
               setZonaId('');
+              clear('geo');
             }}
             className={inputCls}
           />
@@ -204,6 +250,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
             onChange={(e) => {
               setLng(e.target.value);
               setZonaId('');
+              clear('geo');
             }}
             className={inputCls}
           />
@@ -218,8 +265,12 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
         <span className="flex items-start gap-2">
           <select
             value={zonaId || zonaMatch?.id || ''}
-            onChange={(e) => setZonaId(e.target.value)}
+            onChange={(e) => {
+              setZonaId(e.target.value);
+              clear('zona');
+            }}
             className={`${inputCls} min-w-0 flex-1 appearance-none`}
+            {...fieldAria('zona', errors)}
           >
             <option value="">Elige una zona…</option>
             {zonas.map((z) => (
@@ -230,6 +281,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
           </select>
           <CrearZonaBoton onClick={() => setZonaDialogOpen(true)} />
         </span>
+        <FieldError name="zona" error={errors.zona} />
       </label>
       <p className="text-xs text-fog-500">
         Se sugiere la zona por cercanía; estado / municipio:{' '}
@@ -238,7 +290,20 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
         </span>
       </p>
 
-      <fieldset className="flex flex-col gap-1.5 border-t border-ink-700 pt-3 text-xs text-fog-500">
+      <p className="font-mono text-xs uppercase tracking-wider text-fog-500">fotos del cliente</p>
+      <MiniFoto titulo="Fachada de la vivienda" foto={fotoFachada} onChange={setFotoFachada} onError={onFoto} />
+      <MiniFoto titulo="Foto del cliente" foto={fotoCliente} onChange={setFotoCliente} onError={onFoto} />
+      <MiniFoto titulo="Cédula de identidad" foto={fotoCedula} onChange={setFotoCedula} onError={onFoto} />
+      {fotoError && <p className="text-xs text-danger">{fotoError}</p>}
+      <p className="text-xs text-fog-500">
+        Fotos recomendadas: se comprimen en el dispositivo y viajan con el registro.
+      </p>
+
+      <fieldset
+        aria-invalid={errors.consentimiento ? true : undefined}
+        aria-describedby={errors.consentimiento ? 'consentimiento-error' : undefined}
+        className="flex flex-col gap-1.5 border-t border-ink-700 pt-3 text-xs text-fog-500"
+      >
         <legend className="pr-2 font-mono text-xs uppercase tracking-wider text-fog-500">
           consentimiento (obligatorio)
         </legend>
@@ -246,7 +311,10 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
           <input
             type="checkbox"
             checked={fotoCasa}
-            onChange={(e) => setFotoCasa(e.target.checked)}
+            onChange={(e) => {
+              setFotoCasa(e.target.checked);
+              clear('consentimiento');
+            }}
             className="size-4 accent-signal"
           />
           Foto de la vivienda
@@ -255,7 +323,10 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
           <input
             type="checkbox"
             checked={fotoDocumento}
-            onChange={(e) => setFotoDocumento(e.target.checked)}
+            onChange={(e) => {
+              setFotoDocumento(e.target.checked);
+              clear('consentimiento');
+            }}
             className="size-4 accent-signal"
           />
           Foto del documento de identidad (opcional)
@@ -271,19 +342,17 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
             El cliente fue informado del tratamiento del documento
           </label>
         )}
+        <FieldError name="consentimiento" error={errors.consentimiento} />
       </fieldset>
 
-      <p
-        role="alert"
-        className={`min-h-4 text-xs ${message?.kind === 'error' ? 'text-danger' : 'text-ok'}`}
-      >
+      <p role="status" className={`min-h-4 text-xs ${message?.kind === 'ok' ? 'text-ok' : 'text-danger'}`}>
         {message?.text ?? ''}
       </p>
 
       <button
         onClick={onClickGuardar}
         disabled={busy}
-        className="self-start rounded-md bg-signal px-3.5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-50"
+        className="self-start rounded-md bg-signal px-3.5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-50 btn-lift cta-glow"
       >
         {busy ? 'Guardando…' : 'Crear cliente'}
       </button>

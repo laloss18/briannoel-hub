@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { municipiosDeEstado, VE_ESTADOS, type Zona } from '@brian/shared';
 import { crearZonaLocal } from './zonasRepo';
 import { CloseButton } from '../ui/actions';
+import { FieldError, FormErrorSummary } from '../ui/form';
+import { fieldAria, useFormErrors } from '../ui/formErrors';
 
 interface NuevaZonaDialogProps {
   open: boolean;
@@ -22,24 +24,19 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
   const [municipio, setMunicipio] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+  const { errors, fail, clear, summaryRef } = useFormErrors();
 
   if (!open) return null;
 
   const municipios = estado ? municipiosDeEstado(estado) : [];
 
   const onGuardar = async () => {
-    if (!nombre.trim()) {
-      setMessage({ kind: 'error', text: 'Escribe el nombre de la zona.' });
-      return;
-    }
-    if (!estado) {
-      setMessage({ kind: 'error', text: 'Selecciona el estado al que pertenece la zona.' });
-      return;
-    }
-    if (!municipio) {
-      setMessage({ kind: 'error', text: 'Selecciona el municipio de la zona.' });
-      return;
-    }
+    const nuevos = {
+      ...(nombre.trim() ? {} : { nombre: 'Escribe el nombre de la zona.' }),
+      ...(estado ? {} : { estado: 'Selecciona el estado al que pertenece la zona.' }),
+      ...(municipio ? {} : { municipio: 'Selecciona el municipio de la zona.' }),
+    };
+    if (!fail(nuevos)) return;
     setBusy(true);
     setMessage(null);
     try {
@@ -54,7 +51,7 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
       setMunicipio('');
       setMessage({ kind: 'ok', text: 'Zona creada y encolada para sync.' });
     } catch (err) {
-      setMessage({ kind: 'error', text: err instanceof Error ? err.message : String(err) });
+      fail({ general: err instanceof Error ? err.message : String(err) });
     } finally {
       setBusy(false);
     }
@@ -73,29 +70,38 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
       aria-modal="true"
       aria-labelledby="zona-dialog-title"
     >
-      <div className="w-full max-w-md overscroll-contain rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.6)]">
+      <div className="w-full max-w-md overscroll-contain rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-popover">
         <div className="flex items-center justify-between gap-4">
-          <p id="zona-dialog-title" className="font-mono text-[11px] uppercase tracking-wider text-fog-500">
+          <p id="zona-dialog-title" className="font-mono text-2xs uppercase tracking-wider text-fog-500">
             Nueva zona
           </p>
           <CloseButton onClick={onClose} label="Cerrar nueva zona" />
         </div>
 
         <div className="mt-4 flex flex-col gap-2.5">
+          <FormErrorSummary errors={errors} summaryRef={summaryRef} />
           <input
             type="text"
             placeholder="Nombre de la zona *"
             value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
+            onChange={(e) => {
+              setNombre(e.target.value);
+              clear('nombre');
+            }}
             className={inputCls}
+            {...fieldAria('nombre', errors)}
           />
+          <FieldError name="nombre" error={errors.nombre} />
           <select
             value={estado}
             onChange={(e) => {
               setEstado(e.target.value);
               setMunicipio('');
+              clear('estado');
+              clear('municipio');
             }}
             className={inputCls}
+            {...fieldAria('estado', errors)}
           >
             <option value="">Estado de Venezuela *</option>
             {VE_ESTADOS.map((e) => (
@@ -104,11 +110,16 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
               </option>
             ))}
           </select>
+          <FieldError name="estado" error={errors.estado} />
           <select
             value={municipio}
-            onChange={(e) => setMunicipio(e.target.value)}
+            onChange={(e) => {
+              setMunicipio(e.target.value);
+              clear('municipio');
+            }}
             disabled={!estado}
-            className={inputCls}
+            className={`${inputCls} disabled:opacity-50`}
+            {...fieldAria('municipio', errors)}
           >
             <option value="">{estado ? 'Municipio *' : 'Elige primero el estado'}</option>
             {municipios.map((m) => (
@@ -117,20 +128,18 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
               </option>
             ))}
           </select>
-          <p className="text-[11px] text-fog-500">
+          <FieldError name="municipio" error={errors.municipio} />
+          <p className="text-2xs text-fog-500">
             El estado y el municipio quedan asociados a la zona: al elegirla para un cliente se muestran
             automáticamente.
           </p>
-          <p
-            role="alert"
-            className={`text-xs ${message?.kind === 'error' ? 'text-danger' : 'text-ok'}`}
-          >
-            {message?.text ?? ''}
+          <p role="status" className="text-xs text-ok">
+            {message?.kind === 'ok' ? message.text : ''}
           </p>
           <button
             onClick={onGuardar}
             disabled={busy}
-            className="rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50"
+            className="btn-lift cta-glow rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50"
           >
             {busy ? 'Guardando…' : 'Crear zona'}
           </button>

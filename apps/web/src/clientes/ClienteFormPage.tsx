@@ -14,7 +14,7 @@ export default function ClienteFormPage() {
   const zonas = useLiveQuery(() => listZonas(), []);
 
   return (
-    <PageShell titulo="Nuevo cliente" icono="userPlus" volverA="/clientes">
+    <PageShell titulo="Nuevo cliente" icono="userPlus">
       {zonas === undefined ? (
         <p className="text-xs text-fog-600">Cargando…</p>
       ) : (

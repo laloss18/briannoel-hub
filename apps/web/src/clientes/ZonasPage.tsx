@@ -16,7 +16,7 @@ export default function ZonasPage() {
       titulo="Zonas"
       icono="map"
       volverA="/"
-      accion={canManage ? { label: 'Nueva zona', icon: 'plus', to: '/zonas/nueva' } : undefined}
+      accion={canManage ? { label: 'Nueva zona', icon: 'plus', to: '/zonas/nueva', variant: 'primary', soloIcono: true } : undefined}
     >
       <div className="flex flex-col gap-4">
         <p className="font-mono text-xs tabular-nums text-fog-500">
@@ -28,7 +28,7 @@ export default function ZonasPage() {
               {canManage ? (
                 <Link
                   to={`/zonas/${z.id}/editar`}
-                  className="flex items-center justify-between gap-3 py-2.5 transition-colors hover:bg-ink-950/40"
+                  className="flex items-center justify-between gap-3 py-2.5 transition-colors hover:bg-ink-800/60"
                 >
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium text-fog-100">
@@ -39,7 +39,7 @@ export default function ZonasPage() {
                     </span>
                   </span>
                   <span
-                    className={`shrink-0 font-mono text-[10px] uppercase tracking-wider ${
+                    className={`shrink-0 font-mono text-2xs uppercase tracking-wider ${
                       z.lat !== null && z.lng !== null ? 'text-ok' : 'text-fog-600'
                     }`}
                   >
@@ -57,7 +57,7 @@ export default function ZonasPage() {
                     </span>
                   </span>
                   <span
-                    className={`shrink-0 font-mono text-[10px] uppercase tracking-wider ${
+                    className={`shrink-0 font-mono text-2xs uppercase tracking-wider ${
                       z.lat !== null && z.lng !== null ? 'text-ok' : 'text-fog-600'
                     }`}
                   >

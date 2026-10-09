@@ -1,6 +1,7 @@
 import { createOutboxEntry } from '@brian/sync-engine';
 import {
   aplicarOverride,
+  aplicarScore,
   crearCliente,
   editarCliente,
   matchZona,
@@ -9,6 +10,7 @@ import {
 import { clienteSchema, type Cliente, type Consentimiento, type Zona } from '@brian/shared';
 import { hasPermission, type Role } from '@brian/shared';
 import { DexieLocalStore, DexieOutbox, hub } from '../sync/db';
+import { listDespachos } from '../ventas/ventasRepo';
 
 const ENTITY = 'clientes';
 
@@ -141,6 +143,30 @@ export async function aplicarOverrideLocal(
   const updated = aplicarOverride(cliente, override);
   await persistLocal(updated);
   return updated;
+}
+
+/** Recálculo automático del score (§2.5) tras cada venta del cliente: el
+ *  historial de compras (frecuencia + monto) se arma con sus despachos no
+ *  eliminados y la antigüedad con `created_at`. Un override manual lo congela:
+ *  el score recalculado no pisa lo que fijó supervisor/admin. */
+export async function recalcularScoreDe(clienteId: string): Promise<void> {
+  const [clientes, despachos] = await Promise.all([listClientes(), listDespachos()]);
+  const cliente = clientes.find((c) => c.id === clienteId);
+  if (!cliente) return;
+  if (cliente.score_override !== null && cliente.score_override !== undefined) return;
+  const compras = despachos
+    .filter((d) => d.cliente_id === clienteId && (d.deleted_at ?? null) === null)
+    .map((d) => ({ amount: d.total, at: d.created_at }));
+  const tenureDays = Math.max(
+    0,
+    Math.floor((Date.now() - Date.parse(cliente.created_at)) / 86_400_000),
+  );
+  const actualizado = aplicarScore(cliente, {
+    tenureDays,
+    purchases: compras,
+    asOf: new Date().toISOString(),
+  });
+  await persistLocal(actualizado);
 }
 
 /** Permiso para editar clientes / fijar score (PRD §3.2). */
