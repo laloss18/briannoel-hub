@@ -17,7 +17,7 @@ export function GeoBoton({
       disabled={busy}
       aria-label={label}
       title={label}
-      className="flex size-11 shrink-0 items-center justify-center rounded-md border border-ink-700 bg-ink-950 text-fog-300 transition-colors hover:border-ink-600 hover:text-fog-100 disabled:opacity-50"
+      className="btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border border-ink-700 bg-ink-950 text-fog-300 transition-colors hover:border-ink-600 hover:text-fog-100 disabled:opacity-50"
     >
       {busy ? (
         <span
@@ -48,7 +48,7 @@ export function AbrirMapa({ lat, lng }: { lat: number; lng: number }) {
       href={geoMapsUrl(lat, lng)}
       target="_blank"
       rel="noreferrer"
-      className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-signal transition-colors hover:text-fog-100"
+      className="shrink-0 font-mono text-2xs uppercase tracking-wider text-signal transition-colors hover:text-fog-100"
     >
       mapa ↗
     </a>
