@@ -4,9 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b1220" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#f4f5f7" />
+    <meta name="color-scheme" content="light dark" />
     <title>Brian Noel Hub</title>
+    <script>
+      /* Tema antes del primer paint (sin flash): claro por defecto, oscuro si
+         el usuario lo pidió. El mismo script pinta el color de la barra del
+         navegador para que coincida con el fondo de la página. */
+      (function () {
+        try {
+          var oscuro = localStorage.getItem('bh_tema') === 'oscuro';
+          if (oscuro) document.documentElement.setAttribute('data-theme', 'dark');
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', oscuro ? '#0b1220' : '#f4f5f7');
+        } catch (e) {
+          /* localStorage bloqueado (modo incógnito): se queda en claro. */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

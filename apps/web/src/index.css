@@ -2,29 +2,105 @@
 @import '@fontsource-variable/archivo';
 @import '@fontsource-variable/jetbrains-mono';
 
+/**
+ * PALETA DUAL (DESIGN §3): CLARO por defecto, OSCURO vía `[data-theme='dark']`.
+ * Los nombres `ink`/`fog` son históricos y ahora son SEMÁNTICOS por escala:
+ *   - `ink-*`  = superficie (950 página → 900 tarjeta → 800 hover → 700 filete → 600 borde de control)
+ *   - `fog-*`  = texto   (100 primario → 300 secundario → 500 label → 600 meta → 700 decorativo)
+ * En claro los `ink` claran y los `fog` oscurecen; en oscuro, al revés. Todos
+ * los pares texto/fondo están verificados ≥4.5:1 y los bordes de control ≥3:1
+ * en AMBOS temas (script de contraste: DESIGN §3 "verificación").
+ *
+ * El override va FUERA de `@layer` a propósito: `@theme` emite en la capa
+ * `theme` de Tailwind y cualquier regla sin capa le gana por cascada.
+ */
 @theme {
   --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
+
+  /* Escala tipográfica re-escalada (DESIGN §4): cuerpo 16 / UI 14 / label 13 /
+     micro-mono 11. Los `rem` se apoyan en la raíz (16px), así que los targets
+     de 44px (`2.75rem`) no se mueven. */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1.45;
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.55;
+  --text-base: 1rem;
+  --text-base--line-height: 1.6;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.35;
+  --text-xl: 1.3125rem;
+  --text-xl--line-height: 1.25;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.1;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.05;
+
+  /* --- CLARO (defecto) ---------------------------------------------------- */
+  --color-ink-950: #f4f5f7; /* página */
+  --color-ink-900: #ffffff; /* tarjeta / elevación 1 */
+  --color-ink-800: #eceef2; /* hover / elevación 2 */
+  --color-ink-700: #d0d5dd; /* filete hairline */
+  --color-ink-600: #838a98; /* borde de control (3.18:1 sobre página) */
+
+  --color-signal: #c2410c; /* naranja: acento único (4.75:1 sobre página) */
+  --color-signal-soft: #9a3412; /* hover del CTA (se oscurece) */
+
+  --color-fog-100: #141a24; /* texto primario (16:1 sobre página) */
+  --color-fog-300: #3d4553; /* texto secundario */
+  --color-fog-500: #575f6d; /* labels (5.9:1) */
+  --color-fog-600: #656d7c; /* meta/mono (4.77:1) */
+  --color-fog-700: #98a0ae; /* Sólo decorativo/bordes: nunca texto */
+
+  --color-danger: #b3261e; /* errores/destructive (6.5:1) */
+  --color-ok: #157347; /* éxito/entregado (5.9:1) */
+
+  /* Elevación (DESIGN §5.10, de genesis-DESIGN.md): reposo PLANO — la sombra
+     es de estado (hover) o de overlay. `shadow-card` queda en `none` a propósito:
+     una tarjeta al reposo es hairline pura; la sombra nace al hover. */
+  --shadow-card: none;
+  --shadow-card-hover: 0 12px 28px -14px rgb(20 26 36 / 0.4);
+  --shadow-cta-hover: 0 4px 14px -4px rgb(194 65 12 / 0.5);
+  --shadow-popover: 0 24px 60px -12px rgb(16 26 46 / 0.55);
+}
+
+/* Controles nativos (inputs, selects, date, scrollbars): claro por defecto.
+ * DEBE ir ANTES del override oscuro: misma especificidad (`:root` ≡ un
+ * atributo), gana el último. Si se mueve debajo, en oscuro se quedan en light. */
+:root {
+  color-scheme: light;
+}
+
+/* --- OSCURO --------------------------------------------------------------- */
+[data-theme='dark'] {
+  color-scheme: dark;
 
   --color-ink-950: #0b1220;
   --color-ink-900: #101a2e;
   --color-ink-800: #16233b;
   --color-ink-700: #223351;
-  --color-ink-600: #2f405f;
+  --color-ink-600: #6b789a; /* 4.26:1 sobre página — ahora sí identifica controles */
 
-  --color-signal: #e8b54a;
-  --color-signal-soft: #c99a36;
+  --color-signal: #fb923c;
+  --color-signal-soft: #f97316;
 
   --color-fog-100: #e7eaf0;
   --color-fog-300: #c2cad8;
   --color-fog-500: #8b94a8;
-  /* AA sobre ink-950/ink-900 (5.3:1 / 4.9:1): meta texto y micro-labels. */
   --color-fog-600: #7f88a0;
-  /* Sólo decorativo/bordes: 3.2:1 NO cumple AA para texto. */
   --color-fog-700: #5b6479;
 
   --color-danger: #e26d6d;
   --color-ok: #4cbf8f;
+
+  --shadow-card: none;
+  --shadow-card-hover: 0 16px 32px -16px rgb(0 0 0 / 0.7);
+  --shadow-cta-hover: 0 4px 14px -4px rgb(251 146 60 / 0.5);
+  --shadow-popover: 0 24px 60px -12px rgb(0 0 0 / 0.6);
 }
 
 @layer base {
@@ -38,7 +114,6 @@
     font-family: var(--font-sans);
     color: var(--color-fog-100);
     background-color: var(--color-ink-950);
-    color-scheme: dark;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -51,6 +126,13 @@
   [role='button'] {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Fecha/rango nativo en móvil: el date picker respeta el tema del sistema
+     (color-scheme) y este aire mínimo evita el apretamiento de 44px. */
+  input[type='date'],
+  input[type='search'] {
+    font-family: var(--font-sans);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -96,6 +178,53 @@
 :focus-visible {
   outline: 2px solid var(--color-signal);
   outline-offset: 2px;
+}
+
+/* Elevación de estado (DESIGN §5.10 y §6.2, de genesis-DESIGN.md):
+   botones suben 1px (`btn-lift`), superficies clickeables 2px (`card-lift`),
+   y SOLO el CTA primario gana glow ámbar (`cta-glow`). Solo con hover real
+   (puntero fino), nunca en táctil. Fuera de capa: útil para componentes que
+   usan `transition-colors` de Tailwind, esta transición explícita la gana. */
+@media (hover: hover) and (pointer: fine) {
+  .btn-lift,
+  .card-lift {
+    transition:
+      translate 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      outline-color 160ms ease,
+      scale 160ms ease,
+      filter 160ms ease,
+      opacity 160ms ease;
+  }
+
+  .btn-lift:hover {
+    translate: 0 -1px;
+  }
+
+  .card-lift:hover {
+    translate: 0 -2px;
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .cta-glow:hover {
+    box-shadow: var(--shadow-cta-hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-lift,
+  .card-lift {
+    transition: none;
+  }
+
+  .btn-lift:hover,
+  .card-lift:hover {
+    translate: 0 0;
+    box-shadow: none;
+  }
 }
 
 /* Objetivo táctil mínimo 44px (iOS 44pt / Android 48dp ≈ 44 web) en todo

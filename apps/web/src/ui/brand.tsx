@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-/** Monograma candado del hub (acción ámbar única). */
+/** Monograma candado del hub (acción naranja única). */
 export function Monogram() {
   return (
     <div className="flex size-10 items-center justify-center rounded-md bg-ink-800 text-signal shadow-[inset_0_0_0_1px_var(--color-ink-700)]">
@@ -26,14 +26,14 @@ export function Brand() {
     <div className="flex items-center gap-3">
       <Monogram />
       <div className="leading-tight">
-        <p className="text-[15px] font-semibold tracking-tight text-fog-100">Brian Noel</p>
-        <p className="text-[11px] text-fog-500">hub de operaciones</p>
+        <p className="text-base font-semibold tracking-tight text-fog-100">Brian Noel</p>
+        <p className="text-2xs text-fog-500">hub de operaciones</p>
       </div>
     </div>
   );
 }
 
-/** Reloj en vivo: solo los segundos en ámbar (fuente de verdad del sync). */
+/** Reloj en vivo: solo los segundos en naranja (fuente de verdad del sync). */
 export function Clock() {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -55,7 +55,7 @@ export function Clock() {
 /** Franja de estado base de todas las pantallas. */
 export function StatusStrip() {
   return (
-    <div className="flex items-center justify-between gap-4 border-t border-ink-700/60 pt-3 text-[11px] text-fog-500">
+    <div className="flex items-center justify-between gap-4 border-t border-ink-700/60 pt-3 text-2xs text-fog-500">
       <span className="flex items-center gap-1.5">
         <span className="size-1.5 rounded-full bg-ok" aria-hidden="true" />
         reloj del dispositivo

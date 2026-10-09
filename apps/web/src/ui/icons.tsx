@@ -42,6 +42,20 @@ const PATHS = {
   send: ['m22 2-7 20-4-9-9-4Z', 'M22 2 11 13'],
   save: ['M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z', 'M17 21v-8H7v8', 'M7 3v5h8'],
   wallet: ['M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5', 'M16 12h.01'],
+  /** Sol (tema claro): los rayos; el disco va en SHAPES. */
+  sun: ['M12 1v2', 'M12 21v2', 'M4.22 4.22l1.42 1.42', 'M18.36 18.36l1.42 1.42', 'M1 12h2', 'M21 12h2', 'M4.22 19.78l1.42-1.42', 'M18.36 5.64l1.42-1.42'],
+  /** Luna (tema oscuro). */
+  moon: ['M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'],
+  /** Teléfono: acción "llamar" desde la lista de clientes. */
+  phone: ['M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z'],
+  /** Deshacer: corrige una entrega marcada por error (desde la lista). */
+  undo: ['M9 14 4 9l5-5', 'M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11'],
+  /** Camión de reparto: entregar desde la lista. Las ruedas van en SHAPES. */
+  truck: ['M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2', 'M15 18H9', 'M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14'],
+  /** Embudo: abre/cierra el panel de filtros (desplegable compacto). */
+  filter: ['M22 3H2l8 9.46V19l4 2v-8.54Z'],
+  /** Chevron abajo: indica que el panel de filtros se despliega. */
+  chevronDown: ['m6 9 6 6 6-6'],
 } as const;
 
 export type IconName = keyof typeof PATHS;
@@ -50,6 +64,11 @@ export type IconName = keyof typeof PATHS;
 const SHAPES: Partial<Record<IconName, ReadonlyArray<{ cx: number; cy: number; r: number }>>> = {
   eye: [{ cx: 12, cy: 12, r: 3 }],
   coins: [{ cx: 12, cy: 5, r: 3 }],
+  sun: [{ cx: 12, cy: 12, r: 4 }],
+  truck: [
+    { cx: 17, cy: 18, r: 2 },
+    { cx: 7, cy: 18, r: 2 },
+  ],
 };
 
 export interface IconProps {
