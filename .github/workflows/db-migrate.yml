@@ -1,0 +1,39 @@
+---
+# Aplica UNA migración SQL al proyecto Supabase (manual).
+# El MVP tiene UN proyecto (PRD env collapse): las migraciones se aplican por
+# conexión directa al pooler de sesión, no por `supabase db push` (la historia
+# del CLI no está sincronizada porque 0001-0007 se aplicaron a mano con psql/pg).
+name: DB Migrate (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: 'Ruta de la migración a aplicar'
+        required: true
+        default: 'supabase/migrations/0009_admin_usuarios.sql'
+
+concurrency:
+  group: db-migrate
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar cliente Postgres
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Aplicar migración
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-0-us-east-1.pooler.supabase.com
+          PGPORT: '5432'
+          PGUSER: postgres.${{ secrets.SUPABASE_PROJECT_REF }}
+          PGDATABASE: postgres
+          MIGRATION_FILE: ${{ inputs.file }}
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -f "$MIGRATION_FILE"
+          echo "Aplicada: $MIGRATION_FILE"
