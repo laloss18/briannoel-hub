@@ -9,6 +9,7 @@ import {
   type CrearDespachoInput,
   type DescuentoAprobado,
   type EditarDespachoInput,
+  type RecargoMora,
 } from '@brian/ventas';
 import {
   despachoSchema,
@@ -71,6 +72,10 @@ export interface NuevaVentaRepoInput {
   /** Tasa BCV (Bs/USD) vigente al registrar; 0 si aún no configurada (§2.6). */
   tasa_bcv?: number;
   descuento?: DescuentoAprobado;
+  /** Recargo por mora (solo crédito): % sobre subtotal o monto fijo en USD. */
+  mora?: RecargoMora;
+  /** IVA (%) sobre la base con recargo; 0 = sin IVA. */
+  iva_pct?: number;
   /** Promotor que captó al cliente (nombre del roster `personal`), opcional. */
   promotor?: string | null;
   /** Supervisor a cargo (nombre del roster o identidad de quien registra). */
@@ -87,6 +92,8 @@ export async function crearDespachoLocal(input: NuevaVentaRepoInput): Promise<De
     lineas: input.lineas,
     tasa_bcv: input.tasa_bcv,
     descuento: input.descuento,
+    mora: input.mora,
+    iva_pct: input.iva_pct,
     promotor: input.promotor,
     supervisor: input.supervisor,
     vendedor: input.vendedor,
@@ -102,6 +109,10 @@ export interface EditarVentaRepoInput {
   lineas: { item: Item; cantidad: number }[];
   tasa_bcv?: number;
   descuento?: DescuentoAprobado;
+  /** Recargo por mora (solo crédito): % sobre subtotal o monto fijo en USD. */
+  mora?: RecargoMora;
+  /** IVA (%) sobre la base con recargo; 0 = sin IVA. */
+  iva_pct?: number;
   vendedor: string;
   editor_role: Role;
 }
@@ -117,6 +128,8 @@ export async function editarDespachoLocal(
     lineas: input.lineas,
     tasa_bcv: input.tasa_bcv,
     descuento: input.descuento,
+    mora: input.mora,
+    iva_pct: input.iva_pct,
     editor: input.vendedor,
     editor_role: input.editor_role,
   } satisfies EditarDespachoInput);

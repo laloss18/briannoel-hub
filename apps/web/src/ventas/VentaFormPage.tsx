@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { lazy, Suspense, useMemo } from 'react';
-import { listClientes } from '../clientes/clientesRepo';
+import { listClientes, recalcularScoreDe } from '../clientes/clientesRepo';
 import { listZonas } from '../clientes/zonasRepo';
 import { listItems } from './itemsRepo';
 import { listDespachos, crearDespachoLocal, editarDespachoLocal } from './ventasRepo';
@@ -28,12 +28,16 @@ export default function VentaFormPage() {
   const editorRole = roles[0] ?? 'promotor';
 
   const onSubmit = async (form: VentaFormInput) => {
-    await crearDespachoLocal({ ...form, vendedor: email, editor_role: editorRole });
+    const creado = await crearDespachoLocal({ ...form, vendedor: email, editor_role: editorRole });
+    await recalcularScoreDe(creado.cliente_id);
   };
 
   const onEdit = async (form: EditarVentaFormInput) => {
     if (!editing) throw new Error('No hay despacho en edición.');
-    await editarDespachoLocal(editing, { ...form, vendedor: email, editor_role: editorRole });
+    const previoClienteId = editing.cliente_id;
+    const editado = await editarDespachoLocal(editing, { ...form, vendedor: email, editor_role: editorRole });
+    await recalcularScoreDe(previoClienteId);
+    if (editado.cliente_id !== previoClienteId) await recalcularScoreDe(editado.cliente_id);
   };
 
   const onSuccess = () => navigate(editing ? `/ventas/${editing.id}` : '/ventas');
@@ -46,7 +50,7 @@ export default function VentaFormPage() {
     (Boolean(id) && despachos === undefined);
 
   return (
-    <PageShell titulo={titulo} icono="cart" volverA="/ventas">
+    <PageShell titulo={titulo} icono="cart">
       {cargando ? (
         <p className="text-xs text-fog-600">Cargando…</p>
       ) : id && !editing ? (

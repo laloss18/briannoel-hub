@@ -2,13 +2,16 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import type { Cliente, Despacho, Item, Personal, Role, Zona } from '@brian/shared';
 import { hasPermission } from '@brian/shared';
 import type { EditarVentaRepoInput, NuevaVentaRepoInput } from './ventasRepo';
-import { getBcvRate } from '../bimoneda/appConfig';
 import { crearClienteLocal, matchZona } from '../clientes/clientesRepo';
 import { NuevaZonaDialog } from '../clientes/NuevaZonaDialog';
 import { AbrirMapa, GeoBoton } from '../ui/geo';
 import { CrearZonaBoton } from '../ui/zonas';
 import { PersonaSelect } from '../ui/personal';
 import { compressImage } from '../lib/photo';
+import { MiniFoto } from '../ui/fotos';
+import { obtenerCoords } from '../lib/geo';
+import { FieldError, FormErrorSummary } from '../ui/form';
+import { fieldAria, useFormErrors, type FieldErrors } from '../ui/formErrors';
 
 export type VentaFormInput = Omit<NuevaVentaRepoInput, 'vendedor' | 'editor_role'>;
 export type EditarVentaFormInput = Omit<EditarVentaRepoInput, 'vendedor' | 'editor_role'>;
@@ -36,12 +39,14 @@ type Step = (typeof STEPS)[number];
 /**
  * Registro de venta / despacho (PRD §2.2, flujo promotor→supervisor) como
  * onboarding guiado: 1. cliente, 2. condición (crédito/contado), 3. personal
- * (promotor que captó + supervisor a cargo), 4. líneas del catálogo + descuento
- * aprobado, 5. revisión y confirmación. Si el usuario autenticado es supervisor,
- * el campo supervisor se completa automáticamente con su identidad (roster o
- * email); si es promotor, se autocompleta el promotor. La tasa BCV ya NO
- * participa del cierre (PRD §2.6): se guarda como snapshot si hay una vigente
- * localmente. Con `editing` el formulario precarga y entrega a `onEdit`.
+ * (promotor que captó + supervisor a cargo), 4. productos despachados del
+ * catálogo + descuento aprobado, 5. revisión y confirmación. En clientes a
+ * crédito se puede añadir un recargo por mora (porcentaje o monto fijo) e IVA,
+ * ambos incluidos en el total. Si el usuario autenticado es supervisor, el
+ * campo supervisor se completa automáticamente con su identidad (roster o
+ * email); si es promotor, se autocompleta el promotor. La tasa BCV NO participa
+ * del cierre (PRD §2.6). Con `editing` el formulario precarga y entrega a
+ * `onEdit`.
  */
 export function VentaForm({ roles, clientes, items, zonas, personal, email, editing, onSubmit, onEdit, onSuccess }: VentaFormProps) {
   const [step, setStep] = useState<Step>('cliente');
@@ -68,14 +73,17 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
     const unico = items.length === 1 ? items[0].id : '';
     return [{ itemId: unico, cantidad: '1' }];
   });
-  const [tasaBcv, setTasaBcv] = useState(0);
   const [descuentoModo, setDescuentoModo] = useState<'pct' | 'monto'>('pct');
   const [descuentoValor, setDescuentoValor] = useState('0');
+  const [moraModo, setMoraModo] = useState<'pct' | 'monto'>('pct');
+  const [moraValor, setMoraValor] = useState('0');
+  const [ivaPct, setIvaPct] = useState('');
   const [promotor, setPromotor] = useState('');
   const [supervisor, setSupervisor] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const firstRef = useRef<HTMLInputElement>(null);
+  const { errors, fail, clear, summaryRef, setErrors } = useFormErrors();
 
   const canDiscount = hasPermission('discount', roles);
   /** Identidad operativa del usuario autenticado: nombre del roster si está,
@@ -108,7 +116,11 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
         ? editing.lineas.map((l) => ({ itemId: items.find((i) => i.id === l.item_id)?.id ?? '', cantidad: String(l.cantidad) }))
         : [{ itemId: items.length === 1 ? items[0].id : '', cantidad: '1' }],
     );
-    setTasaBcv(editing ? editing.tasa_bcv ?? 0 : 0);
+    setMoraModo(editing?.mora_monto_usd ? 'monto' : 'pct');
+    setMoraValor(
+      editing ? String(editing.mora_pct > 0 ? editing.mora_pct : editing.mora_monto_usd ?? 0) : '0',
+    );
+    setIvaPct(editing?.iva_pct && editing.iva_pct > 0 ? String(editing.iva_pct) : '');
     setPromotor(editing?.promotor ?? '');
     setSupervisor(editing?.supervisor ?? '');
     // Autocompletado por rol (§3.3): si el usuario autenticado ES el supervisor,
@@ -126,23 +138,16 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
       setDescuentoValor(pct > 0 ? String(pct) : '0');
     }
     setMessage(null);
-    if (!editing) {
-      getBcvRate()
-        .then((rate) => {
-          if (rate !== null) {
-            setTasaBcv(rate);
-          }
-        })
-        .catch(() => undefined);
-    }
     // Reset al montar; items/editing se leen en ese momento.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    setErrors({});
     if (step === 'cliente' && window.matchMedia('(pointer: fine)').matches) {
       firstRef.current?.focus();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   const cliente = clientes.find((c) => c.id === clienteId) ?? null;
@@ -167,51 +172,46 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
   );
   const zonaFinal = zonas.find((z) => z.id === (zonaId || zonaMatch?.id || '')) ?? null;
 
-  const validarClienteNuevo = (): string | null => {
-    if (!nuevoNombre.trim()) return 'Escribe el nombre del cliente nuevo.';
-    if (!nuevoDocumento.trim()) return 'El documento (cédula) del cliente es obligatorio.';
-    if (!nuevoTelefono.trim()) return 'El teléfono del cliente es obligatorio.';
+  const validarClienteNuevo = (): FieldErrors => {
+    const e: FieldErrors = {};
+    if (!nuevoNombre.trim()) e.nuevoNombre = 'Escribe el nombre del cliente nuevo.';
+    if (!nuevoDocumento.trim()) e.nuevoDocumento = 'El documento (cédula) del cliente es obligatorio.';
+    if (!nuevoTelefono.trim()) e.nuevoTelefono = 'El teléfono del cliente es obligatorio.';
     if (
       !lat.trim() ||
       !lng.trim() ||
       !Number.isFinite(Number(lat)) ||
       !Number.isFinite(Number(lng))
     ) {
-      return 'Indica la ubicación del cliente (usa «usar mi ubicación» o escribe latitud y longitud).';
+      e.lat = 'Indica la ubicación del cliente (usa «usar mi ubicación» o escribe latitud y longitud).';
     }
     if (!zonaFinal) {
-      return zonas.length
+      e.zona = zonas.length
         ? 'La ubicación no coincide con una zona registrada. Elige o crea la zona del cliente.'
         : 'No hay zonas registradas. Créala con el icono «+» y úsala de inmediato.';
     }
     if (!nuevoAceptaConsent) {
-      return 'Marca el consentimiento del cliente para poder darlo de alta.';
+      e.consentimiento = 'Marca el consentimiento del cliente para poder darlo de alta.';
     }
-    return null;
+    return e;
   };
 
-  const usarMiUbicacion = () => {
-    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
-      setMessage({ kind: 'error', text: 'Tu dispositivo no tiene geolocalización.' });
+  const usarMiUbicacion = async () => {
+    setGeoBusy(true);
+    const coords = await obtenerCoords();
+    setGeoBusy(false);
+    if (coords) {
+      setLat(String(coords.lat));
+      setLng(String(coords.lng));
+      setZonaId('');
+      clear('lat');
       return;
     }
-    setGeoBusy(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(String(pos.coords.latitude));
-        setLng(String(pos.coords.longitude));
-        setZonaId('');
-        setGeoBusy(false);
-      },
-      () => {
-        setGeoBusy(false);
-        setMessage({
-          kind: 'error',
-          text: 'No se pudo obtener la ubicación. Escríbela manualmente en latitud y longitud.',
-        });
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
-    );
+    // Solo avisa si de verdad NO hay coordenadas: con lat/lng ya cargadas no
+    // tiene sentido un error rojo (el usuario ya tiene su ubicación).
+    if (!lat.trim() || !lng.trim()) {
+      fail({ lat: 'No se pudo obtener la ubicación. Escríbela manualmente en latitud y longitud.' });
+    }
   };
 
   const onFoto = async (
@@ -257,6 +257,23 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
   const descuentoEtiqueta =
     descuentoModo === 'pct' ? `${descuentoValorNum}%` : `US$${descuentoValorNum.toFixed(2)}`;
 
+  const moraValorNum = Number(moraValor);
+  const moraActivo = condicion === 'credito' && Number.isFinite(moraValorNum) && moraValorNum > 0;
+  const moraOk =
+    moraActivo && (moraModo === 'pct' ? moraValorNum <= 100 : moraValorNum <= subtotal);
+  const moraMonto = round2(
+    moraOk ? (moraModo === 'pct' ? (subtotal * moraValorNum) / 100 : moraValorNum) : 0,
+  );
+  const moraEtiqueta =
+    moraModo === 'pct' ? `${moraValorNum}%` : `US$${moraValorNum.toFixed(2)}`;
+
+  const ivaNum = Number(ivaPct);
+  const ivaPctOk =
+    ivaPct.trim() === '' || (Number.isFinite(ivaNum) && ivaNum >= 0 && ivaNum <= 100);
+  const ivaUsado = ivaPct.trim() !== '' && Number.isFinite(ivaNum) && ivaNum > 0 ? ivaNum : 0;
+  const ivaMonto = ivaUsado > 0 ? round2((total + moraMonto) * (ivaUsado / 100)) : 0;
+  const totalFinal = round2(total + moraMonto + ivaMonto);
+
   const lineasValidas = lineas.filter((l) => l.itemId !== '');
   const lineasCompletas =
     lineasValidas.length > 0 &&
@@ -266,6 +283,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
     });
 
   const updateLinea = (idx: number, patch: Partial<{ itemId: string; cantidad: string }>) => {
+    clear('lineas');
     setLineas((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
   };
 
@@ -286,21 +304,18 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
       if (cliente) {
         // cliente existente seleccionado: pasa directo
       } else if (nuevoNombre.trim() === '') {
-        setMessage({ kind: 'error', text: 'Busca un cliente o completa los datos de uno nuevo.' });
+        fail({ nuevoNombre: 'Busca un cliente o escribe los datos de uno nuevo.' });
         return false;
-      } else {
-        const err = validarClienteNuevo();
-        if (err) {
-          setMessage({ kind: 'error', text: err });
-          return false;
-        }
+      } else if (!fail(validarClienteNuevo())) {
+        return false;
       }
     }
     if (step === 'productos' && !lineasCompletas) {
-      setMessage({ kind: 'error', text: 'Cada línea necesita un ítem y una cantidad entera positiva.' });
+      fail({ lineas: 'Cada línea necesita un ítem y una cantidad entera positiva.' });
       return false;
     }
     setMessage(null);
+    fail({});
     setStep((s) => STEPS[STEPS.indexOf(s) + 1]);
     return true;
   };
@@ -311,10 +326,9 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
     try {
       let clienteFinal = cliente;
       if (!editing && clienteFinal === null && nuevoNombre.trim() !== '') {
-        const err = validarClienteNuevo();
-        if (err) {
+        const errs = validarClienteNuevo();
+        if (!fail(errs)) {
           setBusy(false);
-          setMessage({ kind: 'error', text: err });
           return;
         }
         clienteFinal = await crearClienteLocal(
@@ -345,22 +359,32 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
       }
       if (!editing && clienteFinal === null) {
         setBusy(false);
-        setMessage({ kind: 'error', text: 'Busca un cliente o escribe los datos de uno nuevo.' });
+        fail({ nuevoNombre: 'Busca un cliente o escribe los datos de uno nuevo.' });
         return;
       }
       if (!lineasCompletas) {
         setBusy(false);
-        setMessage({ kind: 'error', text: 'Agrega al menos una línea con ítem y cantidad entera.' });
+        fail({ lineas: 'Agrega al menos una línea con ítem y cantidad entera.' });
+        return;
+      }
+      if (moraActivo && !moraOk) {
+        setBusy(false);
+        fail({ mora: 'Revisa el recargo por mora: porcentaje entre 0 y 100, o monto hasta el subtotal.' });
+        return;
+      }
+      if (!ivaPctOk) {
+        setBusy(false);
+        fail({ iva: 'El porcentaje de IVA debe estar entre 0 y 100.' });
         return;
       }
       if (!editing && promotor.trim() === '') {
         setBusy(false);
-        setMessage({ kind: 'error', text: 'Indica quién es el promotor que captó al cliente.' });
+        fail({ promotor: 'Indica quién es el promotor que captó al cliente.' });
         return;
       }
       if (!editing && supervisor.trim() === '') {
         setBusy(false);
-        setMessage({ kind: 'error', text: 'Indica el supervisor a cargo de la entrega.' });
+        fail({ supervisor: 'Indica el supervisor a cargo de la entrega.' });
         return;
       }
       const prepared = lineasValidas.map((l) => {
@@ -369,7 +393,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
       });
       if (prepared.some((p) => p === null)) {
         setBusy(false);
-        setMessage({ kind: 'error', text: 'Una línea no corresponde a un ítem del catálogo.' });
+        fail({ lineas: 'Una línea no corresponde a un ítem del catálogo.' });
         return;
       }
       const lineas: { item: Item; cantidad: number }[] = prepared as { item: Item; cantidad: number }[];
@@ -382,21 +406,29 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
             pasos: roles.includes('admin') ? 1 : 2,
           }
         : undefined;
+      const mora = moraOk
+        ? moraModo === 'pct'
+          ? { pct: moraValorNum }
+          : { monto_usd: moraValorNum }
+        : undefined;
+      const iva_pct = ivaUsado;
       if (editing && onEdit) {
         await onEdit({
           cliente: clienteFinal ?? undefined,
           condicion,
           lineas,
-          tasa_bcv: tasaBcv > 0 ? tasaBcv : undefined,
           descuento,
+          mora,
+          iva_pct,
         });
       } else {
         await onSubmit({
           cliente: clienteFinal as Cliente,
           condicion,
           lineas,
-          tasa_bcv: tasaBcv > 0 ? tasaBcv : undefined,
           descuento,
+          mora,
+          iva_pct,
           promotor: promotor.trim(),
           supervisor: supervisor.trim(),
         });
@@ -406,7 +438,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
       onSuccess();
     } catch (err) {
       setBusy(false);
-      setMessage({ kind: 'error', text: err instanceof Error ? err.message : String(err) });
+      fail({ general: err instanceof Error ? err.message : String(err) });
     }
   };
 
@@ -436,17 +468,19 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
         </div>
       </div>
 
+      <FormErrorSummary errors={errors} summaryRef={summaryRef} />
+
       <div className="flex flex-col gap-3">
           {step === 'cliente' && (
             <>
               {cliente ? (
                 <div className="rounded-md border border-signal/40 p-2.5">
-                  <p className="truncate text-[13px] font-medium text-fog-100">{cliente.nombre}</p>
-                  <p className="truncate font-mono text-[10px] text-fog-600">
+                  <p className="truncate text-xs font-medium text-fog-100">{cliente.nombre}</p>
+                  <p className="truncate font-mono text-2xs text-fog-600">
                     {cliente.documento || 'sin documento'} · {cliente.telefono || 'sin teléfono'}
                     {cliente.telefono2 ? ` · ${cliente.telefono2}` : ''}
                   </p>
-                  <p className="truncate font-mono text-[10px] text-fog-600">
+                  <p className="truncate font-mono text-2xs text-fog-600">
                     zona: {(() => {
                       const z = zonas.find((x) => x.id === cliente.zona_id);
                       return z ? `${z.nombre} · ${z.estado} (${z.municipio})` : 'sin zona';
@@ -468,7 +502,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     </div>
                   )}
                   <div className="mt-1 flex items-center justify-between gap-3">
-                    <span className="truncate font-mono text-[10px] text-fog-600">
+                    <span className="truncate font-mono text-2xs text-fog-600">
                       {cliente.notas_referencia || ''}
                     </span>
                     <div className="flex shrink-0 items-center gap-2">
@@ -481,7 +515,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                           setClienteId('');
                           setBusqueda('');
                         }}
-                        className="font-mono text-[10px] uppercase tracking-wider text-fog-500 transition-colors hover:text-fog-300"
+                        className="font-mono text-2xs uppercase tracking-wider text-fog-500 transition-colors hover:text-fog-300"
                       >
                         cambiar
                       </button>
@@ -503,7 +537,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                   />
                   {coincidencias.length > 0 && (
                     <div className="flex flex-col gap-1.5">
-                      <p className="font-mono text-[10px] uppercase tracking-wider text-fog-600">coincidencias</p>
+                      <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">coincidencias</p>
                       {coincidencias.slice(0, 6).map((c) => (
                         <button
                           key={c.id}
@@ -511,8 +545,8 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                           onClick={() => setClienteId(c.id)}
                           className="flex flex-col items-start gap-0.5 rounded-md border border-ink-700 px-3 py-2 text-left transition-[border-color,background-color] hover:border-ink-600"
                         >
-                          <span className="w-full truncate text-[13px] font-medium">{c.nombre}</span>
-                          <span className="w-full truncate font-mono text-[10px] text-fog-600">
+                          <span className="w-full truncate text-xs font-medium">{c.nombre}</span>
+                          <span className="w-full truncate font-mono text-2xs text-fog-600">
                             {c.documento || 'sin documento'} · {c.telefono || 'sin teléfono'}
                           </span>
                         </button>
@@ -527,7 +561,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
 
                   <div className="my-1 flex items-center gap-2 text-fog-600" aria-hidden="true">
                     <span className="h-px flex-1 bg-ink-700" />
-                    <span className="font-mono text-[10px] uppercase tracking-wider">cliente nuevo</span>
+                    <span className="font-mono text-2xs uppercase tracking-wider">cliente nuevo</span>
                     <span className="h-px flex-1 bg-ink-700" />
                   </div>
 
@@ -535,26 +569,44 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     <input
                       type="text"
                       placeholder="Nombre del cliente *"
+                      aria-label="Nombre del cliente nuevo"
                       value={nuevoNombre}
-                      onChange={(e) => setNuevoNombre(e.target.value)}
+                      onChange={(e) => {
+                        setNuevoNombre(e.target.value);
+                        clear('nuevoNombre');
+                      }}
                       className={inputCls}
+                      {...fieldAria('nuevoNombre', errors)}
                     />
+                    <FieldError name="nuevoNombre" error={errors.nuevoNombre} />
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         type="text"
                         placeholder="Cédula / RIF *"
+                        aria-label="Cédula o RIF del cliente nuevo"
                         value={nuevoDocumento}
-                        onChange={(e) => setNuevoDocumento(e.target.value)}
+                        onChange={(e) => {
+                          setNuevoDocumento(e.target.value);
+                          clear('nuevoDocumento');
+                        }}
                         className={inputCls}
+                        {...fieldAria('nuevoDocumento', errors)}
                       />
                       <input
                         type="text"
                         placeholder="Teléfono (primario) *"
+                        aria-label="Teléfono primario del cliente nuevo"
                         value={nuevoTelefono}
-                        onChange={(e) => setNuevoTelefono(e.target.value)}
+                        onChange={(e) => {
+                          setNuevoTelefono(e.target.value);
+                          clear('nuevoTelefono');
+                        }}
                         className={inputCls}
+                        {...fieldAria('nuevoTelefono', errors)}
                       />
                     </div>
+                    <FieldError name="nuevoDocumento" error={errors.nuevoDocumento} />
+                    <FieldError name="nuevoTelefono" error={errors.nuevoTelefono} />
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         type="text"
@@ -579,7 +631,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                       className={inputCls}
                     />
 
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-fog-600">
+                    <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
                       ubicación para la zona
                     </p>
                     <div className="grid grid-cols-[1fr_1fr_auto] items-start gap-2">
@@ -587,31 +639,41 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                         type="number"
                         step="any"
                         placeholder="Latitud"
+                        aria-label="Latitud del cliente nuevo"
                         value={lat}
                         onChange={(e) => {
                           setLat(e.target.value);
                           setZonaId('');
+                          clear('lat');
                         }}
                         className={inputCls}
+                        {...fieldAria('lat', errors)}
                       />
                       <input
                         type="number"
                         step="any"
                         placeholder="Longitud"
+                        aria-label="Longitud del cliente nuevo"
                         value={lng}
                         onChange={(e) => {
                           setLng(e.target.value);
                           setZonaId('');
+                          clear('lat');
                         }}
                         className={inputCls}
                       />
                       <GeoBoton onClick={usarMiUbicacion} busy={geoBusy} />
                     </div>
+                    <FieldError name="lat" error={errors.lat} />
                     <div className="flex items-start gap-2">
                       <select
                         value={zonaId || zonaMatch?.id || ''}
-                        onChange={(e) => setZonaId(e.target.value)}
+                        onChange={(e) => {
+                          setZonaId(e.target.value);
+                          clear('zona');
+                        }}
                         className="min-w-0 flex-1 rounded-md border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
+                        {...fieldAria('zona', errors)}
                       >
                         <option value="">Zona del cliente *</option>
                         {zonas.map((z) => (
@@ -622,33 +684,39 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                       </select>
                       <CrearZonaBoton onClick={() => setZonaDialogOpen(true)} />
                     </div>
-                    <p className="text-[11px] text-fog-500">
+                    <FieldError name="zona" error={errors.zona} />
+                    <p className="text-2xs text-fog-500">
                       Se sugiere la zona por cercanía; estado / municipio:{' '}
                       <span className="text-signal">
                         {zonaFinal ? `${zonaFinal.estado} · ${zonaFinal.municipio}` : 'por elegir zona'}
                       </span>
                     </p>
 
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-fog-600">fotos del cliente</p>
+                    <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">fotos del cliente</p>
                     <MiniFoto titulo="Fachada de la vivienda" foto={fotoFachada} onChange={setFotoFachada} onError={onFoto} />
                     <MiniFoto titulo="Foto del cliente" foto={fotoCliente} onChange={setFotoCliente} onError={onFoto} />
                     <MiniFoto titulo="Cédula de identidad" foto={fotoCedula} onChange={setFotoCedula} onError={onFoto} />
                     {fotoError && <p className="text-xs text-danger">{fotoError}</p>}
-                    <p className="text-[11px] text-fog-500">
+                    <p className="text-2xs text-fog-500">
                       Fotos recomendadas (fachada, cliente y cédula): se comprimen en el dispositivo y viajan con
                       el registro.
                     </p>
 
-                    <label className="flex items-start gap-2 text-[11px] text-fog-500">
+                    <label className="flex items-start gap-2 text-2xs text-fog-500">
                       <input
                         type="checkbox"
                         checked={nuevoAceptaConsent}
-                        onChange={(e) => setNuevoAceptaConsent(e.target.checked)}
+                        onChange={(e) => {
+                          setNuevoAceptaConsent(e.target.checked);
+                          clear('consentimiento');
+                        }}
                         className="mt-0.5"
+                        {...fieldAria('consentimiento', errors)}
                       />
                       El cliente autoriza registrar y usar sus datos y las fotos que se tomen (fachada, cliente y
                       cédula) y fue informado del tratamiento del documento (consentimiento §3.5).
                     </label>
+                    <FieldError name="consentimiento" error={errors.consentimiento} />
                   </div>
                   {clientes.length === 0 && (
                     <p className="text-xs text-fog-600">
@@ -664,19 +732,19 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
           {step === 'condición' && (
             <>
               <div className="flex flex-col gap-1">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-fog-600">condición</p>
+                <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">condición</p>
                 <div className="grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => setCondicion('contado')} className={optionCls(condicion === 'contado')}>
-                    <span className="text-[13px] font-medium">Contado</span>
-                    <span className="text-[11px] text-fog-500">se cobra en el momento</span>
+                    <span className="text-xs font-medium">Contado</span>
+                    <span className="text-2xs text-fog-500">se cobra en el momento</span>
                   </button>
                   <button type="button" onClick={() => setCondicion('credito')} className={optionCls(condicion === 'credito')}>
-                    <span className="text-[13px] font-medium">Crédito</span>
-                    <span className="text-[11px] text-fog-500">consume el límite del cliente</span>
+                    <span className="text-xs font-medium">Crédito</span>
+                    <span className="text-2xs text-fog-500">consume el límite del cliente</span>
                   </button>
                 </div>
               </div>
-              <div className="rounded-md border border-ink-700/60 p-2.5 text-[11px] text-fog-500">
+              <div className="rounded-md border border-ink-700/60 p-2.5 text-2xs text-fog-500">
                 La condición define el precio unitario de cada ítem (el catálogo
                 tiene precio contado y precio crédito).
               </div>
@@ -686,7 +754,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
           {step === 'personal' && (
             <>
               <div className="flex flex-col gap-2.5">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-fog-600">personal a cargo</p>
+                <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">personal a cargo</p>
                 {userEsSupervisor && (
                   <p className="text-xs text-fog-500">
                     Tu identidad de {userEsPromotor ? 'promotor y supervisor' : 'supervisor'} se asigna
@@ -694,7 +762,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                   </p>
                 )}
                 <label className="flex flex-col gap-1">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-fog-500">
+                  <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">
                     Promotor que captó al cliente
                   </span>
                   <PersonaSelect
@@ -702,11 +770,18 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     personas={personal.filter((p) => p.rol === 'promotor' || p.rol === 'admin')}
                     placeholder={userEsPromotor ? identidad : 'Elegir promotor de la lista…'}
                     emptyMessage="Registra promotores en Configuración → Personal"
-                    onChange={setPromotor}
+                    onChange={(v) => {
+                      setPromotor(v);
+                      clear('promotor');
+                    }}
+                    id="promotor"
+                    invalid={Boolean(errors.promotor)}
+                    describedBy="promotor-error"
                   />
+                  <FieldError name="promotor" error={errors.promotor} />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-fog-500">
+                  <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">
                     Supervisor a cargo de la entrega
                   </span>
                   <PersonaSelect
@@ -714,8 +789,15 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     personas={personal.filter((p) => p.rol === 'supervisor' || p.rol === 'admin')}
                     placeholder={userEsSupervisor ? identidad : 'Elegir supervisor de la lista…'}
                     emptyMessage="Registra supervisores en Configuración → Personal"
-                    onChange={setSupervisor}
+                    onChange={(v) => {
+                      setSupervisor(v);
+                      clear('supervisor');
+                    }}
+                    id="supervisor"
+                    invalid={Boolean(errors.supervisor)}
+                    describedBy="supervisor-error"
                   />
+                  <FieldError name="supervisor" error={errors.supervisor} />
                 </label>
               </div>
               <div className="rounded-md border border-ink-700/60 p-2.5 text-xs text-fog-500">
@@ -728,8 +810,8 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
 
           {step === 'productos' && (
             <>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-fog-600">líneas del despacho</p>
-              <p className="text-[11px] text-fog-500">
+              <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">productos despachados</p>
+              <p className="text-2xs text-fog-500">
                 El precio unitario depende de la condición de la venta: {condicion}.
               </p>
               {lineas.map((l, idx) => {
@@ -760,7 +842,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                         <button
                           type="button"
                           onClick={() => setLineas((ls) => ls.filter((_, i) => i !== idx))}
-                          className="shrink-0 rounded-md px-2 py-0.5 font-mono text-[13px] text-danger transition-colors hover:text-danger-soft"
+                          className="shrink-0 rounded-md px-2 py-0.5 font-mono text-xs text-danger transition-colors hover:text-danger-soft"
                           aria-label="Quitar línea"
                         >
                           ×
@@ -768,7 +850,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                       )}
                     </div>
                     {item ? (
-                      <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-fog-500">
+                      <p className="mt-1 font-mono text-2xs uppercase tracking-wider text-fog-500">
                         unitario{' '}
                         <span className="tabular-nums text-signal">US${precioDe(item).toFixed(2)}</span>{' '}
                         · {condicion}
@@ -780,10 +862,10 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                         )}
                       </p>
                     ) : (
-                      <p className="mt-1 text-[11px] text-fog-600">Elige el ítem de la línea.</p>
+                      <p className="mt-1 text-2xs text-fog-600">Elige el ítem de la línea.</p>
                     )}
                     <div className="mt-2 flex items-center justify-between gap-2 border-t border-ink-800 pt-2">
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-fog-600">cantidad</span>
+                      <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">cantidad</span>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
@@ -815,14 +897,15 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                   </div>
                 );
               })}
+              <FieldError name="lineas" error={errors.lineas} />
               <button type="button" onClick={anadirLinea} className={optionCls(false)}>
-                <span className="text-[13px] font-medium">+ Añadir línea</span>
-                <span className="text-[11px] text-fog-500">agrega otra línea al despacho</span>
+                <span className="text-xs font-medium">+ Añadir línea</span>
+                <span className="text-2xs text-fog-500">agrega otra línea al despacho</span>
               </button>
               {canDiscount && (
                 <div className="rounded-md border border-ink-700/60 p-2.5">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-fog-100">
+                    <p className="font-mono text-2xs uppercase tracking-wider text-fog-100">
                       Descuento <span className="text-fog-500">(aprobado)</span>
                     </p>
                     <div
@@ -836,7 +919,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                           type="button"
                           onClick={() => setDescuentoModo(m)}
                           aria-pressed={descuentoModo === m}
-                          className={`px-2.5 py-0.5 font-mono text-[10px] tabular-nums transition-colors ${
+                          className={`px-2.5 py-0.5 font-mono text-2xs tabular-nums transition-colors ${
                             descuentoModo === m
                               ? 'bg-signal text-ink-950'
                               : 'text-fog-500 hover:text-fog-300'
@@ -848,7 +931,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     </div>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-                    <span className="min-w-0 flex-1 text-[11px] leading-relaxed text-fog-500">
+                    <span className="min-w-0 flex-1 text-2xs leading-relaxed text-fog-500">
                       {descuentoModo === 'pct'
                         ? `% sobre subtotal (0–100%)`
                         : `US$ fijos · máx US$${subtotal.toFixed(2)}`}
@@ -866,7 +949,81 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                   </div>
                 </div>
               )}
-              <div className="rounded-md border border-ink-700/60 p-2.5 font-mono text-[11px] text-fog-500">
+              {condicion === 'credito' && (
+                <div className="rounded-md border border-ink-700/60 p-2.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-mono text-2xs uppercase tracking-wider text-fog-100">
+                      Recargo por mora <span className="text-fog-500">(crédito)</span>
+                    </p>
+                    <div
+                      className="flex overflow-hidden rounded-md border border-ink-700"
+                      role="group"
+                      aria-label="Tipo de recargo por mora"
+                    >
+                      {(['pct', 'monto'] as const).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setMoraModo(m)}
+                          aria-pressed={moraModo === m}
+                          className={`px-2.5 py-0.5 font-mono text-2xs tabular-nums transition-colors ${
+                            moraModo === m
+                              ? 'bg-signal text-ink-950'
+                              : 'text-fog-500 hover:text-fog-300'
+                          }`}
+                        >
+                          {m === 'pct' ? '%' : 'US$'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                    <span className="min-w-0 flex-1 text-2xs leading-relaxed text-fog-500">
+                      {moraModo === 'pct'
+                        ? 'Porcentaje sobre el subtotal (0–100%).'
+                        : `Monto fijo · máx US$${subtotal.toFixed(2)}.`}
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={moraModo === 'pct' ? 100 : subtotal}
+                      step={moraModo === 'pct' ? 0.5 : 0.01}
+                      value={moraValor}
+                      onChange={(e) => {
+                        setMoraValor(e.target.value);
+                        clear('mora');
+                      }}
+                      aria-label={`Recargo por mora en ${moraModo === 'pct' ? 'porcentaje' : 'dólares'}`}
+                      className={`${inputCls} w-16 shrink-0 text-right tabular-nums`}
+                      {...fieldAria('mora', errors)}
+                    />
+                  </div>
+                  <FieldError name="mora" error={errors.mora} />
+                </div>
+              )}
+              <div className="rounded-md border border-ink-700/60 p-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                  <span className="font-mono text-2xs uppercase tracking-wider text-fog-100">
+                    IVA <span className="text-fog-500">(incluido en el total)</span>
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={0.5}
+                    value={ivaPct}
+                    onChange={(e) => {
+                      setIvaPct(e.target.value);
+                      clear('iva');
+                    }}
+                    aria-label="IVA en porcentaje"
+                    className={`${inputCls} w-16 shrink-0 text-right tabular-nums`}
+                    {...fieldAria('iva', errors)}
+                  />
+                </div>
+                <FieldError name="iva" error={errors.iva} />
+              </div>
+              <div className="rounded-md border border-ink-700/60 p-2.5 font-mono text-2xs text-fog-500">
                 <div className="flex justify-between">
                   <span>subtotal</span>
                   <span className="tabular-nums text-fog-100">US${subtotal.toFixed(2)}</span>
@@ -887,9 +1044,29 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     </span>
                   </div>
                 )}
-                <div className="mt-0.5 flex justify-between border-t border-ink-800 pt-1 text-[13px]">
+                {moraActivo && !moraOk && (
+                  <div className="flex justify-between text-danger">
+                    <span>recargo por mora</span>
+                    <span>
+                      {moraModo === 'pct' ? 'máx 100%' : `máx US$${subtotal.toFixed(2)}`}
+                    </span>
+                  </div>
+                )}
+                {moraOk && (
+                  <div className="flex justify-between">
+                    <span>recargo por mora · {moraEtiqueta}</span>
+                    <span className="tabular-nums text-signal">+US${moraMonto.toFixed(2)}</span>
+                  </div>
+                )}
+                {ivaUsado > 0 && (
+                  <div className="flex justify-between">
+                    <span>IVA {ivaUsado}%</span>
+                    <span className="tabular-nums text-signal">+US${ivaMonto.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="mt-0.5 flex justify-between border-t border-ink-800 pt-1 text-xs">
                   <span className="uppercase tracking-wider">total</span>
-                  <span className="tabular-nums text-signal">US${total.toFixed(2)}</span>
+                  <span className="tabular-nums text-signal">US${totalFinal.toFixed(2)}</span>
                 </div>
               </div>
               {items.length === 0 && (
@@ -916,10 +1093,10 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     const item = items.find((i) => i.id === l.itemId);
                     return (
                       <div key={idx} className="flex items-baseline justify-between gap-3 py-0.5">
-                        <span className="min-w-0 text-[13px] font-medium text-fog-100">
+                        <span className="min-w-0 text-xs font-medium text-fog-100">
                           {item?.nombre ?? 'Ítem'}
                         </span>
-                        <span className="shrink-0 font-mono text-[10px] text-fog-500">
+                        <span className="shrink-0 font-mono text-2xs text-fog-500">
                           {l.cantidad} × US${precioDe(item as Item).toFixed(2)}
                         </span>
                       </div>
@@ -934,20 +1111,31 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     </span>
                   </div>
                 )}
+                {moraOk && (
+                  <div className="mt-1 flex justify-between gap-3">
+                    <span>recargo por mora</span>
+                    <span className="text-right text-fog-100">
+                      {moraEtiqueta} · +US${moraMonto.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {ivaUsado > 0 && (
+                  <div className="mt-1 flex justify-between gap-3">
+                    <span>IVA {ivaUsado}%</span>
+                    <span className="text-right text-fog-100">+US${ivaMonto.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center justify-between rounded-md border border-signal/40 p-2.5 font-mono text-[11px]">
+              <div className="flex items-center justify-between rounded-md border border-signal/40 p-2.5 font-mono text-2xs">
                 <span className="text-fog-500">total</span>
-                <span className="tabular-nums text-signal">US${total.toFixed(2)}</span>
+                <span className="tabular-nums text-signal">US${totalFinal.toFixed(2)}</span>
               </div>
             </div>
           )}
         </div>
 
-        {message && (
-          <p
-            role="alert"
-            className={`mt-3 text-xs ${message.kind === 'error' ? 'text-danger' : 'text-ok'}`}
-          >
+        {message?.kind === 'ok' && (
+          <p role="status" className="mt-3 text-xs text-ok">
             {message.text}
           </p>
         )}
@@ -971,14 +1159,14 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
             <button
               onClick={onClickGuardar}
               disabled={busy}
-              className="rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50"
+              className="btn-lift cta-glow rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50"
             >
               {busy ? 'Guardando…' : editing ? 'Guardar cambios' : 'Registrar venta'}
             </button>
           ) : (
             <button
               onClick={stepNext}
-              className="rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft"
+              className="btn-lift cta-glow rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft"
             >
               siguiente
             </button>
@@ -994,39 +1182,5 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
         }}
       />
     </div>
-  );
-}
-
-/** Botón de captura de foto (cámara/galería del dispositivo) con preview y
- *  compresión en el device; el label abre el selector sin estado adicional. */
-function MiniFoto({
-  titulo,
-  foto,
-  onChange,
-  onError,
-}: {
-  titulo: string;
-  foto: string;
-  onChange: (data: string) => void;
-  onError: (e: ChangeEvent<HTMLInputElement>, set: (data: string) => void) => Promise<void>;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center gap-2 rounded-md border border-ink-700 p-2 transition-colors hover:border-ink-600">
-      {foto ? (
-        <img src={foto} alt="Vista previa" className="size-10 shrink-0 rounded object-cover" />
-      ) : (
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-dashed border-ink-600 font-mono text-[10px] text-fog-600">
-          foto
-        </span>
-      )}
-      <span className="flex-1 text-[11px] text-fog-100">{titulo}</span>
-      <span className="font-mono text-[10px] uppercase tracking-wider text-fog-500">añadir</span>
-      <input
-        type="file"
-        accept="image/*"
-        className="sr-only"
-        onChange={(e) => void onError(e, onChange)}
-      />
-    </label>
   );
 }
