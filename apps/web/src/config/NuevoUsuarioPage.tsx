@@ -4,6 +4,9 @@ import { hasPermission, ROLES, usernameSchema, type Role as Rol } from '@brian/s
 import PageShell from '../app/PageShell';
 import { useSesion } from '../app/sesion';
 import { adminCrearUsuario } from '../auth/usuariosRepo';
+import { runSync } from '../sync/useSync';
+import { FieldError, FormErrorSummary } from '../ui/form';
+import { fieldAria, useFormErrors } from '../ui/formErrors';
 
 const ETIQUETA_ROL: Record<Rol, string> = {
   admin: 'administrador',
@@ -14,13 +17,14 @@ const ETIQUETA_ROL: Record<Rol, string> = {
 
 const CAMPO =
   'w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
-const ETIQUETA = 'text-[11px] text-fog-500';
+const ETIQUETA = 'text-2xs text-fog-500';
 
 /**
  * Alta de cuenta (solo admin, §3.4): correo + nombre de usuario + contraseña
- * inicial + roles. No hay signup público — la RPC `admin_create_app_user` es
- * `SECURITY DEFINER` y valida el rol admin en el servidor. Tras crearla, la app
- * se sincroniza para bajar el perfil nuevo.
+ * inicial + **un** rol (el usuario es una persona, un rol). No hay signup
+ * público — la RPC `admin_create_app_user` es `SECURITY DEFINER` y valida el
+ * rol admin en el servidor. Tras crearla, se dispara una sync para bajar el
+ * perfil nuevo por delta.
  */
 export default function NuevoUsuarioPage() {
   const { roles: misRoles } = useSesion();
@@ -28,14 +32,14 @@ export default function NuevoUsuarioPage() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [roles, setRoles] = useState<Rol[]>(['promotor']);
-  const [error, setError] = useState<string | null>(null);
+  const [rol, setRol] = useState<Rol>('promotor');
   const [guardando, setGuardando] = useState(false);
+  const [estado, setEstado] = useState('');
+  const { errors, fail, clear, summaryRef } = useFormErrors();
 
   if (!hasPermission('manage_personal', misRoles)) {
     return (
-      <PageShell titulo="Nuevo usuario" volverA="/config/usuarios">
+      <PageShell titulo="Nuevo usuario">
         <p className="text-xs text-fog-500">
           Solo el administrador puede dar de alta cuentas del hub.
         </p>
@@ -43,49 +47,60 @@ export default function NuevoUsuarioPage() {
     );
   }
 
-  const toggle = (r: Rol) =>
-    setRoles((v) => (v.includes(r) ? v.filter((x) => x !== r) : [...v, r]));
-
   const onGuardar = async () => {
-    if (!usernameSchema.safeParse(username).success) {
-      setError('El nombre de usuario necesita 3 a 24 caracteres válidos.');
-      return;
-    }
-    if (password.length < 8) {
-      setError('La contraseña necesita al menos 8 caracteres.');
-      return;
-    }
-    if (roles.length === 0) {
-      setError('Elige al menos un rol.');
-      return;
-    }
+    const nuevos = {
+      ...(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+        ? {}
+        : { email: 'Escribe un correo válido (clave de acceso y auditoría).' }),
+      ...(usernameSchema.safeParse(username).success
+        ? {}
+        : { username: 'El nombre de usuario necesita 3 a 24 caracteres válidos (letras, números, . _ -).' }),
+      ...(password.length >= 8
+        ? {}
+        : { password: 'La contraseña necesita al menos 8 caracteres.' }),
+    };
+    if (!fail(nuevos)) return;
     setGuardando(true);
-    setError(null);
+    setEstado('');
     try {
-      await adminCrearUsuario({ email, username, password, roles, name: name || undefined });
+      await adminCrearUsuario({ email, username, password, roles: [rol] });
+      // La cuenta vive en el servidor: la bajamos ahora para que aparezca sin
+      // esperar a la próxima sync (si falla, no bloquea el alta).
+      setEstado('Cuenta creada. Sincronizando…');
+      try {
+        await runSync();
+      } catch {
+        // best-effort: el perfil llegará con la próxima sincronización
+      }
       navigate('/config/usuarios');
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      fail({ general: e instanceof Error ? e.message : String(e) });
     } finally {
       setGuardando(false);
     }
   };
 
   return (
-    <PageShell titulo="Nuevo usuario" icono="userPlus" volverA="/config/usuarios">
+    <PageShell titulo="Nuevo usuario" icono="userPlus">
       <div className="flex flex-col gap-4">
+        <FormErrorSummary errors={errors} summaryRef={summaryRef} />
+
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email" className={ETIQUETA}>
             Correo (clave de auditoría y de acceso)
           </label>
           <input
-            id="email"
             type="email"
             autoComplete="off"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clear('email');
+            }}
             className={CAMPO}
+            {...fieldAria('email', errors)}
           />
+          <FieldError name="email" error={errors.email} />
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -93,30 +108,17 @@ export default function NuevoUsuarioPage() {
             Nombre de usuario (lo que se ve en la app)
           </label>
           <input
-            id="username"
             autoComplete="off"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              clear('username');
+            }}
             placeholder="ej. luis.p"
             className={`${CAMPO} font-mono`}
+            {...fieldAria('username', errors)}
           />
-          {username && !usernameSchema.safeParse(username).success && (
-            <p className="text-[11px] text-danger">
-              Solo letras, números, punto, guion y guion bajo.
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="name" className={ETIQUETA}>
-            Nombre visible (opcional)
-          </label>
-          <input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className={CAMPO}
-          />
+          <FieldError name="username" error={errors.username} />
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -124,31 +126,42 @@ export default function NuevoUsuarioPage() {
             Contraseña inicial
           </label>
           <input
-            id="password"
             type="text"
             autoComplete="off"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              clear('password');
+            }}
             className={`${CAMPO} font-mono`}
+            {...fieldAria('password', errors)}
           />
-          <p className="text-[11px] text-fog-600">
+          <FieldError name="password" error={errors.password} />
+          <p className="text-2xs text-fog-600">
             Mínimo 8 caracteres. Entrégala al usuario: en el MVP no hay restablecimiento
             desde la app.
           </p>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <p className={ETIQUETA}>Roles</p>
-          <div className="flex flex-wrap gap-1.5">
+          <p className={ETIQUETA} id="rol-label">
+            Rol
+          </p>
+          <div
+            role="radiogroup"
+            aria-labelledby="rol-label"
+            className="flex flex-wrap gap-1.5"
+          >
             {ROLES.map((r) => {
-              const activo = roles.includes(r);
+              const activo = rol === r;
               return (
                 <button
                   key={r}
                   type="button"
-                  onClick={() => toggle(r)}
-                  aria-pressed={activo}
-                  className={`rounded-md border px-2 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+                  role="radio"
+                  aria-checked={activo}
+                  onClick={() => setRol(r)}
+                  className={`rounded-md border px-2 py-1 font-mono text-2xs uppercase tracking-wider transition-colors ${
                     activo
                       ? 'border-signal/60 bg-signal/10 text-signal'
                       : 'border-ink-700 text-fog-600 hover:border-ink-600'
@@ -159,19 +172,20 @@ export default function NuevoUsuarioPage() {
               );
             })}
           </div>
+          <p className="text-2xs text-fog-600">
+            Un solo rol por cuenta. Cada persona tiene un único nivel de acceso.
+          </p>
         </div>
 
-        {error && (
-          <p role="alert" className="text-xs text-danger">
-            {error}
-          </p>
-        )}
+        <p role="status" className="min-h-4 text-xs text-fog-500">
+          {estado}
+        </p>
 
         <button
           type="button"
           onClick={() => void onGuardar()}
           disabled={guardando}
-          className="flex items-center justify-center rounded-md bg-signal px-3 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-60"
+          className="btn-lift cta-glow flex items-center justify-center rounded-md bg-signal px-3 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-60"
         >
           {guardando ? 'Creando…' : 'Crear cuenta'}
         </button>

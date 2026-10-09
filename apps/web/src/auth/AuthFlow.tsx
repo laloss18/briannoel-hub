@@ -14,7 +14,7 @@ export default function AuthFlow({ auth }: { auth: UseAuthResult }) {
     return (
       <div className="flex min-h-dvh flex-col justify-between gap-8 px-5 py-6 sm:py-10">
         <Brand />
-        <p className="font-mono text-[11px] text-fog-600">leyendo dispositivo…</p>
+        <p className="font-mono text-2xs text-fog-600">leyendo dispositivo…</p>
         <StatusStrip />
       </div>
     );
@@ -44,8 +44,8 @@ function Card({
     <div className="flex min-h-dvh flex-col justify-between gap-8 px-5 py-6 sm:py-10">
       <Brand />
       <div className="rise-in mx-auto w-full max-w-[360px]">
-        <p className="text-[13px] font-medium text-fog-100">{title}</p>
-        {hint && <p className="mt-1 text-[12px] leading-relaxed text-fog-500">{hint}</p>}
+        <p className="text-xs font-medium text-fog-100">{title}</p>
+        {hint && <p className="mt-1 text-xs leading-relaxed text-fog-500">{hint}</p>}
         <div className="mt-5">{children}</div>
       </div>
       <StatusStrip />
@@ -75,14 +75,14 @@ function LoginScreen({ auth }: { auth: UseAuthResult }) {
   };
 
   const input =
-    'w-full rounded-md bg-ink-900 px-3.5 py-2.5 text-[14px] text-fog-100 placeholder:text-fog-600 caret-signal outline-none transition-colors hover:bg-ink-800';
+    'w-full rounded-md bg-ink-900 px-3.5 py-2.5 text-sm text-fog-100 placeholder:text-fog-600 caret-signal outline-none transition-colors hover:bg-ink-800';
 
   return (
     <Card title="Entrar a tu operación" hint="Sesión cifrada y guardada en este dispositivo.">
       <form onSubmit={submit} className="flex flex-col gap-3.5">
         <div>
           <label
-            className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-fog-500"
+            className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
             htmlFor="login-email"
           >
             correo
@@ -101,7 +101,7 @@ function LoginScreen({ auth }: { auth: UseAuthResult }) {
         </div>
         <div>
           <label
-            className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-fog-500"
+            className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
             htmlFor="login-password"
           >
             contraseña
@@ -118,14 +118,14 @@ function LoginScreen({ auth }: { auth: UseAuthResult }) {
           />
         </div>
         {error && (
-          <p role="alert" className="text-[12px] text-danger">
+          <p role="alert" className="text-xs text-danger">
             {error}
           </p>
         )}
         <button
           type="submit"
           disabled={busy}
-          className="mt-1 rounded-md bg-signal px-3.5 py-2.5 text-[14px] font-semibold text-ink-950 transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50"
+          className="mt-1 rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-ink-950 transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
         >
           {busy ? 'Verificando…' : 'Entrar'}
         </button>
@@ -167,7 +167,7 @@ function SetupPinScreen({ auth }: { auth: UseAuthResult }) {
       <form onSubmit={submit} className="flex flex-col gap-4">
         <div>
           <label
-            className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-fog-500"
+            className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
             htmlFor="pin-1"
           >
             nuevo PIN
@@ -188,7 +188,7 @@ function SetupPinScreen({ auth }: { auth: UseAuthResult }) {
         </div>
         <div>
           <label
-            className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-fog-500"
+            className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
             htmlFor="pin-2"
           >
             confirmar
@@ -208,14 +208,14 @@ function SetupPinScreen({ auth }: { auth: UseAuthResult }) {
           />
         </div>
         {error && (
-          <p role="alert" className="text-[12px] text-danger">
+          <p role="alert" className="text-xs text-danger">
             {error}
           </p>
         )}
         <button
           type="submit"
           disabled={busy || pin.length < 4 || confirm.length < 4}
-          className="rounded-md bg-signal px-3.5 py-2.5 text-[14px] font-semibold text-ink-950 transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50"
+          className="rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-ink-950 transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
         >
           {busy ? 'Guardando…' : 'Guardar PIN'}
         </button>
@@ -260,7 +260,7 @@ function UnlockScreen({ auth }: { auth: UseAuthResult }) {
     >
       <form onSubmit={submit} className="flex flex-col gap-4">
         <label
-          className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-fog-500"
+          className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
           htmlFor="pin-unlock"
         >
           tu PIN
@@ -278,26 +278,26 @@ function UnlockScreen({ auth }: { auth: UseAuthResult }) {
           disabled={auth.state.locked}
         />
         {error && (
-          <p role="alert" className="text-[12px] text-danger">
+          <p role="alert" className="text-xs text-danger">
             {error}
           </p>
         )}
         {auth.state.locked && (
-          <p className="text-[12px] text-signal">
+          <p className="text-xs text-signal">
             Dispositivo bloqueado hasta que el admin lo desbloquee.
           </p>
         )}
         <button
           type="submit"
           disabled={busy || auth.state.locked || pin.length < 4}
-          className="rounded-md bg-signal px-3.5 py-2.5 text-[14px] font-semibold text-ink-950 transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50"
+          className="rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-ink-950 transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
         >
           {busy ? 'Verificando…' : 'Entrar'}
         </button>
         <button
           type="button"
           onClick={auth.logout}
-          className="text-center font-mono text-[11px] text-fog-600 transition-colors hover:text-fog-500"
+          className="text-center font-mono text-2xs text-fog-600 transition-colors hover:text-fog-500"
         >
           salir y borrar datos locales
         </button>

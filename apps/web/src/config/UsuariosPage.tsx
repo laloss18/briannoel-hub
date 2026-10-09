@@ -12,45 +12,21 @@ const ETIQUETA_ROL: Record<Rol, string> = {
   cobrador: 'cobrador',
 };
 
-function RoleChips({
-  roles,
-  disabled,
-  onToggle,
-}: {
-  roles: readonly Rol[];
-  disabled?: boolean;
-  onToggle?: (r: Rol) => void;
-}) {
+function RoleChip({ rol }: { rol: Rol }) {
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {ROLES.map((r) => {
-        const activo = roles.includes(r);
-        const Tag = onToggle ? 'button' : 'span';
-        return (
-          <Tag
-            key={r}
-            {...(onToggle ? { type: 'button' as const, onClick: () => onToggle(r), disabled } : {})}
-            className={`rounded-md border px-2 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors ${
-              activo
-                ? 'border-signal/60 bg-signal/10 text-signal'
-                : 'border-ink-700 text-fog-600'
-            } ${onToggle && !disabled ? 'cursor-pointer hover:border-ink-600' : ''}`}
-          >
-            {ETIQUETA_ROL[r]}
-          </Tag>
-        );
-      })}
-    </div>
+    <span className="rounded-md border border-signal/60 bg-signal/10 px-2 py-1 font-mono text-2xs uppercase tracking-wider text-signal">
+      {ETIQUETA_ROL[rol]}
+    </span>
   );
 }
 
 /** Panel de usuarios (solo admin, `manage_personal` §3.3). El alta vive en
- *  `/config/usuarios/nuevo`; aquí se edita username, roles y estado. */
+ *  `/config/usuarios/nuevo`; aquí se edita username, el rol único y el estado. */
 export default function UsuariosPage() {
   const { roles: misRoles } = useSesion();
   const usuarios = useAppUsers();
   const [editando, setEditando] = useState<string | null>(null);
-  const [borrador, setBorrador] = useState<{ username: string; roles: Rol[] } | null>(null);
+  const [borrador, setBorrador] = useState<{ username: string; rol: Rol } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
@@ -68,7 +44,7 @@ export default function UsuariosPage() {
 
   const abrir = (userId: string, username: string, roles: readonly Rol[]) => {
     setEditando(userId);
-    setBorrador({ username, roles: [...roles] });
+    setBorrador({ username, rol: roles[0] ?? 'promotor' });
     setError(null);
   };
 
@@ -77,22 +53,20 @@ export default function UsuariosPage() {
     setBorrador(null);
   };
 
-  const toggleRol = (r: Rol) => {
-    setBorrador((b) =>
-      b ? { ...b, roles: b.roles.includes(r) ? b.roles.filter((x) => x !== r) : [...b.roles, r] } : b,
-    );
-  };
-
   const guardar = async (userId: string) => {
     if (!borrador) return;
-    if (borrador.roles.length === 0) {
-      setError('Deja al menos un rol.');
+    if (!usernameSchema.safeParse(borrador.username).success) {
+      setError('El nombre de usuario necesita 3 a 24 caracteres válidos (letras, números, . _ -).');
       return;
     }
     setGuardando(true);
     setError(null);
     try {
-      await adminEditarUsuario({ user_id: userId, username: borrador.username, roles: borrador.roles });
+      await adminEditarUsuario({
+        user_id: userId,
+        username: borrador.username,
+        roles: [borrador.rol],
+      });
       cerrar();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -106,7 +80,7 @@ export default function UsuariosPage() {
       titulo="Usuarios"
       icono="users"
       volverA="/config"
-      accion={{ label: 'Nuevo usuario', icon: 'userPlus', to: '/config/usuarios/nuevo' }}
+      accion={{ label: 'Nuevo usuario', icon: 'plus', to: '/config/usuarios/nuevo', variant: 'primary', soloIcono: true }}
     >
       <div className="flex flex-col gap-3">
         <p className="text-xs text-fog-500">
@@ -127,14 +101,14 @@ export default function UsuariosPage() {
               <li key={u.user_id} className="flex flex-col gap-2 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-medium text-fog-100">
+                    <p className="truncate text-xs font-medium text-fog-100">
                       {u.username ?? '(sin username)'}
                     </p>
-                    <p className="truncate font-mono text-[10px] text-fog-600">{u.email}</p>
+                    <p className="truncate font-mono text-2xs text-fog-600">{u.email}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {!u.active && (
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-danger">
+                      <span className="font-mono text-2xs uppercase tracking-wider text-danger">
                         inactivo
                       </span>
                     )}
@@ -145,12 +119,23 @@ export default function UsuariosPage() {
                     />
                   </div>
                 </div>
-                {!abierto && <RoleChips roles={u.roles} />}
+
+                {!abierto && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {u.roles.length > 0 ? (
+                      u.roles.map((r) => <RoleChip key={r} rol={r} />)
+                    ) : (
+                      <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+                        sin rol
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {abierto && borrador && (
                   <div className="flex flex-col gap-3 rounded-lg border border-ink-700 bg-ink-900 p-3">
                     <div className="flex flex-col gap-1.5">
-                      <label htmlFor={`u-${u.user_id}`} className="text-[11px] text-fog-500">
+                      <label htmlFor={`u-${u.user_id}`} className="text-2xs text-fog-500">
                         Nombre de usuario
                       </label>
                       <input
@@ -160,17 +145,43 @@ export default function UsuariosPage() {
                         className="rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
                       />
                       {usernameSchema.safeParse(borrador.username).success ? null : (
-                        <p className="text-[11px] text-danger">
+                        <p className="text-2xs text-danger">
                           3 a 24 caracteres: solo letras, números, punto, guion y guion bajo.
                         </p>
                       )}
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <p className="text-[11px] text-fog-500">Roles</p>
-                      <RoleChips roles={borrador.roles} onToggle={toggleRol} />
+                      <p className="text-2xs text-fog-500" id={`rol-label-${u.user_id}`}>
+                        Rol
+                      </p>
+                      <div
+                        role="radiogroup"
+                        aria-labelledby={`rol-label-${u.user_id}`}
+                        className="flex flex-wrap gap-1.5"
+                      >
+                        {ROLES.map((r) => {
+                          const activo = borrador.rol === r;
+                          return (
+                            <button
+                              key={r}
+                              type="button"
+                              role="radio"
+                              aria-checked={activo}
+                              onClick={() => setBorrador({ ...borrador, rol: r })}
+                              className={`rounded-md border px-2 py-1 font-mono text-2xs uppercase tracking-wider transition-colors ${
+                                activo
+                                  ? 'border-signal/60 bg-signal/10 text-signal'
+                                  : 'border-ink-700 text-fog-600 hover:border-ink-600'
+                              }`}
+                            >
+                              {ETIQUETA_ROL[r]}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                     {error && (
-                      <p role="alert" className="text-[11px] text-danger">
+                      <p role="alert" className="text-2xs text-danger">
                         {error}
                       </p>
                     )}

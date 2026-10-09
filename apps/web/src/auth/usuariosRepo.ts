@@ -38,7 +38,6 @@ export interface AltaUsuario {
   username: string;
   password: string;
   roles: readonly Role[];
-  name?: string;
 }
 
 async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
@@ -56,7 +55,7 @@ export async function adminCrearUsuario(alta: AltaUsuario): Promise<string> {
     p_username: alta.username,
     p_password: alta.password,
     p_roles: [...alta.roles],
-    p_name: alta.name ?? null,
+    p_name: null,
   });
 }
 
@@ -64,17 +63,16 @@ export interface EdicionUsuario {
   user_id: string;
   username?: string;
   roles?: readonly Role[];
-  name?: string;
   active?: boolean;
 }
 
-/** Username/roles/nombre/estado de una cuenta. Los campos omitidos se conservan. */
+/** Username/roles/estado de una cuenta. Los campos omitidos se conservan. */
 export async function adminEditarUsuario(edicion: EdicionUsuario): Promise<void> {
   await rpc<null>('admin_update_app_user', {
     p_user_id: edicion.user_id,
     p_username: edicion.username ?? null,
     p_roles: edicion.roles ? [...edicion.roles] : null,
-    p_name: edicion.name ?? null,
+    p_name: null,
     p_active: edicion.active ?? null,
   });
 }
