@@ -37,3 +37,7 @@ npm-debug.log*
 pnpm-debug.log*
 # Supabase CLI
 supabase/.temp/
+
+# Python (skill scripts)
+__pycache__/
+*.pyc
