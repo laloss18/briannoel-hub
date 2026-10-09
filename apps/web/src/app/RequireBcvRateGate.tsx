@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import type { Role } from '@brian/shared';
 import { hasPermission } from '@brian/shared';
 import { getAppConfig, saveBcvRate } from '../bimoneda/appConfig';
+import { fetchBcvRate } from '../bimoneda/api';
 import TasaRequerida from './TasaRequerida';
 
 /** Contexto del gate de tasa BCV: comparte estado entre el shell y la página. */
@@ -10,6 +11,8 @@ interface TasaGateCtx {
   /** `null` significa sin tasa (no entra al hub). */
   tasa: number | null;
   source: 'BCV_API' | 'manual' | null;
+  /** ISO de la última actualización de la tasa vigente (config local). */
+  actualizadoEn: string | null;
   /** Actualiza desde API oficial. Retorna la tasa obtenida o `null` si falló. */
   refrescar: () => Promise<number | null>;
   /** Guarda tasa manual (admin/supervisor con `view_kpis`). */
@@ -24,27 +27,6 @@ export function useTasaGate(): TasaGateCtx {
   const v = useContext(Ctx);
   if (!v) throw new Error('useTasaGate fuera de RequireBcvRateProvider');
   return v;
-}
-
-async function fetchBcvApi(): Promise<number> {
-  const url =
-    (import.meta.env.VITE_BCV_API_URL as string | undefined) ??
-    'https://pydolarve.org/api/v1/dollar?type=bcv';
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`BCV API HTTP ${res.status}`);
-  const json = await res.json();
-  // pydolarve usualmente devuelve { price, ... } o { rates: { bcv: ... } }
-  const valor =
-    json?.price ??
-    json?.bcv ??
-    json?.dollar?.bcv ??
-    json?.rates?.bcv ??
-    json?.value ??
-    (Array.isArray(json) ? json[0]?.price : undefined);
-  if (typeof valor !== 'number' || !Number.isFinite(valor) || valor <= 0) {
-    throw new Error('Respuesta de BCV sin tasa válida');
-  }
-  return valor;
 }
 
 /**
@@ -67,6 +49,7 @@ export default function RequireBcvRateProvider({
 
   const tasa = config?.bcv_rate ?? null;
   const source = config?.bcv_rate_source ?? null;
+  const actualizadoEn = config?.bcv_rate_updated_at ?? null;
 
   useEffect(() => {
     // Auto-intento de obtener tasa oficial si no existe (sin bloquear UI). Solo
@@ -82,9 +65,11 @@ export default function RequireBcvRateProvider({
     if (!canEdit) return tasa;
     setRefrescando(true);
     try {
-      const v = await fetchBcvApi();
-      await saveBcvRate(v, 'BCV_API');
-      return v;
+      // Cadena de fuentes con parser tolerante (ve.dolarapi → lista → respaldo).
+      const r = await fetchBcvRate();
+      if (r === null) return null;
+      await saveBcvRate(r.tasa, 'BCV_API');
+      return r.tasa;
     } catch {
       return null;
     } finally {
@@ -98,8 +83,8 @@ export default function RequireBcvRateProvider({
   }, [canEdit]);
 
   const valor = useMemo<TasaGateCtx>(
-    () => ({ tasa, source, refrescar, guardarManual, refrescando }),
-    [tasa, source, refrescar, guardarManual, refrescando],
+    () => ({ tasa, source, actualizadoEn, refrescar, guardarManual, refrescando }),
+    [tasa, source, actualizadoEn, refrescar, guardarManual, refrescando],
   );
 
   // Gate obligatorio: sin tasa → pantalla de configuración. Con tasa → hub.

@@ -11,8 +11,8 @@ import { useSesion } from './sesion';
  * Shell del hub con sesión (DESIGN §5): sidebar colapsable + contenido. En
  * `md+` es un grid con la columna de navegación y la de contenido a ancho
  * completo; en móvil la navegación es un drawer y el contenido sí lleva
- * `max-w-2xl`. El botón de menú está en la esquina superior derecha del header,
- * con el de sincronización justo a su izquierda.
+ * `max-w-2xl`. El botón de colapsar vive DENTRO del sidebar (arriba); en móvil
+ * la cabecera conserva el botón que abre el drawer.
  */
 export default function AppShell() {
   const { roles } = useSesion();
@@ -20,18 +20,12 @@ export default function AppShell() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const onMenu = () => {
-    // En desktop colapsa/expande; en móvil abre/cierra el drawer. El breakpoint
-    // de Tailwind (md=768px) es el mismo que usa el `hidden md:flex` del aside.
-    if (window.matchMedia('(min-width: 768px)').matches) setCollapsed((c) => !c);
-    else setMobileOpen((o) => !o);
-  };
-
   return (
     <div className="flex min-h-dvh">
       <NavSidebar
         roles={roles}
         collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed((c) => !c)}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />
@@ -40,13 +34,13 @@ export default function AppShell() {
         <header className="sticky top-0 z-30 border-b border-ink-700/60 bg-ink-950/90 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate font-mono text-[11px] uppercase tracking-wider text-fog-600">
+              <p className="truncate font-mono text-2xs uppercase tracking-wider text-fog-600">
                 Brian Noel · hub
               </p>
               {error ? (
-                <p className="truncate text-[11px] text-danger">{error}</p>
+                <p className="truncate text-2xs text-danger">{error}</p>
               ) : (
-                <p className="truncate text-[11px] text-fog-500">
+                <p className="truncate text-2xs text-fog-500">
                   Última sincronización: {last ?? '(nunca)'}
                 </p>
               )}
@@ -55,12 +49,12 @@ export default function AppShell() {
               <SyncButton busy={busy} onSync={() => void sync()} />
               <button
                 type="button"
-                onClick={onMenu}
-                aria-label="Menú"
-                aria-expanded={mobileOpen || !collapsed}
-                className="flex size-11 items-center justify-center rounded-md border border-ink-700 text-fog-100 transition-colors hover:border-ink-600 active:brightness-90"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Abrir menú"
+                aria-expanded={mobileOpen}
+                className="btn-lift flex size-11 items-center justify-center rounded-md border border-ink-700 text-fog-100 transition-colors hover:border-ink-600 active:brightness-90 md:hidden"
               >
-                <Icon name={collapsed ? 'panelLeftOpen' : 'menu'} />
+                <Icon name="menu" />
               </button>
             </div>
           </div>

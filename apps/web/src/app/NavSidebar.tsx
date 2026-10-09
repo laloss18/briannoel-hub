@@ -30,6 +30,8 @@ interface NavSidebarProps {
   roles: readonly Role[];
   /** Colapsado en desktop (w-14): el contenido del enlace se oculta. */
   collapsed: boolean;
+  /** Alterna colapsado/expandido en desktop desde el botón del sidebar. */
+  onToggleCollapse: () => void;
   /** Drawer en móvil. */
   mobileOpen: boolean;
   onMobileClose: () => void;
@@ -38,10 +40,16 @@ interface NavSidebarProps {
 /**
  * Sidebar de navegación (DESIGN §5): en desktop es una columna persistente que
  * colapsa a iconos; en móvil es el mismo nav dentro de un drawer. El botón de
- * menú vive en el header (esquina superior derecha) y llama a `onToggle` /
- * `onMobileClose` según el breakpoint.
+ * colapsar vive DENTRO del sidebar (arriba); en móvil el drawer se abre desde
+ * el botón de la cabecera.
  */
-export default function NavSidebar({ roles, collapsed, mobileOpen, onMobileClose }: NavSidebarProps) {
+export default function NavSidebar({
+  roles,
+  collapsed,
+  onToggleCollapse,
+  mobileOpen,
+  onMobileClose,
+}: NavSidebarProps) {
   const { pathname } = useLocation();
   const { username, email, onLogout } = useSesion();
   const visibles = SECCIONES.filter((s) => !s.permiso || hasPermission(s.permiso, roles));
@@ -58,10 +66,10 @@ export default function NavSidebar({ roles, collapsed, mobileOpen, onMobileClose
           <Monogram />
           {!collapsed && (
             <span className="hidden min-w-0 text-left leading-tight sm:block">
-              <span className="block truncate text-[13px] font-semibold tracking-tight text-fog-100">
+              <span className="block truncate text-xs font-semibold tracking-tight text-fog-100">
                 Brian Noel
               </span>
-              <span className="block text-[10px] text-fog-500">hub de operaciones</span>
+              <span className="block text-2xs text-fog-500">hub de operaciones</span>
             </span>
           )}
         </Link>
@@ -78,7 +86,7 @@ export default function NavSidebar({ roles, collapsed, mobileOpen, onMobileClose
               aria-current={activo ? 'page' : undefined}
               aria-disabled={s.estado !== 'listo' || undefined}
               title={collapsed ? s.nombre : undefined}
-              className={`flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] transition-colors ${
+              className={`flex min-h-11 items-center gap-2.5 rounded-md px-2.5 py-2 text-xs transition-colors ${
                 activo ? 'bg-ink-800 text-fog-100' : 'text-fog-300 hover:bg-ink-800/60 hover:text-fog-100'
               } ${collapsed ? 'justify-center' : ''} ${
                 s.estado !== 'listo' ? 'cursor-default opacity-50' : ''
@@ -92,8 +100,19 @@ export default function NavSidebar({ roles, collapsed, mobileOpen, onMobileClose
       </nav>
 
       <div className="border-t border-ink-700/60 p-2">
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+          className={`hidden w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-xs text-fog-500 transition-colors hover:bg-ink-800/60 hover:text-fog-100 md:flex ${
+            collapsed ? 'justify-center' : ''
+          }`}
+        >
+          <Icon name={collapsed ? 'panelLeftOpen' : 'panelLeftClose'} className="size-4 shrink-0" />
+          {!collapsed && <span>Colapsar</span>}
+        </button>
         <div className={collapsed ? 'flex justify-center px-1 pb-1' : 'px-1 pb-1'}>
-          <p className="truncate text-[11px] text-fog-500" title={username ?? email}>
+          <p className="truncate text-2xs text-fog-500" title={username ?? email}>
             {collapsed ? (username ?? email.slice(0, 2)) : (username ?? email)}
           </p>
         </div>
@@ -101,7 +120,7 @@ export default function NavSidebar({ roles, collapsed, mobileOpen, onMobileClose
           type="button"
           onClick={() => void onLogout()}
           title={collapsed ? 'Salir' : undefined}
-          className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-fog-500 transition-colors hover:bg-ink-800/60 hover:text-fog-100 ${
+          className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-xs text-fog-500 transition-colors hover:bg-ink-800/60 hover:text-fog-100 ${
             collapsed ? 'justify-center' : ''
           }`}
         >
@@ -114,8 +133,9 @@ export default function NavSidebar({ roles, collapsed, mobileOpen, onMobileClose
 
   return (
     <>
-      {/* Desktop: columna persistente colapsable. El toggle vive en el header
-          (DESIGN §5.2), no aquí, para que el control esté siempre en el mismo sitio. */}
+      {/* Desktop: columna persistente colapsable. El toggle de colapso vive
+          dentro del propio sidebar; en móvil el drawer se abre desde la
+          cabecera. */}
       <aside
         className={`hidden shrink-0 flex-col border-r border-ink-700/60 bg-ink-900/40 md:flex ${
           collapsed ? 'w-14' : 'w-56'

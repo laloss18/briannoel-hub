@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { Icon, type IconName } from './icons';
 
 export interface ActionButtonProps {
@@ -38,7 +39,7 @@ export function ActionButton({
       disabled={disabled}
       aria-label={label}
       title={label}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-colors disabled:opacity-50 ${VARIANTS[variant]} ${className ?? ''}`}
+      className={`btn-lift inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium disabled:opacity-50 ${VARIANTS[variant]} ${variant === 'primary' ? 'cta-glow' : ''} ${className ?? ''}`}
     >
       {icon && <Icon name={icon} />}
       <span className="hidden sm:inline">{label}</span>
@@ -51,6 +52,83 @@ export function ActionIconGlyph({ icon, className }: { icon: IconName; className
     <span aria-hidden="true" className={className}>
       <Icon name={icon} />
     </span>
+  );
+}
+
+/**
+ * Botón icon-only de 44px para acciones en filas de lista (edición rápida sin
+ * abrir el registro). El nombre accesible va en `label` (aria-label + title).
+ */
+export function IconButton({
+  label,
+  icon,
+  onClick,
+  variant = 'default',
+  disabled,
+  className,
+}: {
+  label: string;
+  icon: IconName;
+  onClick: () => void;
+  variant?: NonNullable<ActionButtonProps['variant']>;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border disabled:opacity-50 ${VARIANTS[variant]} ${className ?? ''}`}
+    >
+      <Icon name={icon} className="size-4" />
+    </button>
+  );
+}
+
+const SIN_BORDE: Record<'default' | 'ok' | 'danger', string> = {
+  default: 'text-fog-300 hover:bg-ink-800 hover:text-fog-100',
+  ok: 'text-ok hover:bg-ok/10',
+  danger: 'text-danger hover:bg-danger/10',
+};
+
+/**
+ * Icono de acción compacto y SIN borde (DESIGN: los iconos viven libres del
+ * contenedor). Mantiene el área táctil de 44px (regla global de `index.css`)
+ * pero el glifo se ve suelto, con fondo suave solo al pasar o presionar.
+ * Acepta enlace (`to`) para acciones de navegación como "editar".
+ */
+export function IconAction({
+  label,
+  icon,
+  onClick,
+  to,
+  variant = 'default',
+  disabled,
+  className,
+}: {
+  label: string;
+  icon: IconName;
+  onClick?: () => void;
+  to?: string;
+  variant?: keyof typeof SIN_BORDE;
+  disabled?: boolean;
+  className?: string;
+}) {
+  const cls = `btn-lift flex size-11 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-50 ${SIN_BORDE[variant]} ${className ?? ''}`;
+  if (to) {
+    return (
+      <Link to={to} aria-label={label} title={label} className={cls}>
+        <Icon name={icon} className="size-4" />
+      </Link>
+    );
+  }
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} aria-label={label} title={label} className={cls}>
+      <Icon name={icon} className="size-4" />
+    </button>
   );
 }
 
@@ -70,7 +148,7 @@ export function CloseButton({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`flex size-11 shrink-0 items-center justify-center rounded-md border border-transparent text-fog-500 transition-colors hover:border-ink-600 hover:text-fog-300 ${className ?? ''}`}
+      className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border border-transparent text-fog-500 hover:border-ink-600 hover:text-fog-300 ${className ?? ''}`}
     >
       <Icon name="close" />
     </button>

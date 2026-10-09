@@ -1,11 +1,16 @@
 import { createHashRouter, Navigate, type RouteObject } from 'react-router-dom';
 import AppShell from './AppShell';
 import RequireBcvRate from './RequireBcvRate';
+import RouteError from './RouteError';
 import HomePage from './HomePage';
 
 /**
  * Mapa de rutas del hub (2026-10-05). Cada sección es un `lazy` para que el
  * bundle inicial solo cargue shell + auth (DESIGN §bundle-dynamic-imports).
+ *
+ * Cada carga/de render de sección lleva `errorElement`: si un `lazy` falla
+ * (dev server reiniciado, red caída) React Router muestra una pantalla con
+ * "Reintentar" en vez del "Unexpected Application Error!" de fábrica.
  *
  * Formularios y detalles son **páginas**, no modales: `#/ventas/nueva`,
  * `#/clientes/:id`, `#/ventas/:id/editar`, … Deep-link y botón atrás de
@@ -14,12 +19,15 @@ import HomePage from './HomePage';
  */
 const lazy = (fn: () => Promise<{ default: React.ComponentType }>) => async () => {
   const m = await fn();
-  return { Component: m.default };
+  return { Component: m.default, errorElement: <RouteError /> };
 };
 
 const rutas: RouteObject[] = [
   {
     element: <AppShell />,
+    // Borde global del shell: el fallo de import de cualquier `lazy` hijo
+    // burbujea hasta aquí (el hijo no alcanza a instalarse).
+    errorElement: <RouteError />,
     children: [
       {
         // Gate de bimoneda: sin tasa BCV no se entra al hub (§2.6/§7.4).
