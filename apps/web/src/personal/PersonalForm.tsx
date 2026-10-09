@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { ROLES, type Role } from '@brian/shared';
 import type { NuevaPersonalRepoInput } from './personalRepo';
+import { FieldError, FormErrorSummary } from '../ui/form';
+import { fieldAria, useFormErrors } from '../ui/formErrors';
 
 export interface PersonalFormProps {
   /** Persona a editar; null = crear una nueva. */
@@ -24,6 +26,7 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { errors, fail, clear, summaryRef, setErrors } = useFormErrors();
 
   useEffect(() => {
     setNombre(persona?.nombre ?? '');
@@ -32,18 +35,19 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
     setRol(persona?.rol ?? 'promotor');
     setBusy(false);
     setMessage(null);
+    setErrors({});
     inputRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persona]);
 
   const onClickGuardar = async () => {
-    if (!nombre.trim()) {
-      setMessage({ kind: 'error', text: 'El nombre es obligatorio.' });
-      return;
-    }
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setMessage({ kind: 'error', text: 'Escribe un correo válido o déjalo vacío.' });
-      return;
-    }
+    const nuevos = {
+      ...(nombre.trim() ? {} : { nombre: 'El nombre es obligatorio.' }),
+      ...(email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+        ? { email: 'Escribe un correo válido o déjalo vacío.' }
+        : {}),
+    };
+    if (!fail(nuevos)) return;
     setBusy(true);
     setMessage(null);
     try {
@@ -58,7 +62,7 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
       onSuccess();
     } catch (err) {
       setBusy(false);
-      setMessage({ kind: 'error', text: err instanceof Error ? err.message : String(err) });
+      fail({ general: err instanceof Error ? err.message : String(err) });
     }
   };
 
@@ -68,6 +72,7 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-3 text-fog-100">
+      <FormErrorSummary errors={errors} summaryRef={summaryRef} />
       <label className={labelCls}>
         Nombre *
         <input
@@ -75,9 +80,14 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
           type="text"
           placeholder="ej. Ana Rojas"
           value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
+          onChange={(e) => {
+            setNombre(e.target.value);
+            clear('nombre');
+          }}
           className={inputCls}
+          {...fieldAria('nombre', errors)}
         />
+        <FieldError name="nombre" error={errors.nombre} />
       </label>
       <label className={labelCls}>
         Teléfono (opcional)
@@ -93,9 +103,14 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
         <input
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            clear('email');
+          }}
           className={inputCls}
+          {...fieldAria('email', errors)}
         />
+        <FieldError name="email" error={errors.email} />
       </label>
       <label className={labelCls}>
         Rol en la operación
@@ -112,17 +127,14 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
         </select>
       </label>
 
-      <p
-        role="alert"
-        className={`min-h-4 text-xs ${message?.kind === 'error' ? 'text-danger' : 'text-ok'}`}
-      >
-        {message?.text ?? ''}
+      <p role="status" className="min-h-4 text-xs text-ok">
+        {message?.kind === 'ok' ? message.text : ''}
       </p>
 
       <button
         onClick={onClickGuardar}
         disabled={busy}
-        className="self-start rounded-md bg-signal px-3.5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-50"
+        className="self-start rounded-md bg-signal px-3.5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-50 btn-lift cta-glow"
       >
         {busy ? 'Guardando…' : persona ? 'Guardar cambios' : 'Crear persona'}
       </button>

@@ -17,7 +17,7 @@ export default function PersonalFormPage() {
   const titulo = id ? 'Editar persona' : 'Nueva persona';
 
   return (
-    <PageShell titulo={titulo} icono="user" volverA="/personal">
+    <PageShell titulo={titulo} icono="user">
       {id && personas !== undefined && !persona ? (
         <p className="text-xs text-fog-600">Persona no encontrada.</p>
       ) : (

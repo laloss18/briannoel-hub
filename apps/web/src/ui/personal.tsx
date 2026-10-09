@@ -1,7 +1,7 @@
 import type { Personal } from '@brian/shared';
 
 const inputCls =
-  'w-full rounded-md border border-ink-700 bg-ink-950 px-2.5 py-1.5 text-[13px] text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
+  'w-full rounded-md border border-ink-700 bg-ink-950 px-2.5 py-1.5 text-xs text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
 
 /** Selector de persona del roster (`personal`): la opción SIEMPRE viene de la
  *  lista de usuarios registrados, filtrada por rol desde el caller. Si el roster
@@ -13,17 +13,28 @@ export function PersonaSelect({
   placeholder,
   emptyMessage = 'No hay usuarios registrados en este rol',
   onChange,
+  id,
+  invalid,
+  describedBy,
 }: {
   value: string;
   personas: Personal[];
   placeholder: string;
   emptyMessage?: string;
   onChange: (v: string) => void;
+  id?: string;
+  invalid?: boolean;
+  describedBy?: string;
 }) {
+  const aria = {
+    id,
+    'aria-invalid': invalid || undefined,
+    'aria-describedby': invalid ? describedBy : undefined,
+  } as const;
   const opciones = personas.filter((p) => p.nombre !== value);
   if (personas.length === 0) {
     return (
-      <select disabled aria-label={placeholder} className={`${inputCls} opacity-60`}>
+      <select disabled aria-label={placeholder} className={`${inputCls} opacity-60`} {...aria}>
         <option value="">{emptyMessage}</option>
       </select>
     );
@@ -34,6 +45,7 @@ export function PersonaSelect({
       onChange={(e) => onChange(e.target.value)}
       aria-label={placeholder}
       className={`${inputCls} appearance-none`}
+      {...aria}
     >
       <option value="">{placeholder}</option>
       {value && <option value={value}>{value}</option>}

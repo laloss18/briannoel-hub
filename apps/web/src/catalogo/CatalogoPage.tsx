@@ -1,4 +1,4 @@
-import PageShell from '../app/PageShell';
+﻿import PageShell from '../app/PageShell';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
 import { listItems } from '../ventas/itemsRepo';
@@ -15,7 +15,7 @@ export default function CatalogoPage() {
       titulo="Catálogo"
       icono="package"
       volverA="/"
-      accion={canManage ? { label: 'Nuevo ítem', icon: 'plus', to: '/catalogo/nuevo' } : undefined}
+      accion={canManage ? { label: 'Nuevo ítem', icon: 'plus', to: '/catalogo/nuevo', variant: 'primary', soloIcono: true } : undefined}
     >
       <ul className="flex flex-col divide-y divide-ink-700/60 border-y border-ink-700/60">
         {items?.map((i) => (
@@ -23,7 +23,7 @@ export default function CatalogoPage() {
             {canManage ? (
               <Link
                 to={`/catalogo/${i.id}/editar`}
-                className="flex flex-col gap-1 py-2.5 transition-colors hover:bg-ink-950/40"
+                className="flex flex-col gap-1 py-2.5 transition-colors hover:bg-ink-800/60"
               >
                 <span className="text-sm font-medium text-fog-100">{i.nombre}</span>
                 <span className="font-mono text-xs tabular-nums text-fog-500">

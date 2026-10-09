@@ -1,4 +1,4 @@
-import PageShell from '../app/PageShell';
+﻿import PageShell from '../app/PageShell';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
 import { listPersonal } from './personalRepo';
@@ -15,7 +15,7 @@ export default function PersonalPage() {
       titulo="Personal"
       icono="user"
       volverA="/"
-      accion={canManage ? { label: 'Nueva persona', icon: 'plus', to: '/personal/nuevo' } : undefined}
+      accion={canManage ? { label: 'Nueva persona', icon: 'plus', to: '/personal/nuevo', variant: 'primary', soloIcono: true } : undefined}
     >
       <ul className="flex flex-col divide-y divide-ink-700/60 border-y border-ink-700/60">
         {personas?.map((p) => (
@@ -23,7 +23,7 @@ export default function PersonalPage() {
             {canManage ? (
               <Link
                 to={`/personal/${p.id}/editar`}
-                className="flex flex-col gap-1 py-2.5 transition-colors hover:bg-ink-950/40"
+                className="flex flex-col gap-1 py-2.5 transition-colors hover:bg-ink-800/60"
               >
                 <span className="text-sm font-medium text-fog-100">{p.nombre}</span>
                 <span className="font-mono text-xs tabular-nums text-fog-500">
