@@ -20,11 +20,7 @@ export async function listAppUsers(): Promise<AppUser[]> {
     .sort((a, b) => (a.username ?? a.email).localeCompare(b.username ?? b.email));
 }
 
-export async function getAppUserByUsername(username: string): Promise<AppUser | null> {
-  const busca = username.toLowerCase();
-  const u = (await listAppUsers()).find((x) => (x.username ?? '').toLowerCase() === busca);
-  return u ?? null;
-}
+
 
 /** Suscripción para la UI (índice de identidades, panel de usuarios). */
 export function useAppUsers(): AppUser[] {
@@ -76,19 +72,5 @@ export async function adminEditarUsuario(edicion: EdicionUsuario): Promise<void>
 }
 
 /** Contraseña inicial o reseteo. El MVP no tiene "olvidé mi contraseña". */
-export async function adminCambiarPassword(userId: string, password: string): Promise<void> {
-  await rpc<null>('admin_set_app_user_password', {
-    p_user_id: userId,
-    p_password: password,
-  });
-}
-
-/** Baja lógica (conserva la auditoría) o reactivación. */
-export async function adminCambiarActivo(userId: string, activo: boolean): Promise<void> {
-  await rpc<null>(activo ? 'admin_reactivate_app_user' : 'admin_deactivate_app_user', {
-    p_user_id: userId,
-  });
-}
-
 export const APP_USERS_ENTITY = ENTITY;
 export { ROLES };
