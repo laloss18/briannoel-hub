@@ -12,7 +12,7 @@ import { Icon, type IconName } from '../ui/icons';
  * semibold) → acción (2º plano salvo `variant: 'primary'`, que es el CTA de la
  * pantalla). El cuerpo no compite con el título: un solo `h1` por página.
  */
-export interface PageShellProps {
+interface PageShellProps {
   titulo: string;
   /** Contexto mono sobre el título (p. ej. "ventas", "detalle del pedido"). */
   eyebrow?: string;

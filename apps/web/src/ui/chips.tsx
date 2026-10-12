@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { DespachoEstado } from '@brian/shared';
 
 /**
@@ -6,7 +6,7 @@ import type { DespachoEstado } from '@brian/shared';
  * fondo que tenga el contenedor. Nunca relleno sólido: en listas densas el
  * relleno compite con el contenido y el texto pierde contraste en un tono.
  */
-export type ChipTono = 'neutral' | 'ok' | 'signal' | 'danger';
+type ChipTono = 'neutral' | 'ok' | 'signal' | 'danger';
 
 const TONOS: Record<ChipTono, string> = {
   neutral: 'border-ink-600 text-fog-500',

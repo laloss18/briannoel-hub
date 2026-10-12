@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { DexieOutbox } from '../sync/db';
 
-export interface SyncButtonProps {
+interface SyncButtonProps {
   busy: boolean;
   onSync: () => void;
 }

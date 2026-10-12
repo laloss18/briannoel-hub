@@ -12,9 +12,9 @@ import { FieldError, FormErrorSummary } from '../ui/form';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 
 /** Campos que reúne el formulario; `creado_por` lo inyecta quien lo invoca. */
-export type ClienteFormInput = Omit<NuevoClienteRepoInput, 'creado_por'>;
+type ClienteFormInput = Omit<NuevoClienteRepoInput, 'creado_por'>;
 
-export interface ClienteFormProps {
+interface ClienteFormProps {
   roles: readonly Role[];
   zonas: Zona[];
   /** `zonaId` es la zona elegida (auto por cercanía o manual); puede ser null. */

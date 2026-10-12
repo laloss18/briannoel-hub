@@ -19,7 +19,7 @@ export async function listZonas(): Promise<Zona[]> {
     .sort((a, b) => a.estado.localeCompare(b.estado) || a.nombre.localeCompare(b.nombre));
 }
 
-export interface NuevoZonaInput {
+interface NuevoZonaInput {
   nombre: string;
   municipio: string;
   estado: string;

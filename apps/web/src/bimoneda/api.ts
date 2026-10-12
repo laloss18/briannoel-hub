@@ -19,7 +19,7 @@ const FUENTES: readonly string[] = [
   'https://pydolarve.org/api/v1/dollar?type=bcv',
 ];
 
-export interface TasaBcv {
+interface TasaBcv {
   /** Bs por dólar. */
   tasa: number;
   /** Última publicación que reportó la fuente (ISO), si la trajo. */

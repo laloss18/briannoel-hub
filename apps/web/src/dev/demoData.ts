@@ -59,7 +59,7 @@ const APP_USER_4 = '10000000-0000-4000-8000-000000000004';
 const APP_USER_5 = '10000000-0000-4000-8000-000000000005';
 const APP_USER_6 = '10000000-0000-4000-8000-000000000006';
 
-export const DEMO_IDS: readonly string[] = [
+const DEMO_IDS: readonly string[] = [
   'global',
   ZONA_NORTE,
   ZONA_CENTRO,
@@ -650,15 +650,6 @@ export async function limpiarDemoData(): Promise<number> {
   const ids = [...DEMO_IDS];
   const borrados = await hub.records.where('id').anyOf(ids).delete();
   return borrados;
-}
-
-/** Demo ya presente (para el auto-seed y el estado del botón). */
-export async function tieneDatosDemo(): Promise<boolean> {
-  const n = await hub.records
-    .where('id')
-    .anyOf([...DEMO_IDS])
-    .count();
-  return n > 0;
 }
 
 /**

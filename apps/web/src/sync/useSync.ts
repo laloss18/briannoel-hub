@@ -5,13 +5,13 @@ import { DexieLocalStore, DexieOutbox, DexieCursorStore, DexieEventLog } from '.
 import { SupabaseTransport } from './transport';
 import { supabase } from './supabase';
 
-export interface SyncState {
+interface SyncState {
   busy: boolean;
   last: string | null;
   error: string | null;
 }
 
-export interface SyncResult {
+interface SyncResult {
   pushed: number;
   applied: number;
 }

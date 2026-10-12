@@ -6,7 +6,7 @@ import { Monogram } from '../ui/brand';
 import { useSesion } from './sesion';
 
 /** Secciones del MVP (PRD §2). */
-export interface Seccion {
+interface Seccion {
   id: string;
   nombre: string;
   to: string;

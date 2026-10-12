@@ -1,8 +1,7 @@
-import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon, type IconName } from './icons';
 
-export interface ActionButtonProps {
+interface ActionButtonProps {
   /** Rótulo visible en escritorio y aria-label/title (accesibilidad, §a11y). */
   label: string;
   icon?: IconName;
@@ -22,7 +21,7 @@ const VARIANTS: Record<NonNullable<ActionButtonProps['variant']>, string> = {
 /**
  * Botón de acción con icono: en móvil solo el icono; en escritorio icono + texto
  * (`hidden sm:inline`). El `label` siempre queda en aria-label para no perder
- * accesibilidad (web-design-guidelines).
+ * accesibilidad (DESIGN §a11y).
  */
 export function ActionButton({
   label,
@@ -43,47 +42,6 @@ export function ActionButton({
     >
       {icon && <Icon name={icon} />}
       <span className="hidden sm:inline">{label}</span>
-    </button>
-  );
-}
-
-export function ActionIconGlyph({ icon, className }: { icon: IconName; className?: string }) {
-  return (
-    <span aria-hidden="true" className={className}>
-      <Icon name={icon} />
-    </span>
-  );
-}
-
-/**
- * Botón icon-only de 44px para acciones en filas de lista (edición rápida sin
- * abrir el registro). El nombre accesible va en `label` (aria-label + title).
- */
-export function IconButton({
-  label,
-  icon,
-  onClick,
-  variant = 'default',
-  disabled,
-  className,
-}: {
-  label: string;
-  icon: IconName;
-  onClick: () => void;
-  variant?: NonNullable<ActionButtonProps['variant']>;
-  disabled?: boolean;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      title={label}
-      className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border disabled:opacity-50 ${VARIANTS[variant]} ${className ?? ''}`}
-    >
-      <Icon name={icon} className="size-4" />
     </button>
   );
 }
@@ -161,6 +119,3 @@ export function CloseButton({
     </button>
   );
 }
-
-export type { IconName };
-export type { ReactNode };

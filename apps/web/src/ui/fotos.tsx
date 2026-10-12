@@ -1,7 +1,7 @@
 import type { ChangeEvent } from 'react';
 
 /** Manejador de captura de foto: comprime y entrega el data URL al setter. */
-export type FotoChangeHandler = (
+type FotoChangeHandler = (
   e: ChangeEvent<HTMLInputElement>,
   set: (data: string) => void,
 ) => Promise<void>;

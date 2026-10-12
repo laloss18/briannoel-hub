@@ -31,7 +31,7 @@ export async function listDespachos(): Promise<Despacho[]> {
 }
 
 /** Despachos abiertos a crédito de un cliente (para el indicador "crédito bloqueado"). */
-export async function persistDespacho(
+async function persistDespacho(
   despacho: Despacho,
   operation: 'create' | 'update' | 'softDelete',
 ): Promise<void> {

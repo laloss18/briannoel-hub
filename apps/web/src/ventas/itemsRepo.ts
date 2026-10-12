@@ -37,7 +37,7 @@ async function persistItem(
   );
 }
 
-export interface NuevoItemRepoInput {
+interface NuevoItemRepoInput {
   nombre: string;
   precio_contado: number;
   precio_credito: number;

@@ -145,7 +145,7 @@ const SHAPES: Partial<Record<IconName, ReadonlyArray<{ cx: number; cy: number; r
   ],
 };
 
-export interface IconProps {
+interface IconProps {
   name: IconName;
   className?: string;
 }

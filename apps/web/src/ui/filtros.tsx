@@ -3,7 +3,7 @@ import { Icon, type IconName } from './icons';
 
 /** Campo base de los controles de filtro: 44px (regla global), forma suave y
  *  foco al acento. Compartido por selects y campos de fecha. */
-export const campoCls =
+const campoCls =
   'w-full rounded-xl border border-ink-600 bg-ink-950 px-3 text-sm text-fog-100 caret-signal outline-none transition-colors placeholder:text-fog-600 focus:border-signal';
 
 /**

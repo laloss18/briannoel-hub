@@ -10,7 +10,7 @@ export type Tema = 'claro' | 'oscuro';
 
 const CLAVE = 'bh_tema';
 
-export function temaActual(): Tema {
+function temaActual(): Tema {
   try {
     return localStorage.getItem(CLAVE) === 'oscuro' ? 'oscuro' : 'claro';
   } catch {
@@ -18,7 +18,7 @@ export function temaActual(): Tema {
   }
 }
 
-export function aplicarTema(tema: Tema): void {
+function aplicarTema(tema: Tema): void {
   const raiz = document.documentElement;
   if (tema === 'oscuro') raiz.setAttribute('data-theme', 'dark');
   else raiz.removeAttribute('data-theme');

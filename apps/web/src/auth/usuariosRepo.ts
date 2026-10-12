@@ -25,7 +25,7 @@ export function useAppUsers(): AppUser[] {
   return useLiveQuery(() => listAppUsers(), []) ?? [];
 }
 
-export interface AltaUsuario {
+interface AltaUsuario {
   email: string;
   username: string;
   password: string;
@@ -51,7 +51,7 @@ export async function adminCrearUsuario(alta: AltaUsuario): Promise<string> {
   });
 }
 
-export interface EdicionUsuario {
+interface EdicionUsuario {
   user_id: string;
   username?: string;
   roles?: readonly Role[];
@@ -70,5 +70,4 @@ export async function adminEditarUsuario(edicion: EdicionUsuario): Promise<void>
 }
 
 /** Contraseña inicial o reseteo. El MVP no tiene "olvidé mi contraseña". */
-export const APP_USERS_ENTITY = ENTITY;
 export { ROLES };

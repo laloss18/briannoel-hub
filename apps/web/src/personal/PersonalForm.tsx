@@ -4,7 +4,7 @@ import type { NuevaPersonalRepoInput } from './personalRepo';
 import { FieldError, FormErrorSummary } from '../ui/form';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 
-export interface PersonalFormProps {
+interface PersonalFormProps {
   /** Persona a editar; null = crear una nueva. */
   persona: { id: string; nombre: string; telefono?: string; email?: string; rol: Role } | null;
   onSubmit: (input: NuevaPersonalRepoInput) => Promise<void>;

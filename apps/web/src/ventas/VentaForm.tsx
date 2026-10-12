@@ -16,7 +16,7 @@ import { fieldAria, useFormErrors, type FieldErrors } from '../ui/formErrors';
 export type VentaFormInput = Omit<NuevaVentaRepoInput, 'vendedor' | 'editor_role'>;
 export type EditarVentaFormInput = Omit<EditarVentaRepoInput, 'vendedor' | 'editor_role'>;
 
-export interface VentaFormProps {
+interface VentaFormProps {
   roles: readonly Role[];
   clientes: Cliente[];
   items: Item[];
