@@ -1,6 +1,10 @@
 # Design/spec Prose that must not be reformatted by Prettier.
 PRD.md
 AGENTS.md
+DESIGN.md
+
+# Skills de agentes (contenido de terceros, no se reformatea).
+.agents/
 
 # Build outputs + reports.
 node_modules

@@ -12,10 +12,7 @@ const ENTITY = 'app_users';
  * Solo se lee el espejo local (baja por delta) para resolver identidades.
  */
 export async function listAppUsers(): Promise<AppUser[]> {
-  const rows = await hub.records
-    .where('entity')
-    .equals(ENTITY)
-    .toArray();
+  const rows = await hub.records.where('entity').equals(ENTITY).toArray();
   return rows
     .map((r) => appUserSchema.safeParse(r))
     .filter((r) => r.success)

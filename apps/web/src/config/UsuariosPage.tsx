@@ -80,7 +80,13 @@ export default function UsuariosPage() {
       titulo="Usuarios"
       icono="users"
       volverA="/config"
-      accion={{ label: 'Nuevo usuario', icon: 'plus', to: '/config/usuarios/nuevo', variant: 'primary', soloIcono: true }}
+      accion={{
+        label: 'Nuevo usuario',
+        icon: 'plus',
+        to: '/config/usuarios/nuevo',
+        variant: 'primary',
+        soloIcono: true,
+      }}
     >
       <div className="flex flex-col gap-3">
         <p className="text-xs text-fog-500">

@@ -98,9 +98,10 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-function buildLineas(
-  input: Pick<CrearDespachoInput, 'lineas' | 'condicion'>,
-): { lineas: DespachoItem[]; subtotal: number } {
+function buildLineas(input: Pick<CrearDespachoInput, 'lineas' | 'condicion'>): {
+  lineas: DespachoItem[];
+  subtotal: number;
+} {
   const lineas: DespachoItem[] = [];
   let subtotal = 0;
   for (const linea of input.lineas) {
@@ -137,8 +138,17 @@ interface RecargoResuelto {
 
 /** Valida líneas, descuento (% o monto USD) y tasa opcional; devuelve {lineas, subtotal, tasa, d}. */
 function validarEntrada(
-  input: Pick<CrearDespachoInput, 'lineas' | 'condicion' | 'descuento' | 'tasa_bcv' | 'mora' | 'iva_pct'>,
-): { lineas: DespachoItem[]; subtotal: number; tasa: number; d: DescuentoResuelto; rec: RecargoResuelto } {
+  input: Pick<
+    CrearDespachoInput,
+    'lineas' | 'condicion' | 'descuento' | 'tasa_bcv' | 'mora' | 'iva_pct'
+  >,
+): {
+  lineas: DespachoItem[];
+  subtotal: number;
+  tasa: number;
+  d: DescuentoResuelto;
+  rec: RecargoResuelto;
+} {
   if (!input.lineas || input.lineas.length === 0) {
     throw new Error('Un despacho requiere al menos una línea de ítem.');
   }
@@ -289,10 +299,7 @@ export interface EditarDespachoInput {
  * recalcula líneas, subtotal, descuento aprobado y total con la misma regla de
  * precios por condición. El caller (admin) valida el permiso antes de llamar.
  */
-export function editarDespachoPendiente(
-  prev: Despacho,
-  input: EditarDespachoInput,
-): Despacho {
+export function editarDespachoPendiente(prev: Despacho, input: EditarDespachoInput): Despacho {
   if (prev.estado !== 'pedido') {
     throw new Error(`Solo un despacho en 'pedido' puede editarse (estado actual: ${prev.estado}).`);
   }
@@ -340,7 +347,9 @@ export function entregarDespacho(
   clock: VentaClock = realClock,
 ): Despacho {
   if (prev.estado !== 'pedido') {
-    throw new Error(`Solo un despacho en 'pedido' puede entregarse (estado actual: ${prev.estado}).`);
+    throw new Error(
+      `Solo un despacho en 'pedido' puede entregarse (estado actual: ${prev.estado}).`,
+    );
   }
   const now = clock.now();
   return {
@@ -368,7 +377,10 @@ export function puedeGestionarDespacho(
   editor_role: Role,
 ): boolean {
   if (editor_role === 'admin') return true;
-  if (despacho.supervisor && (despacho.supervisor === editor || despacho.supervisor === editor_email)) {
+  if (
+    despacho.supervisor &&
+    (despacho.supervisor === editor || despacho.supervisor === editor_email)
+  ) {
     return true;
   }
   if (despacho.created_by === editor_email) return true;
@@ -386,7 +398,9 @@ export function eliminarDespachoPendiente(
   clock: VentaClock = realClock,
 ): Despacho {
   if (prev.estado !== 'pedido') {
-    throw new Error(`Solo un despacho en 'pedido' puede eliminarse (estado actual: ${prev.estado}).`);
+    throw new Error(
+      `Solo un despacho en 'pedido' puede eliminarse (estado actual: ${prev.estado}).`,
+    );
   }
   const now = clock.now();
   return {
@@ -418,10 +432,7 @@ export interface CorregirDespachoInput {
  * volver a `pedido` limpia los campos de entrega; `anulado` desde pedido o
  * entregado. No toca línea/totales (eso es `editarDespachoPendiente`).
  */
-export function corregirDespacho(
-  prev: Despacho,
-  input: CorregirDespachoInput,
-): Despacho {
+export function corregirDespacho(prev: Despacho, input: CorregirDespachoInput): Despacho {
   const clock = input.clock ?? realClock;
   const now = clock.now();
   const estadoObjetivo = input.estado ?? prev.estado;
@@ -480,10 +491,7 @@ export function corregirDespacho(
  * crédito abiertos consumen su `credito_limite` (1 bolsa/pack por defecto, §2.5)
  * o si su scoring referencial está en banda mala (D/E) con crédito en uso.
  */
-export function creditoBloqueado(
-  cliente: Cliente,
-  despachosAbiertos: Despacho[],
-): boolean {
+export function creditoBloqueado(cliente: Cliente, despachosAbiertos: Despacho[]): boolean {
   const { unidades } = creditoUsado(cliente, despachosAbiertos);
   if (unidades > 0) {
     // Fase 3: existe crédito en uso; el scoring referencial decide la bandera.
@@ -501,16 +509,16 @@ export interface CreditoUsado {
  * Consumo de crédito en unidades de bolsa/pack (sin montos) para los roles que
  * sí ven saldos. No lo usa el promotor: la UX solo consume `creditoBloqueado`.
  */
-export function creditoUsado(
-  cliente: Cliente,
-  despachosAbiertos: Despacho[],
-): CreditoUsado {
+export function creditoUsado(cliente: Cliente, despachosAbiertos: Despacho[]): CreditoUsado {
   const abiertos = despachosAbiertos.filter(
     (d) =>
       d.condicion === 'credito' &&
       d.estado !== 'anulado' &&
       (d.deleted_at === null || d.deleted_at === undefined),
   );
-  const unidades = abiertos.reduce((acc, d) => acc + d.lineas.reduce((a, l) => a + l.cantidad, 0), 0);
+  const unidades = abiertos.reduce(
+    (acc, d) => acc + d.lineas.reduce((a, l) => a + l.cantidad, 0),
+    0,
+  );
   return { unidades, limite: cliente.credito_limite };
 }

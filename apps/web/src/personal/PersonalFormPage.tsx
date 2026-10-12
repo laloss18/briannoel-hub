@@ -6,7 +6,9 @@ import { useSesion } from '../app/sesion';
 import PageShell from '../app/PageShell';
 import type { NuevaPersonalRepoInput } from './personalRepo';
 
-const PersonalForm = lazy(() => import('./PersonalForm').then((m) => ({ default: m.PersonalForm })));
+const PersonalForm = lazy(() =>
+  import('./PersonalForm').then((m) => ({ default: m.PersonalForm })),
+);
 
 export default function PersonalFormPage() {
   const { id } = useParams<{ id: string }>();

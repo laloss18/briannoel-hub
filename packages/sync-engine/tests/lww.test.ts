@@ -82,12 +82,12 @@ describe('rolePriority (entidades críticas §5.1)', () => {
   });
 
   it('admin gana siempre (orden admin > supervisor > promotor > cobrador)', () => {
-    expect(rolePriorityWins(roleRec('a', 't', 'supervisor'), roleRec('a', 't', 'admin'))).toMatchObject(
-      { editor_role: 'admin' },
-    );
-    expect(rolePriorityWins(roleRec('a', 't', 'cobrador'), roleRec('a', 't', 'promotor'))).toMatchObject(
-      { editor_role: 'promotor' },
-    );
+    expect(
+      rolePriorityWins(roleRec('a', 't', 'supervisor'), roleRec('a', 't', 'admin')),
+    ).toMatchObject({ editor_role: 'admin' });
+    expect(
+      rolePriorityWins(roleRec('a', 't', 'cobrador'), roleRec('a', 't', 'promotor')),
+    ).toMatchObject({ editor_role: 'promotor' });
   });
 
   it('empate de rol cae a LWW (updated_at, tie-break id)', () => {

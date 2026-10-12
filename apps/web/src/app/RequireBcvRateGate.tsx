@@ -77,10 +77,13 @@ export default function RequireBcvRateProvider({
     }
   }, [canEdit, tasa]);
 
-  const guardarManual = useCallback(async (v: number): Promise<void> => {
-    if (!canEdit) throw new Error('No tienes permiso para configurar la tasa');
-    await saveBcvRate(v, 'manual');
-  }, [canEdit]);
+  const guardarManual = useCallback(
+    async (v: number): Promise<void> => {
+      if (!canEdit) throw new Error('No tienes permiso para configurar la tasa');
+      await saveBcvRate(v, 'manual');
+    },
+    [canEdit],
+  );
 
   const valor = useMemo<TasaGateCtx>(
     () => ({ tasa, source, actualizadoEn, refrescar, guardarManual, refrescando }),

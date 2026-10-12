@@ -66,7 +66,10 @@ async function intentar(url: string, signal?: AbortSignal): Promise<TasaBcv | nu
   const onAbort = () => controller.abort();
   signal?.addEventListener('abort', onAbort, { once: true });
   try {
-    const res = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/json' } });
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
     if (!res.ok) return null;
     const parsed = parseTasa(await res.json());
     if (!parsed) return null;

@@ -22,7 +22,7 @@ export default function ClienteEditarPage() {
   const { email } = useSesion();
   const clientes = useLiveQuery(() => listClientes(), []);
   const zonas = useLiveQuery(() => listZonas(), []);
-  const cliente = id ? (clientes ?? []).find((c) => c.id === id) ?? null : null;
+  const cliente = id ? ((clientes ?? []).find((c) => c.id === id) ?? null) : null;
 
   const [nombre, setNombre] = useState('');
   const [documento, setDocumento] = useState('');
@@ -66,21 +66,16 @@ export default function ClienteEditarPage() {
     if (!fail(nombre.trim() ? {} : { nombre: 'Escribe el nombre del cliente.' })) return;
     setBusy(true);
     try {
-      await editarClienteLocal(
-        cliente,
-        email,
-        zonas ?? [],
-        {
-          nombre,
-          documento: documento || undefined,
-          telefono: telefono || undefined,
-          telefono2: telefono2 || undefined,
-          direccion: direccion || undefined,
-          notas_referencia: notas || undefined,
-          lat: lat.trim() !== '' && Number.isFinite(Number(lat)) ? Number(lat) : null,
-          lng: lng.trim() !== '' && Number.isFinite(Number(lng)) ? Number(lng) : null,
-        },
-      );
+      await editarClienteLocal(cliente, email, zonas ?? [], {
+        nombre,
+        documento: documento || undefined,
+        telefono: telefono || undefined,
+        telefono2: telefono2 || undefined,
+        direccion: direccion || undefined,
+        notas_referencia: notas || undefined,
+        lat: lat.trim() !== '' && Number.isFinite(Number(lat)) ? Number(lat) : null,
+        lng: lng.trim() !== '' && Number.isFinite(Number(lng)) ? Number(lng) : null,
+      });
       navigate(`/clientes/${cliente.id}`);
     } catch (e) {
       fail({ general: e instanceof Error ? e.message : String(e) });

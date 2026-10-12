@@ -21,8 +21,8 @@ export default function RouteError() {
       <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">error</p>
       <h1 className="text-lg font-semibold text-fog-100">No se pudo cargar la vista</h1>
       <p className="text-xs text-fog-500">
-        No llegó el módulo de esta sección. Suele ser la conexión o un reinicio
-        del servidor de desarrollo: vuelve a intentar.
+        No llegó el módulo de esta sección. Suele ser la conexión o un reinicio del servidor de
+        desarrollo: vuelve a intentar.
       </p>
       <p className="rounded-md border border-ink-700 bg-ink-900 p-2 font-mono text-2xs text-fog-600">
         {detalle}

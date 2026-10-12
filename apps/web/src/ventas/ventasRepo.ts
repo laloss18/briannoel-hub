@@ -11,13 +11,7 @@ import {
   type EditarDespachoInput,
   type RecargoMora,
 } from '@brian/ventas';
-import {
-  despachoSchema,
-  type Cliente,
-  type Despacho,
-  type Item,
-  type Role,
-} from '@brian/shared';
+import { despachoSchema, type Cliente, type Despacho, type Item, type Role } from '@brian/shared';
 import { DexieLocalStore, DexieOutbox, hub } from '../sync/db';
 
 const ENTITY = 'despachos';
@@ -40,10 +34,7 @@ export async function listDespachos(): Promise<Despacho[]> {
 export async function listDespachosAbiertosCredito(clienteId: string): Promise<Despacho[]> {
   const todos = await listDespachos();
   return todos.filter(
-    (d) =>
-      d.cliente_id === clienteId &&
-      d.condicion === 'credito' &&
-      d.estado !== 'anulado',
+    (d) => d.cliente_id === clienteId && d.condicion === 'credito' && d.estado !== 'anulado',
   );
 }
 

@@ -46,10 +46,8 @@ export interface PageShellAccion {
   disabled?: boolean;
 }
 
-const ACCION_DEFAULT =
-  'border-ink-600 text-fog-100 hover:bg-ink-800';
-const ACCION_PRIMARY =
-  'border-signal bg-signal text-ink-950 hover:bg-signal-soft cta-glow';
+const ACCION_DEFAULT = 'border-ink-600 text-fog-100 hover:bg-ink-800';
+const ACCION_PRIMARY = 'border-signal bg-signal text-ink-950 hover:bg-signal-soft cta-glow';
 
 export default function PageShell({
   titulo,
@@ -67,9 +65,10 @@ export default function PageShell({
   const accionCls = `btn-lift flex shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium active:brightness-90 ${
     accion?.variant === 'primary' ? ACCION_PRIMARY : ACCION_DEFAULT
   }`;
-  const accionIconoCls = accion?.variant === 'primary'
-    ? 'btn-lift flex size-11 shrink-0 items-center justify-center rounded-full bg-signal text-ink-950 active:brightness-90 cta-glow'
-    : 'btn-lift flex size-11 shrink-0 items-center justify-center rounded-full text-fog-100 active:brightness-90 hover:bg-ink-800';
+  const accionIconoCls =
+    accion?.variant === 'primary'
+      ? 'btn-lift flex size-11 shrink-0 items-center justify-center rounded-full bg-signal text-ink-950 active:brightness-90 cta-glow'
+      : 'btn-lift flex size-11 shrink-0 items-center justify-center rounded-full text-fog-100 active:brightness-90 hover:bg-ink-800';
 
   const ACCION_ICONO: Record<NonNullable<PageShellAccion['variant']>, string> = {
     default: 'text-fog-300 hover:bg-ink-800 hover:text-fog-100',
@@ -146,7 +145,11 @@ export default function PageShell({
             </button>
           ))}
         {acciones && acciones.length > 0 && (
-          <div className="flex shrink-0 items-center gap-1" role="group" aria-label="acciones del pedido">
+          <div
+            className="flex shrink-0 items-center gap-1"
+            role="group"
+            aria-label="acciones del pedido"
+          >
             {acciones.map((a) => {
               const cls = `btn-lift flex size-11 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-50 ${ACCION_ICONO[a.variant ?? 'default']}`;
               return a.to ? (

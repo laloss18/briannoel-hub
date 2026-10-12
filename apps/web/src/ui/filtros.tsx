@@ -66,7 +66,9 @@ export function FilterBar({
           />
         </button>
       </div>
-      {abierto && <div className="flex flex-col gap-2.5 border-t border-ink-800 pt-2.5">{children}</div>}
+      {abierto && (
+        <div className="flex flex-col gap-2.5 border-t border-ink-800 pt-2.5">{children}</div>
+      )}
     </section>
   );
 }

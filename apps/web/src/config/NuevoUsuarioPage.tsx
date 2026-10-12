@@ -54,7 +54,10 @@ export default function NuevoUsuarioPage() {
         : { email: 'Escribe un correo válido (clave de acceso y auditoría).' }),
       ...(usernameSchema.safeParse(username).success
         ? {}
-        : { username: 'El nombre de usuario necesita 3 a 40 caracteres (letras, números y espacios).' }),
+        : {
+            username:
+              'El nombre de usuario necesita 3 a 40 caracteres (letras, números y espacios).',
+          }),
       ...(password.length >= 8
         ? {}
         : { password: 'La contraseña necesita al menos 8 caracteres.' }),
@@ -138,8 +141,8 @@ export default function NuevoUsuarioPage() {
           />
           <FieldError name="password" error={errors.password} />
           <p className="text-2xs text-fog-600">
-            Mínimo 8 caracteres. Entrégala al usuario: en el MVP no hay restablecimiento
-            desde la app.
+            Mínimo 8 caracteres. Entrégala al usuario: en el MVP no hay restablecimiento desde la
+            app.
           </p>
         </div>
 
@@ -147,11 +150,7 @@ export default function NuevoUsuarioPage() {
           <p className={ETIQUETA} id="rol-label">
             Rol
           </p>
-          <div
-            role="radiogroup"
-            aria-labelledby="rol-label"
-            className="flex flex-wrap gap-1.5"
-          >
+          <div role="radiogroup" aria-labelledby="rol-label" className="flex flex-wrap gap-1.5">
             {ROLES.map((r) => {
               const activo = rol === r;
               return (

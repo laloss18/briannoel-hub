@@ -19,7 +19,10 @@ export default function ClienteDetallePage() {
   const clientes = useLiveQuery(() => listClientes(), []);
   const zonas = useLiveQuery(() => listZonas(), []);
   const cliente = useMemo(() => (clientes ?? []).find((c) => c.id === id), [clientes, id]);
-  const zona = useMemo(() => (zonas ?? []).find((z) => z.id === cliente?.zona_id), [zonas, cliente]);
+  const zona = useMemo(
+    () => (zonas ?? []).find((z) => z.id === cliente?.zona_id),
+    [zonas, cliente],
+  );
   const puedeEditar = canEditClientes(roles);
 
   if (clientes === undefined) {
@@ -50,11 +53,15 @@ export default function ClienteDetallePage() {
                 {cliente.score ?? '—'}
                 <span className="ml-1 text-xs font-medium text-fog-500">/100</span>
               </p>
-              <p className="text-2xs text-fog-500">{cliente.score_grado ? `grado ${cliente.score_grado}` : 'por calcular'}</p>
+              <p className="text-2xs text-fog-500">
+                {cliente.score_grado ? `grado ${cliente.score_grado}` : 'por calcular'}
+              </p>
             </div>
             <div>
               <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">límite</p>
-              <p className="font-mono text-2xl tabular-nums text-fog-100">US$ {cliente.credito_limite.toFixed(0)}</p>
+              <p className="font-mono text-2xl tabular-nums text-fog-100">
+                US$ {cliente.credito_limite.toFixed(0)}
+              </p>
               <p className="text-2xs text-fog-500">crédito</p>
             </div>
             <div>
@@ -102,7 +109,10 @@ export default function ClienteDetallePage() {
             <Campo label="cédula/rif">{cliente.documento ?? '—'}</Campo>
             <Campo label="teléfono">
               {cliente.telefono ? (
-                <a href={`tel:${cliente.telefono}`} className="underline decoration-ink-600 underline-offset-2 hover:text-signal">
+                <a
+                  href={`tel:${cliente.telefono}`}
+                  className="underline decoration-ink-600 underline-offset-2 hover:text-signal"
+                >
                   {cliente.telefono}
                 </a>
               ) : (
@@ -116,7 +126,9 @@ export default function ClienteDetallePage() {
                 ? `${zona.municipio}${zona.estado ? `, ${zona.estado}` : ''}`
                 : '—'}
             </Campo>
-            <Campo label="dirección" className="sm:col-span-2">{cliente.direccion ?? '—'}</Campo>
+            <Campo label="dirección" className="sm:col-span-2">
+              {cliente.direccion ?? '—'}
+            </Campo>
             <Campo label="ubicación en mapa" className="sm:col-span-2">
               {cliente.lat != null && cliente.lng != null ? (
                 <a
@@ -128,14 +140,16 @@ export default function ClienteDetallePage() {
                   {cliente.lat.toFixed(5)}, {cliente.lng.toFixed(5)}
                 </a>
               ) : (
-                cliente.plus_code ?? '—'
+                (cliente.plus_code ?? '—')
               )}
             </Campo>
           </dl>
         </section>
 
         <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">condiciones de crédito</h2>
+          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+            condiciones de crédito
+          </h2>
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="límite">US${cliente.credito_limite.toFixed(2)}</Campo>
             <Campo label="plazo">{cliente.credito_dias} días</Campo>
@@ -144,13 +158,17 @@ export default function ClienteDetallePage() {
                 <>
                   {cliente.score}
                   <span className="text-fog-500"> / 100</span>
-                  {cliente.score_grado ? <span className="ml-1 text-ok">· {cliente.score_grado}</span> : null}
+                  {cliente.score_grado ? (
+                    <span className="ml-1 text-ok">· {cliente.score_grado}</span>
+                  ) : null}
                 </>
               ) : (
                 'por calcular'
               )}
             </Campo>
-            <Campo label="notas" className="sm:col-span-2">{cliente.notas_referencia ?? '—'}</Campo>
+            <Campo label="notas" className="sm:col-span-2">
+              {cliente.notas_referencia ?? '—'}
+            </Campo>
           </dl>
         </section>
       </div>
@@ -158,7 +176,15 @@ export default function ClienteDetallePage() {
   );
 }
 
-function Campo({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+function Campo({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <div className={className}>
       <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">{label}</dt>

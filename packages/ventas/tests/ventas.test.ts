@@ -198,12 +198,12 @@ describe('crearDespacho', () => {
   });
 
   it('rechaza cantidad no entera positiva', () => {
-    expect(() =>
-      crearDespacho(baseInput({ lineas: [{ item: ITEM, cantidad: 0 }] })),
-    ).toThrow(/entero positivo/);
-    expect(() =>
-      crearDespacho(baseInput({ lineas: [{ item: ITEM, cantidad: 1.5 }] })),
-    ).toThrow(/entero positivo/);
+    expect(() => crearDespacho(baseInput({ lineas: [{ item: ITEM, cantidad: 0 }] }))).toThrow(
+      /entero positivo/,
+    );
+    expect(() => crearDespacho(baseInput({ lineas: [{ item: ITEM, cantidad: 1.5 }] }))).toThrow(
+      /entero positivo/,
+    );
   });
 
   it('rechaza descuento sin aprobación', () => {
@@ -251,7 +251,9 @@ describe('editarDespachoPendiente (edición de pedido, §2.6)', () => {
 
   it('recalcula líneas, subtotal y total del pedido sin tocar id/created_at', () => {
     const d = editarDespachoPendiente(
-      despachoBase({ lineas: [{ item_id: ITEM.id, nombre: ITEM.nombre, cantidad: 1, precio_unitario: 2.5 }] }),
+      despachoBase({
+        lineas: [{ item_id: ITEM.id, nombre: ITEM.nombre, cantidad: 1, precio_unitario: 2.5 }],
+      }),
       { ...editInput(), clock: { now: () => T0, newId: () => 'X' } },
     );
     expect(d.id).toBe('01J0ZEV05QJ33W41PGGZG7XD6C');
@@ -278,13 +280,10 @@ describe('editarDespachoPendiente (edición de pedido, §2.6)', () => {
   });
 
   it('edición con descuento por monto fijo recalcula el total', () => {
-    const d = editarDespachoPendiente(
-      despachoBase(),
-      {
-        ...editInput({ lineas: [{ item: ITEM, cantidad: 2 }] }),
-        descuento: { monto_usd: 1, aprobado_por: 'admin@briannoel.com', pasos: 1 },
-      },
-    );
+    const d = editarDespachoPendiente(despachoBase(), {
+      ...editInput({ lineas: [{ item: ITEM, cantidad: 2 }] }),
+      descuento: { monto_usd: 1, aprobado_por: 'admin@briannoel.com', pasos: 1 },
+    });
     expect(d.subtotal).toBe(4.4);
     expect(d.total).toBe(3.4);
     expect(d.descuento_monto_usd).toBe(1);
@@ -328,10 +327,13 @@ describe('entregarDespacho (inmutabilidad §2.6)', () => {
 
 describe('corregirDespacho (corrección admin §2.6)', () => {
   it('marca entregado indicando quién entregó (desde pedido)', () => {
-    const d = corregirDespacho(
-      despachoBase(),
-      { estado: 'entregado', entregado_por: 'Luis Pérez', editor: 'admin@briannoel.com', editor_role: 'admin', clock: CLOCK },
-    );
+    const d = corregirDespacho(despachoBase(), {
+      estado: 'entregado',
+      entregado_por: 'Luis Pérez',
+      editor: 'admin@briannoel.com',
+      editor_role: 'admin',
+      clock: CLOCK,
+    });
     expect(d.estado).toBe('entregado');
     expect(d.entregado_at).toBe(T0);
     expect(d.entregado_por).toBe('Luis Pérez');
@@ -339,31 +341,46 @@ describe('corregirDespacho (corrección admin §2.6)', () => {
   });
 
   it('revierte entregado → pedido (me equivoqué) y limpia la entrega', () => {
-    const entregado = despachoBase({ estado: 'entregado', entregado_at: T0, entregado_por: 'Luis Pérez' });
-    const d = corregirDespacho(
-      entregado,
-      { estado: 'pedido', editor: 'admin@briannoel.com', editor_role: 'admin', clock: CLOCK },
-    );
+    const entregado = despachoBase({
+      estado: 'entregado',
+      entregado_at: T0,
+      entregado_por: 'Luis Pérez',
+    });
+    const d = corregirDespacho(entregado, {
+      estado: 'pedido',
+      editor: 'admin@briannoel.com',
+      editor_role: 'admin',
+      clock: CLOCK,
+    });
     expect(d.estado).toBe('pedido');
     expect(d.entregado_at).toBeNull();
     expect(d.entregado_por).toBeNull();
   });
 
   it('anula un pedido entregado (corrección)', () => {
-    const entregado = despachoBase({ estado: 'entregado', entregado_at: T0, entregado_por: 'Luis Pérez' });
-    const d = corregirDespacho(
-      entregado,
-      { estado: 'anulado', editor: 'admin@briannoel.com', editor_role: 'admin', clock: CLOCK },
-    );
+    const entregado = despachoBase({
+      estado: 'entregado',
+      entregado_at: T0,
+      entregado_por: 'Luis Pérez',
+    });
+    const d = corregirDespacho(entregado, {
+      estado: 'anulado',
+      editor: 'admin@briannoel.com',
+      editor_role: 'admin',
+      clock: CLOCK,
+    });
     expect(d.estado).toBe('anulado');
     expect(d.entregado_por).toBe('Luis Pérez');
   });
 
   it('asigna promotor y entregado_por del roster sin cambiar estado', () => {
-    const d = corregirDespacho(
-      despachoBase(),
-      { promotor: 'Ana Rojas', entregado_por: 'Luis Pérez', editor: 'admin@briannoel.com', editor_role: 'admin', clock: CLOCK },
-    );
+    const d = corregirDespacho(despachoBase(), {
+      promotor: 'Ana Rojas',
+      entregado_por: 'Luis Pérez',
+      editor: 'admin@briannoel.com',
+      editor_role: 'admin',
+      clock: CLOCK,
+    });
     expect(d.promotor).toBe('Ana Rojas');
     expect(d.entregado_por).toBe('Luis Pérez');
     expect(d.estado).toBe('pedido');
@@ -371,40 +388,47 @@ describe('corregirDespacho (corrección admin §2.6)', () => {
 
   it('limpiar promotor/entregado_por con null', () => {
     const conRoster = despachoBase({ promotor: 'Ana Rojas', entregado_por: 'Luis Pérez' });
-    const d = corregirDespacho(
-      conRoster,
-      { promotor: null, entregado_por: null, editor: 'admin@briannoel.com', editor_role: 'admin', clock: CLOCK },
-    );
+    const d = corregirDespacho(conRoster, {
+      promotor: null,
+      entregado_por: null,
+      editor: 'admin@briannoel.com',
+      editor_role: 'admin',
+      clock: CLOCK,
+    });
     expect(d.promotor).toBeNull();
     expect(d.entregado_por).toBeNull();
   });
 
   it('rechaza marcar entregado sin indicar quién entregó', () => {
     expect(() =>
-      corregirDespacho(
-        despachoBase(),
-        { estado: 'entregado', editor: 'admin@briannoel.com', editor_role: 'admin' },
-      ),
+      corregirDespacho(despachoBase(), {
+        estado: 'entregado',
+        editor: 'admin@briannoel.com',
+        editor_role: 'admin',
+      }),
     ).toThrow(/quién entregó/i);
   });
 
   it('rechaza marcar entregado desde un estado distinto a pedido', () => {
     const anulado = despachoBase({ estado: 'anulado' });
     expect(() =>
-      corregirDespacho(
-        anulado,
-        { estado: 'entregado', entregado_por: 'Luis', editor: 'admin@briannoel.com', editor_role: 'admin' },
-      ),
+      corregirDespacho(anulado, {
+        estado: 'entregado',
+        entregado_por: 'Luis',
+        editor: 'admin@briannoel.com',
+        editor_role: 'admin',
+      }),
     ).toThrow(/pedido/i);
   });
 
   it('rechaza anular algo ya anulado', () => {
     const anulado = despachoBase({ estado: 'anulado' });
     expect(() =>
-      corregirDespacho(
-        anulado,
-        { estado: 'anulado', editor: 'admin@briannoel.com', editor_role: 'admin' },
-      ),
+      corregirDespacho(anulado, {
+        estado: 'anulado',
+        editor: 'admin@briannoel.com',
+        editor_role: 'admin',
+      }),
     ).toThrow(/ya está anulado/i);
   });
 });
@@ -417,21 +441,39 @@ describe('puedeGestionarDespacho (propiedad §3.3)', () => {
 
   it('el supervisor gestiona solo sus propios registros (a cargo)', () => {
     const propios = despachoBase({ supervisor: 'Luis Pérez', created_by: 'promotor@x.com' });
-    expect(puedeGestionarDespacho(propios, 'Luis Pérez', 'supervisor@x.com', 'supervisor')).toBe(true);
+    expect(puedeGestionarDespacho(propios, 'Luis Pérez', 'supervisor@x.com', 'supervisor')).toBe(
+      true,
+    );
     const ajenos = despachoBase({ supervisor: 'Ana Rojas', created_by: 'promotor@x.com' });
-    expect(puedeGestionarDespacho(ajenos, 'Luis Pérez', 'supervisor@x.com', 'supervisor')).toBe(false);
+    expect(puedeGestionarDespacho(ajenos, 'Luis Pérez', 'supervisor@x.com', 'supervisor')).toBe(
+      false,
+    );
   });
 
   it('el promotor gestiona el pedido que tomó él', () => {
     const propio = despachoBase({ created_by: 'promotor@x.com' });
-    expect(puedeGestionarDespacho(propio, 'promotor@x.com', 'promotor@x.com', 'promotor')).toBe(true);
+    expect(puedeGestionarDespacho(propio, 'promotor@x.com', 'promotor@x.com', 'promotor')).toBe(
+      true,
+    );
     const ajeno = despachoBase({ created_by: 'otro@x.com' });
-    expect(puedeGestionarDespacho(ajeno, 'promotor@x.com', 'promotor@x.com', 'promotor')).toBe(false);
+    expect(puedeGestionarDespacho(ajeno, 'promotor@x.com', 'promotor@x.com', 'promotor')).toBe(
+      false,
+    );
   });
 
   it('supervisor coincide por email de la sesión si el roster no tiene nombre', () => {
-    const d = despachoBase({ supervisor: 'supervisor@briannoel.com', created_by: 'promotor@x.com' });
-    expect(puedeGestionarDespacho(d, 'supervisor@briannoel.com', 'supervisor@briannoel.com', 'supervisor')).toBe(true);
+    const d = despachoBase({
+      supervisor: 'supervisor@briannoel.com',
+      created_by: 'promotor@x.com',
+    });
+    expect(
+      puedeGestionarDespacho(
+        d,
+        'supervisor@briannoel.com',
+        'supervisor@briannoel.com',
+        'supervisor',
+      ),
+    ).toBe(true);
   });
 });
 
@@ -571,32 +613,40 @@ describe('recargo por mora e IVA (§recargo)', () => {
   it('rechaza recargo por mora en una venta de contado', () => {
     expect(() =>
       crearDespacho(
-        baseInput({ condicion: 'contado', lineas: [{ item: ITEM, cantidad: 2 }], mora: { pct: 10 } }),
+        baseInput({
+          condicion: 'contado',
+          lineas: [{ item: ITEM, cantidad: 2 }],
+          mora: { pct: 10 },
+        }),
       ),
     ).toThrow(/solo aplica a ventas a crédito/i);
   });
 
   it('rechaza combinar porcentaje y monto fijo de mora a la vez', () => {
     expect(() =>
-      crearDespacho(
-        baseInput({ condicion: 'credito', mora: { pct: 5, monto_usd: 3 } }),
-      ),
+      crearDespacho(baseInput({ condicion: 'credito', mora: { pct: 5, monto_usd: 3 } })),
     ).toThrow(/un solo tipo de recargo/i);
   });
 
   it('rechaza porcentaje fuera de rango o monto mayor al subtotal', () => {
+    expect(() => crearDespacho(baseInput({ condicion: 'credito', mora: { pct: 101 } }))).toThrow(
+      /0 y 100/i,
+    );
     expect(() =>
-      crearDespacho(baseInput({ condicion: 'credito', mora: { pct: 101 } })),
-    ).toThrow(/0 y 100/i);
-    expect(() =>
-      crearDespacho(baseInput({ condicion: 'credito', lineas: [{ item: ITEM, cantidad: 1 }], mora: { monto_usd: 999 } })),
+      crearDespacho(
+        baseInput({
+          condicion: 'credito',
+          lineas: [{ item: ITEM, cantidad: 1 }],
+          mora: { monto_usd: 999 },
+        }),
+      ),
     ).toThrow(/no puede superar el subtotal/i);
   });
 
   it('rechaza IVA fuera de rango', () => {
-    expect(() =>
-      crearDespacho(baseInput({ condicion: 'credito', iva_pct: 120 })),
-    ).toThrow(/0 y 100/i);
+    expect(() => crearDespacho(baseInput({ condicion: 'credito', iva_pct: 120 }))).toThrow(
+      /0 y 100/i,
+    );
   });
 
   it('la edición de un pedido recalcula recargo e IVA con las nuevas reglas', () => {

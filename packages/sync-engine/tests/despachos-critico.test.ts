@@ -60,7 +60,13 @@ function record(
   role: string,
   deletedAt: string | null = null,
 ): SyncRecord & { editor_role: string } {
-  return { id, created_at: updatedAt, updated_at: updatedAt, deleted_at: deletedAt, editor_role: role };
+  return {
+    id,
+    created_at: updatedAt,
+    updated_at: updatedAt,
+    deleted_at: deletedAt,
+    editor_role: role,
+  };
 }
 
 describe('despachos: prioridad por rol (§5.1, entidad crítica)', () => {
@@ -106,8 +112,15 @@ describe('despachos: prioridad por rol (§5.1, entidad crítica)', () => {
   it('sin editor_role (registro heredado) no rompe: cae a LWW', async () => {
     const t = new MemoryTransport();
     const { drive, store } = makeDrive(t);
-    await store.upsert('despachos', { id: 'd4', created_at: NOW, updated_at: NOW, deleted_at: null });
-    t.seed('despachos', [{ id: 'd4', created_at: NOW, updated_at: '2024-06-01T00:00:09.000Z', deleted_at: null }]);
+    await store.upsert('despachos', {
+      id: 'd4',
+      created_at: NOW,
+      updated_at: NOW,
+      deleted_at: null,
+    });
+    t.seed('despachos', [
+      { id: 'd4', created_at: NOW, updated_at: '2024-06-01T00:00:09.000Z', deleted_at: null },
+    ]);
 
     await drive.pullDelta('despachos');
 
@@ -124,8 +137,7 @@ describe('despachos: push + skew de reloj ±5 min (§6.4)', () => {
     await drive.pushOutbox();
 
     const pushed = (await outbox.listAll()).find((o) => o.id === 'd-push') as
-      | (OutboxEntry & { editor_role: string; nro_control: string })
-      | undefined;
+      (OutboxEntry & { editor_role: string; nro_control: string }) | undefined;
     expect(pushed?.editor_role).toBe('supervisor');
     expect(pushed?.nro_control).toBe('D-D-PU');
     expect(pushed?.status).toBe('synced');
@@ -141,16 +153,19 @@ describe('despachos: push + skew de reloj ±5 min (§6.4)', () => {
     const driveB = makeDrive(t, clockB);
 
     // A estampa 01:05 (reloj adelantado, es real 01:00); B escribe a las 01:05 reales.
-    await driveA.drive.enqueue(despachoOut('d-skew', '2024-06-01T01:05:00.000Z', 'supervisor', 'device-a'));
-    await driveB.drive.enqueue(despachoOut('d-skew', '2024-06-01T01:05:00.000Z', 'supervisor', 'device-b'));
+    await driveA.drive.enqueue(
+      despachoOut('d-skew', '2024-06-01T01:05:00.000Z', 'supervisor', 'device-a'),
+    );
+    await driveB.drive.enqueue(
+      despachoOut('d-skew', '2024-06-01T01:05:00.000Z', 'supervisor', 'device-b'),
+    );
 
     await driveA.drive.pushOutbox();
     await driveB.drive.pushOutbox();
 
     // Normalización: A → 01:00, B → 01:05 → gana B (escribe después en tiempo real).
     const serverRow = t.server.get('despachos')?.get('d-skew') as
-      | (SyncRecord & { client_id: string })
-      | undefined;
+      (SyncRecord & { client_id: string }) | undefined;
     expect(serverRow?.updated_at).toBe('2024-06-01T01:05:00.000Z');
     expect(serverRow?.client_id).toBe('device-b');
   });

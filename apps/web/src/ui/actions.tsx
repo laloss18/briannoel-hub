@@ -126,7 +126,14 @@ export function IconAction({
     );
   }
   return (
-    <button type="button" onClick={onClick} disabled={disabled} aria-label={label} title={label} className={cls}>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className={cls}
+    >
       <Icon name={icon} className="size-4" />
     </button>
   );

@@ -11,7 +11,7 @@ export default function ZonaFormPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const zonas = useLiveQuery(() => listZonas(), []);
-  const zona = id ? (zonas ?? []).find((z) => z.id === id) ?? null : null;
+  const zona = id ? ((zonas ?? []).find((z) => z.id === id) ?? null) : null;
   const editando = Boolean(id && zona);
   const [nombre, setNombre] = useState('');
   const [estado, setEstado] = useState('');

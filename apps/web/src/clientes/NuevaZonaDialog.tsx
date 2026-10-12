@@ -72,7 +72,10 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
     >
       <div className="w-full max-w-md overscroll-contain rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-popover">
         <div className="flex items-center justify-between gap-4">
-          <p id="zona-dialog-title" className="font-mono text-2xs uppercase tracking-wider text-fog-500">
+          <p
+            id="zona-dialog-title"
+            className="font-mono text-2xs uppercase tracking-wider text-fog-500"
+          >
             Nueva zona
           </p>
           <CloseButton onClick={onClose} label="Cerrar nueva zona" />
@@ -130,8 +133,8 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
           </select>
           <FieldError name="municipio" error={errors.municipio} />
           <p className="text-2xs text-fog-500">
-            El estado y el municipio quedan asociados a la zona: al elegirla para un cliente se muestran
-            automáticamente.
+            El estado y el municipio quedan asociados a la zona: al elegirla para un cliente se
+            muestran automáticamente.
           </p>
           <p role="status" className="text-xs text-ok">
             {message?.kind === 'ok' ? message.text : ''}

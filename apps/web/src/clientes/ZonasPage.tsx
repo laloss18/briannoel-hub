@@ -16,7 +16,17 @@ export default function ZonasPage() {
       titulo="Zonas"
       icono="map"
       volverA="/"
-      accion={canManage ? { label: 'Nueva zona', icon: 'plus', to: '/zonas/nueva', variant: 'primary', soloIcono: true } : undefined}
+      accion={
+        canManage
+          ? {
+              label: 'Nueva zona',
+              icon: 'plus',
+              to: '/zonas/nueva',
+              variant: 'primary',
+              soloIcono: true,
+            }
+          : undefined
+      }
     >
       <div className="flex flex-col gap-4">
         <p className="font-mono text-xs tabular-nums text-fog-500">

@@ -219,7 +219,12 @@ function buildRows(): DemoRow[] {
       lat: 10.4806,
       lng: -66.9036,
       zona_id: ZONA_CENTRO,
-      consentimiento: { fecha: iso(25 * D), foto_casa: false, foto_documento: false, aviso_documento: false },
+      consentimiento: {
+        fecha: iso(25 * D),
+        foto_casa: false,
+        foto_documento: false,
+        aviso_documento: false,
+      },
       credito_limite: 300,
       credito_dias: 30,
       score: 82,
@@ -242,7 +247,12 @@ function buildRows(): DemoRow[] {
       lat: 10.498,
       lng: -66.868,
       zona_id: ZONA_NORTE,
-      consentimiento: { fecha: iso(22 * D), foto_casa: true, foto_documento: false, aviso_documento: false },
+      consentimiento: {
+        fecha: iso(22 * D),
+        foto_casa: true,
+        foto_documento: false,
+        aviso_documento: false,
+      },
       credito_limite: 500,
       credito_dias: 30,
       score: 95,
@@ -261,7 +271,12 @@ function buildRows(): DemoRow[] {
       telefono: '0424-5566778',
       direccion: 'Av. San Rafael, local 5, Centro Comercial Montalbán',
       zona_id: ZONA_NORTE,
-      consentimiento: { fecha: iso(14 * D), foto_casa: false, foto_documento: true, aviso_documento: true },
+      consentimiento: {
+        fecha: iso(14 * D),
+        foto_casa: false,
+        foto_documento: true,
+        aviso_documento: true,
+      },
       credito_limite: 200,
       credito_dias: 15,
       score: 64,
@@ -283,7 +298,12 @@ function buildRows(): DemoRow[] {
       lat: 10.432,
       lng: -66.813,
       zona_id: ZONA_HATILLO,
-      consentimiento: { fecha: iso(6 * D), foto_casa: false, foto_documento: false, aviso_documento: false },
+      consentimiento: {
+        fecha: iso(6 * D),
+        foto_casa: false,
+        foto_documento: false,
+        aviso_documento: false,
+      },
       credito_limite: 1,
       credito_dias: 15,
       score: 22,
@@ -303,7 +323,12 @@ function buildRows(): DemoRow[] {
       telefono: '0412-4455667',
       direccion: 'Av. Boyacá, frente a la Plaza Bolívar',
       zona_id: ZONA_CENTRO,
-      consentimiento: { fecha: iso(11 * D), foto_casa: false, foto_documento: false, aviso_documento: false },
+      consentimiento: {
+        fecha: iso(11 * D),
+        foto_casa: false,
+        foto_documento: false,
+        aviso_documento: false,
+      },
       credito_limite: 150,
       credito_dias: 30,
       score: 72,
@@ -321,7 +346,12 @@ function buildRows(): DemoRow[] {
       documento: 'V-81234567',
       telefono: '0212-3344556',
       zona_id: ZONA_HATILLO,
-      consentimiento: { fecha: iso(9 * D), foto_casa: false, foto_documento: false, aviso_documento: false },
+      consentimiento: {
+        fecha: iso(9 * D),
+        foto_casa: false,
+        foto_documento: false,
+        aviso_documento: false,
+      },
       credito_limite: 250,
       credito_dias: 30,
       score: 88,
@@ -624,7 +654,10 @@ export async function limpiarDemoData(): Promise<number> {
 
 /** Demo ya presente (para el auto-seed y el estado del botón). */
 export async function tieneDatosDemo(): Promise<boolean> {
-  const n = await hub.records.where('id').anyOf([...DEMO_IDS]).count();
+  const n = await hub.records
+    .where('id')
+    .anyOf([...DEMO_IDS])
+    .count();
   return n > 0;
 }
 

@@ -24,7 +24,10 @@ export default function VentaFormPage() {
   const personal = useLiveQuery(() => listPersonal(), []);
   const usuarios = useAppUsers();
   const despachos = useLiveQuery(() => listDespachos(), []);
-  const editing = useMemo(() => (id ? (despachos ?? []).find((d) => d.id === id) ?? null : null), [despachos, id]);
+  const editing = useMemo(
+    () => (id ? ((despachos ?? []).find((d) => d.id === id) ?? null) : null),
+    [despachos, id],
+  );
   const titulo = id ? 'Editar venta' : 'Registrar venta';
 
   const editorRole = roles[0] ?? 'promotor';
@@ -37,7 +40,11 @@ export default function VentaFormPage() {
   const onEdit = async (form: EditarVentaFormInput) => {
     if (!editing) throw new Error('No hay despacho en edición.');
     const previoClienteId = editing.cliente_id;
-    const editado = await editarDespachoLocal(editing, { ...form, vendedor: email, editor_role: editorRole });
+    const editado = await editarDespachoLocal(editing, {
+      ...form,
+      vendedor: email,
+      editor_role: editorRole,
+    });
     await recalcularScoreDe(previoClienteId);
     if (editado.cliente_id !== previoClienteId) await recalcularScoreDe(editado.cliente_id);
   };

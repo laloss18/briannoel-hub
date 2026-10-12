@@ -1,10 +1,6 @@
 import { MAX_OUTBOX_ATTEMPTS, MAX_PUSH_BATCH } from '@brian/shared';
 import { measureClockOffset, normalizeTimestamp } from './clock';
-import {
-  ConflictRegistry,
-  lwwWins,
-  rolePriorityWins,
-} from './lww';
+import { ConflictRegistry, lwwWins, rolePriorityWins } from './lww';
 import { markAttempted, toFailed, toPending } from './outbox';
 import type { CursorStore, EventLog, LocalStore, OutboxStore, SyncTransport } from './ports';
 import type {

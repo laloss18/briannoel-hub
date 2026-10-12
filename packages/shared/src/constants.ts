@@ -157,7 +157,15 @@ export const VE_ESTADOS_MUNICIPIOS: Record<VE_Estado, readonly string[]> = {
     'Simón Bolívar',
     'Simón Rodríguez',
   ],
-  Apure: ['Achaguas', 'Biruaca', 'Muñoz', 'Páez', 'Pedro Camejo', 'Rómulo Gallegos', 'San Fernando'],
+  Apure: [
+    'Achaguas',
+    'Biruaca',
+    'Muñoz',
+    'Páez',
+    'Pedro Camejo',
+    'Rómulo Gallegos',
+    'San Fernando',
+  ],
   Aragua: [
     'Bolívar',
     'Camatagua',

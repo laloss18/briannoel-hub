@@ -42,14 +42,22 @@ export default function VentaDetallePage() {
   const clientes = useLiveQuery(() => listClientes(), []);
   const zonas = useLiveQuery(() => listZonas(), []);
   const despacho = useMemo(() => (despachos ?? []).find((d) => d.id === id), [despachos, id]);
-  const cliente = useMemo(() => (clientes ?? []).find((c) => c.id === despacho?.cliente_id), [clientes, despacho]);
-  const zona = useMemo(() => (zonas ?? []).find((z) => z.id === cliente?.zona_id), [zonas, cliente]);
+  const cliente = useMemo(
+    () => (clientes ?? []).find((c) => c.id === despacho?.cliente_id),
+    [clientes, despacho],
+  );
+  const zona = useMemo(
+    () => (zonas ?? []).find((z) => z.id === cliente?.zona_id),
+    [zonas, cliente],
+  );
 
   const editorRole = roles[0] ?? 'promotor';
   const canDeliver = hasPermission('deliver_dispatch', roles);
   const canDelete = hasPermission('delete_dispatch_pending', roles);
   const esPedido = despacho?.estado === 'pedido';
-  const ownership = despacho ? puedeGestionarDespacho(despacho, identidad, email, editorRole) : false;
+  const ownership = despacho
+    ? puedeGestionarDespacho(despacho, identidad, email, editorRole)
+    : false;
   const puedeEditar = ownership && esPedido;
   const puedeEntregar = canDeliver && ownership && esPedido;
   // `corregirDespacho` documenta "solo el admin corrige": la UI valida ese rol.
@@ -73,7 +81,11 @@ export default function VentaDetallePage() {
     if (!confirm(`¿Deshacer la entrega de ${despacho.nro_control}? Vuelve a "pedido".`)) return;
     setBusy('deshacer');
     try {
-      await corregirDespachoLocal(despacho, { estado: 'pedido', editor: identidad, editor_role: editorRole });
+      await corregirDespachoLocal(despacho, {
+        estado: 'pedido',
+        editor: identidad,
+        editor_role: editorRole,
+      });
       await recalcularScoreDe(despacho.cliente_id);
     } finally {
       setBusy(null);
@@ -127,7 +139,12 @@ export default function VentaDetallePage() {
 
   /* Seguimiento: hitos derivados del registro (sin reescribir el historial). */
   const hitos: { cuando: string; etiqueta: string; autor?: string | null; nota?: string }[] = [];
-  const pushHito = (cuando: string | null | undefined, etiqueta: string, autor?: string | null, nota?: string) => {
+  const pushHito = (
+    cuando: string | null | undefined,
+    etiqueta: string,
+    autor?: string | null,
+    nota?: string,
+  ) => {
     if (cuando) hitos.push({ cuando, etiqueta, autor, nota });
   };
   pushHito(despacho.created_at, 'pedido registrado', despacho.created_by);
@@ -145,12 +162,30 @@ export default function VentaDetallePage() {
 
   const acciones: PageShellAccion[] = [];
   if (puedeEntregar)
-    acciones.push({ label: 'Entregar', icon: 'truck', variant: 'ok', disabled: busy !== null, onClick: () => void onEntregar() });
-  if (puedeEditar) acciones.push({ label: 'Editar pedido', icon: 'pencil', to: `/ventas/${despacho.id}/editar` });
+    acciones.push({
+      label: 'Entregar',
+      icon: 'truck',
+      variant: 'ok',
+      disabled: busy !== null,
+      onClick: () => void onEntregar(),
+    });
+  if (puedeEditar)
+    acciones.push({ label: 'Editar pedido', icon: 'pencil', to: `/ventas/${despacho.id}/editar` });
   if (puedeDeshacer)
-    acciones.push({ label: 'Deshacer entrega', icon: 'undo', disabled: busy !== null, onClick: () => void onDeshacer() });
+    acciones.push({
+      label: 'Deshacer entrega',
+      icon: 'undo',
+      disabled: busy !== null,
+      onClick: () => void onDeshacer(),
+    });
   if (puedeEliminar)
-    acciones.push({ label: 'Eliminar pedido', icon: 'trash', variant: 'danger', disabled: busy !== null, onClick: () => void onEliminar() });
+    acciones.push({
+      label: 'Eliminar pedido',
+      icon: 'trash',
+      variant: 'danger',
+      disabled: busy !== null,
+      onClick: () => void onEliminar(),
+    });
 
   const estadoEntrega =
     despacho.entregado_at !== null && despacho.entregado_at !== undefined
@@ -170,7 +205,9 @@ export default function VentaDetallePage() {
         {/* 1 · Resumen de ventas: pedido, cliente, total, saldo y estado — lo
             primero que el operador quiere saber de un vistazo. */}
         <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">resumen de ventas</h2>
+          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+            resumen de ventas
+          </h2>
           <div className="mt-2 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
             <div>
               <p className="text-lg font-semibold tracking-[-0.01em] text-fog-100">
@@ -186,11 +223,15 @@ export default function VentaDetallePage() {
           <dl className="mt-3 flex flex-col gap-1 border-t border-ink-800 pt-3">
             <div className="flex justify-between gap-3">
               <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">total</dt>
-              <dd className="font-mono text-3xl tabular-nums text-signal">US$ {despacho.total.toFixed(2)}</dd>
+              <dd className="font-mono text-3xl tabular-nums text-signal">
+                US$ {despacho.total.toFixed(2)}
+              </dd>
             </div>
             {esCredito ? (
               <div className="flex justify-between gap-3">
-                <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">saldo a cancelar · crédito</dt>
+                <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+                  saldo a cancelar · crédito
+                </dt>
                 <dd className="text-right font-mono text-sm tabular-nums text-fog-100">
                   US$ {despacho.total.toFixed(2)}
                   {saldoBs !== null && (
@@ -202,10 +243,14 @@ export default function VentaDetallePage() {
               </div>
             ) : saldoBs !== null ? (
               <div className="flex justify-between gap-3">
-                <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">equivalente</dt>
+                <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+                  equivalente
+                </dt>
                 <dd className="text-right font-mono text-sm tabular-nums text-fog-100">
                   ≈ Bs {saldoBs.toFixed(2)}
-                  <span className="block text-2xs text-fog-500">a la tasa de hoy {tasa!.toFixed(2)}</span>
+                  <span className="block text-2xs text-fog-500">
+                    a la tasa de hoy {tasa!.toFixed(2)}
+                  </span>
                 </dd>
               </div>
             ) : null}
@@ -214,7 +259,9 @@ export default function VentaDetallePage() {
 
         {/* 2 · Detalles de venta: productos, totales, supervisión y entrega */}
         <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">detalles de venta</h2>
+          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+            detalles de venta
+          </h2>
 
           <h3 className="mt-2 font-mono text-2xs uppercase tracking-wider text-fog-600">
             productos · {despacho.lineas.length}
@@ -222,10 +269,14 @@ export default function VentaDetallePage() {
           <div className="mt-1 flex flex-col divide-y divide-ink-800">
             {despacho.lineas.map((l) => (
               <div key={l.item_id} className="flex items-baseline justify-between gap-3 py-2">
-                <span className="min-w-0 truncate text-sm font-medium text-fog-100">{l.nombre}</span>
+                <span className="min-w-0 truncate text-sm font-medium text-fog-100">
+                  {l.nombre}
+                </span>
                 <span className="shrink-0 text-right font-mono text-xs tabular-nums text-fog-500">
                   {l.cantidad} × US${l.precio_unitario.toFixed(2)}
-                  <span className="ml-2 text-fog-100">US$ {(l.cantidad * l.precio_unitario).toFixed(2)}</span>
+                  <span className="ml-2 text-fog-100">
+                    US$ {(l.cantidad * l.precio_unitario).toFixed(2)}
+                  </span>
                 </span>
               </div>
             ))}
@@ -233,8 +284,12 @@ export default function VentaDetallePage() {
 
           <div className="mt-3 flex flex-col gap-1 border-t border-ink-800 pt-3">
             <div className="flex justify-between gap-3">
-              <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">subtotal</span>
-              <span className="font-mono text-sm tabular-nums text-fog-100">US${despacho.subtotal.toFixed(2)}</span>
+              <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+                subtotal
+              </span>
+              <span className="font-mono text-sm tabular-nums text-fog-100">
+                US${despacho.subtotal.toFixed(2)}
+              </span>
             </div>
             {(() => {
               const mora = despacho.mora_total_usd ?? 0;
@@ -246,31 +301,49 @@ export default function VentaDetallePage() {
                   {descuentoMonto > 0 && (
                     <div className="flex justify-between gap-3 text-danger">
                       <span className="font-mono text-2xs uppercase tracking-wider">
-                        descuento {despacho.descuento_pct > 0 ? `${despacho.descuento_pct}%` : `US$${despacho.descuento_monto_usd?.toFixed(2)}`}
+                        descuento{' '}
+                        {despacho.descuento_pct > 0
+                          ? `${despacho.descuento_pct}%`
+                          : `US$${despacho.descuento_monto_usd?.toFixed(2)}`}
                       </span>
-                      <span className="font-mono text-sm tabular-nums">−US${descuentoMonto.toFixed(2)}</span>
+                      <span className="font-mono text-sm tabular-nums">
+                        −US${descuentoMonto.toFixed(2)}
+                      </span>
                     </div>
                   )}
                   {mora > 0 && (
                     <div className="flex justify-between gap-3">
                       <span className="font-mono text-2xs uppercase tracking-wider">
-                        recargo por mora {despacho.mora_pct > 0 ? `${despacho.mora_pct}%` : `US$${(despacho.mora_monto_usd ?? 0).toFixed(2)}`}
+                        recargo por mora{' '}
+                        {despacho.mora_pct > 0
+                          ? `${despacho.mora_pct}%`
+                          : `US$${(despacho.mora_monto_usd ?? 0).toFixed(2)}`}
                       </span>
-                      <span className="font-mono text-sm tabular-nums text-fog-100">+US${mora.toFixed(2)}</span>
+                      <span className="font-mono text-sm tabular-nums text-fog-100">
+                        +US${mora.toFixed(2)}
+                      </span>
                     </div>
                   )}
                   {iva > 0 && (
                     <div className="flex justify-between gap-3">
-                      <span className="font-mono text-2xs uppercase tracking-wider">IVA {despacho.iva_pct}%</span>
-                      <span className="font-mono text-sm tabular-nums text-fog-100">+US${iva.toFixed(2)}</span>
+                      <span className="font-mono text-2xs uppercase tracking-wider">
+                        IVA {despacho.iva_pct}%
+                      </span>
+                      <span className="font-mono text-sm tabular-nums text-fog-100">
+                        +US${iva.toFixed(2)}
+                      </span>
                     </div>
                   )}
                 </>
               );
             })()}
             <div className="mt-1 flex items-baseline justify-between gap-3 border-t border-ink-800 pt-2">
-              <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">total</span>
-              <span className="font-mono text-lg tabular-nums text-signal">US${despacho.total.toFixed(2)}</span>
+              <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+                total
+              </span>
+              <span className="font-mono text-lg tabular-nums text-signal">
+                US${despacho.total.toFixed(2)}
+              </span>
             </div>
           </div>
 
@@ -284,13 +357,18 @@ export default function VentaDetallePage() {
 
         {/* 3 · Datos de cliente: contacto + ubicación */}
         <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">datos de cliente</h2>
+          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+            datos de cliente
+          </h2>
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="nombre">{cliente?.nombre ?? despacho.cliente_nombre}</Campo>
             <Campo label="cédula/rif">{cliente?.documento ?? '—'}</Campo>
             <Campo label="teléfono">
               {cliente?.telefono ? (
-                <a href={`tel:${cliente.telefono}`} className="underline decoration-ink-600 underline-offset-2 hover:text-signal">
+                <a
+                  href={`tel:${cliente.telefono}`}
+                  className="underline decoration-ink-600 underline-offset-2 hover:text-signal"
+                >
                   {cliente.telefono}
                 </a>
               ) : (
@@ -298,9 +376,15 @@ export default function VentaDetallePage() {
               )}
               {cliente?.telefono2 ? ` · ${cliente.telefono2}` : ''}
             </Campo>
-            <Campo label="zona">{zona ? `${zona.nombre} · ${zona.municipio} · ${zona.estado}` : '—'}</Campo>
-            <Campo label="dirección" className="sm:col-span-2">{cliente?.direccion ?? '—'}</Campo>
-            <Campo label="notas de referencia" className="sm:col-span-2">{cliente?.notas_referencia ?? '—'}</Campo>
+            <Campo label="zona">
+              {zona ? `${zona.nombre} · ${zona.municipio} · ${zona.estado}` : '—'}
+            </Campo>
+            <Campo label="dirección" className="sm:col-span-2">
+              {cliente?.direccion ?? '—'}
+            </Campo>
+            <Campo label="notas de referencia" className="sm:col-span-2">
+              {cliente?.notas_referencia ?? '—'}
+            </Campo>
             <Campo label="ubicación" className="sm:col-span-2">
               {cliente?.lat != null && cliente?.lng != null ? (
                 <a
@@ -312,7 +396,7 @@ export default function VentaDetallePage() {
                   {cliente.lat.toFixed(5)}, {cliente.lng.toFixed(5)}
                 </a>
               ) : (
-                cliente?.plus_code ?? '—'
+                (cliente?.plus_code ?? '—')
               )}
             </Campo>
           </dl>
@@ -325,7 +409,9 @@ export default function VentaDetallePage() {
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="creado por">{identidadDe(despacho.created_by)}</Campo>
             <Campo label="creado">{fechaCorta(despacho.created_at)}</Campo>
-            <Campo label="editado por">{despacho.updated_by ? identidadDe(despacho.updated_by) : '—'}</Campo>
+            <Campo label="editado por">
+              {despacho.updated_by ? identidadDe(despacho.updated_by) : '—'}
+            </Campo>
             <Campo label="editor rol">{despacho.editor_role}</Campo>
             <Campo label="actualizado">{fechaCorta(despacho.updated_at)}</Campo>
           </dl>
@@ -342,8 +428,12 @@ export default function VentaDetallePage() {
                     aria-hidden="true"
                   />
                   <div className="flex items-baseline justify-between gap-3">
-                    <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">{h.etiqueta}</p>
-                    <time className="shrink-0 font-mono text-2xs tabular-nums text-fog-500">{fechaCorta(h.cuando)}</time>
+                    <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+                      {h.etiqueta}
+                    </p>
+                    <time className="shrink-0 font-mono text-2xs tabular-nums text-fog-500">
+                      {fechaCorta(h.cuando)}
+                    </time>
                   </div>
                   {(h.autor || h.nota) && (
                     <p className="text-xs text-fog-500">
@@ -360,7 +450,15 @@ export default function VentaDetallePage() {
   );
 }
 
-function Campo({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+function Campo({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <div className={className}>
       <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">{label}</dt>

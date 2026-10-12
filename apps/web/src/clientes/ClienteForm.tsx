@@ -293,9 +293,24 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
       </p>
 
       <p className="font-mono text-xs uppercase tracking-wider text-fog-500">fotos del cliente</p>
-      <MiniFoto titulo="Fachada de la vivienda" foto={fotoFachada} onChange={setFotoFachada} onError={onFoto} />
-      <MiniFoto titulo="Foto del cliente" foto={fotoCliente} onChange={setFotoCliente} onError={onFoto} />
-      <MiniFoto titulo="Cédula de identidad" foto={fotoCedula} onChange={setFotoCedula} onError={onFoto} />
+      <MiniFoto
+        titulo="Fachada de la vivienda"
+        foto={fotoFachada}
+        onChange={setFotoFachada}
+        onError={onFoto}
+      />
+      <MiniFoto
+        titulo="Foto del cliente"
+        foto={fotoCliente}
+        onChange={setFotoCliente}
+        onError={onFoto}
+      />
+      <MiniFoto
+        titulo="Cédula de identidad"
+        foto={fotoCedula}
+        onChange={setFotoCedula}
+        onError={onFoto}
+      />
       {fotoError && <p className="text-xs text-danger">{fotoError}</p>}
       <p className="text-xs text-fog-500">
         Fotos recomendadas: se comprimen en el dispositivo y viajan con el registro.
@@ -347,7 +362,10 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
         <FieldError name="consentimiento" error={errors.consentimiento} />
       </fieldset>
 
-      <p role="status" className={`min-h-4 text-xs ${message?.kind === 'ok' ? 'text-ok' : 'text-danger'}`}>
+      <p
+        role="status"
+        className={`min-h-4 text-xs ${message?.kind === 'ok' ? 'text-ok' : 'text-danger'}`}
+      >
         {message?.text ?? ''}
       </p>
 

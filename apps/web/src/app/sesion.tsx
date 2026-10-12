@@ -34,10 +34,7 @@ export function SesionProvider({ sesion, children }: { sesion: Sesion; children:
     return m;
   }, [usuarios]);
 
-  const valor = useMemo<SesionCtx>(
-    () => ({ ...sesion, identidades }),
-    [sesion, identidades],
-  );
+  const valor = useMemo<SesionCtx>(() => ({ ...sesion, identidades }), [sesion, identidades]);
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }
 

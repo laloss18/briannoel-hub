@@ -107,7 +107,13 @@ describe('matchZona', () => {
       { lat: 10.1872, lng: -67.9905 }, // ~1.4 km al este de Centro
       { lat: 10.176, lng: -68.0117 }, // ~1.1 km al oeste-suroeste de Centro
     ];
-    const naguanagua: Zona = { ...ZONA, id: 'NAG', nombre: 'Naguanagua', lat: 10.2765, lng: -68.0106 };
+    const naguanagua: Zona = {
+      ...ZONA,
+      id: 'NAG',
+      nombre: 'Naguanagua',
+      lat: 10.2765,
+      lng: -68.0106,
+    };
     const sanBlas: Zona = { ...ZONA, id: 'SBL', nombre: 'San Blas', lat: 10.153, lng: -68.02 };
     for (const punto of dispositivos) {
       expect(matchZona(punto, [naguanagua, sanBlas, ZONA])?.id).toBe(ZONA.id);

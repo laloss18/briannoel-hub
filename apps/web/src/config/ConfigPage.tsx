@@ -92,7 +92,10 @@ function DatosDemo() {
         </div>
       </div>
       {msg && (
-        <p role="alert" className={`mt-2 text-xs ${msg.kind === 'error' ? 'text-danger' : 'text-ok'}`}>
+        <p
+          role="alert"
+          className={`mt-2 text-xs ${msg.kind === 'error' ? 'text-danger' : 'text-ok'}`}
+        >
           {msg.text}
         </p>
       )}
@@ -121,7 +124,9 @@ function Apariencia() {
               title={t === 'claro' ? 'Tema claro' : 'Tema oscuro'}
               onClick={() => cambiarTema(t)}
               className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border transition-colors ${
-                tema === t ? 'border-signal bg-signal text-ink-950' : 'border-ink-600 text-fog-300 hover:bg-ink-800 hover:text-fog-100'
+                tema === t
+                  ? 'border-signal bg-signal text-ink-950'
+                  : 'border-ink-600 text-fog-300 hover:bg-ink-800 hover:text-fog-100'
               }`}
             >
               <Icon name={t === 'claro' ? 'sun' : 'moon'} />
@@ -147,7 +152,10 @@ function MiPerfil() {
     const v = uname.trim();
     const ok = usernameSchema.safeParse(v);
     if (!ok.success) {
-      setMsg({ kind: 'error', text: 'Nombre inválido: 3 a 40 caracteres (letras, números y espacios).' });
+      setMsg({
+        kind: 'error',
+        text: 'Nombre inválido: 3 a 40 caracteres (letras, números y espacios).',
+      });
       return;
     }
     if (!supabase) {
@@ -160,7 +168,10 @@ function MiPerfil() {
       const { error } = await supabase.auth.updateUser({ data: { username: v } });
       if (error) throw error;
       await supabase.auth.refreshSession();
-      setMsg({ kind: 'ok', text: 'Username actualizado. Puede que necesites recargar para verlo en la sesión.' });
+      setMsg({
+        kind: 'ok',
+        text: 'Username actualizado. Puede que necesites recargar para verlo en la sesión.',
+      });
     } catch (e) {
       setMsg({ kind: 'error', text: e instanceof Error ? e.message : String(e) });
     } finally {

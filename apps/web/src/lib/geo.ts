@@ -25,7 +25,11 @@ export function obtenerCoords(): Promise<{ lat: number; lng: number } | null> {
         },
         // Alta precisión estricta primero; si falla, baja precisión con más
         // margen de tiempo (la posición de red suele bastar para la zona).
-        { enableHighAccuracy: altaPrecision, timeout: altaPrecision ? 8000 : 15000, maximumAge: 60000 },
+        {
+          enableHighAccuracy: altaPrecision,
+          timeout: altaPrecision ? 8000 : 15000,
+          maximumAge: 60000,
+        },
       );
     pedir(true);
   });

@@ -26,7 +26,10 @@ export const usernameSchema = z
   .trim()
   .min(3, 'el nombre de usuario necesita al menos 3 caracteres')
   .max(40, 'el nombre de usuario admite hasta 40 caracteres')
-  .regex(/^[\p{L}\p{N}][\p{L}\p{N} .,'_-]*$/u, "usa letras, números y espacios (no se permiten símbolos raros)");
+  .regex(
+    /^[\p{L}\p{N}][\p{L}\p{N} .,'_-]*$/u,
+    'usa letras, números y espacios (no se permiten símbolos raros)',
+  );
 
 /** Sesión de usuario cacheada offline (PRD §3.4: indispensble offline, expira por inactividad 5 días).
  *  `username` es opcional: las sesiones cacheadas antes del alta por admin no lo traen y
@@ -70,7 +73,10 @@ export type AppUser = z.infer<typeof appUserSchema>;
 export type IdentidadIndice = ReadonlyMap<string, string>;
 
 /** Nombre a mostrar para un email: el username si está en el índice, el email si no. */
-export function identidadDe(indice: IdentidadIndice | undefined, email: string | null | undefined): string {
+export function identidadDe(
+  indice: IdentidadIndice | undefined,
+  email: string | null | undefined,
+): string {
   if (!email) return '—';
   const username = indice?.get(email.toLowerCase());
   return username ?? email;

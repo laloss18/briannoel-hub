@@ -231,7 +231,9 @@ describe('pullDelta / cursor', () => {
 
     await drive.pullDelta('sync_demo');
 
-    const after = (await store.get('sync_demo', 'a')) as SyncRecordWithData<{ editor_role: string }>;
+    const after = (await store.get('sync_demo', 'a')) as SyncRecordWithData<{
+      editor_role: string;
+    }>;
     expect(after?.updated_at).toBe('2024-01-01T00:00:00.000Z');
     expect(after?.editor_role).toBe('supervisor');
   });

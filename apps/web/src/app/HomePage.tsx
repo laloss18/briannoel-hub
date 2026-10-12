@@ -44,7 +44,8 @@ export default function HomePage() {
   const totalClientes = clientes?.length ?? 0;
   const conZona = clientes?.filter((c) => c.zona_id !== null).length ?? 0;
   const conScore = clientes?.filter((c) => c.score_grado !== null) ?? [];
-  const porGrado = (g: (typeof GRADOS)[number]) => conScore.filter((c) => c.score_grado === g).length;
+  const porGrado = (g: (typeof GRADOS)[number]) =>
+    conScore.filter((c) => c.score_grado === g).length;
 
   const totalDespachos = despachos?.length ?? 0;
   const porEntregar = despachos?.filter((d) => d.estado === 'pedido').length ?? 0;
@@ -56,7 +57,12 @@ export default function HomePage() {
   const cargando = clientes === undefined || despachos === undefined || config === undefined;
 
   const tasa = config?.bcv_rate;
-  const origen = config?.bcv_rate_source === 'BCV_API' ? 'oficial' : config?.bcv_rate_source === 'manual' ? 'manual' : null;
+  const origen =
+    config?.bcv_rate_source === 'BCV_API'
+      ? 'oficial'
+      : config?.bcv_rate_source === 'manual'
+        ? 'manual'
+        : null;
 
   const fecha = new Date().toLocaleDateString('es-VE', {
     weekday: 'long',
@@ -91,11 +97,18 @@ export default function HomePage() {
       </nav>
 
       <section aria-label="Indicadores" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Kpi label="clientes" value={totalClientes} hint={conZona ? `${conZona} con zona` : 'sin zona'} cargando={cargando} />
+        <Kpi
+          label="clientes"
+          value={totalClientes}
+          hint={conZona ? `${conZona} con zona` : 'sin zona'}
+          cargando={cargando}
+        />
         <Kpi
           label="despachos"
           value={totalDespachos}
-          hint={totalDespachos ? `${porEntregar} por entregar · ${entregados} entregados` : 'sin ventas'}
+          hint={
+            totalDespachos ? `${porEntregar} por entregar · ${entregados} entregados` : 'sin ventas'
+          }
           cargando={cargando}
         />
         <Kpi
@@ -126,23 +139,30 @@ export default function HomePage() {
           <div className="mt-3 flex flex-col gap-1.5">
             {cargando
               ? GRADOS.map((g) => (
-                  <div key={g} className="h-1.5 animate-pulse rounded-full bg-ink-800" aria-hidden="true" />
+                  <div
+                    key={g}
+                    className="h-1.5 animate-pulse rounded-full bg-ink-800"
+                    aria-hidden="true"
+                  />
                 ))
               : GRADOS.map((g) => {
-              const n = porGrado(g);
-              const pct = conScore.length ? Math.round((n / conScore.length) * 100) : 0;
-              return (
-                <div key={g} className="flex items-center gap-3">
-                  <span className="w-3 shrink-0 font-mono text-2xs text-signal">{g}</span>
-                  <div className="h-1.5 flex-1 rounded-full bg-ink-800" aria-hidden="true">
-                    <div className="h-1.5 rounded-full bg-signal" style={{ width: `${pct}%` }} />
-                  </div>
-                  <span className="w-8 shrink-0 text-right font-mono text-2xs tabular-nums text-fog-500">
-                    {n}
-                  </span>
-                </div>
-              );
-            })}
+                  const n = porGrado(g);
+                  const pct = conScore.length ? Math.round((n / conScore.length) * 100) : 0;
+                  return (
+                    <div key={g} className="flex items-center gap-3">
+                      <span className="w-3 shrink-0 font-mono text-2xs text-signal">{g}</span>
+                      <div className="h-1.5 flex-1 rounded-full bg-ink-800" aria-hidden="true">
+                        <div
+                          className="h-1.5 rounded-full bg-signal"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="w-8 shrink-0 text-right font-mono text-2xs tabular-nums text-fog-500">
+                        {n}
+                      </span>
+                    </div>
+                  );
+                })}
           </div>
         </section>
       ) : (

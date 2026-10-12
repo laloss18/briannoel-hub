@@ -15,7 +15,17 @@ export default function PersonalPage() {
       titulo="Personal"
       icono="user"
       volverA="/"
-      accion={canManage ? { label: 'Nueva persona', icon: 'plus', to: '/personal/nuevo', variant: 'primary', soloIcono: true } : undefined}
+      accion={
+        canManage
+          ? {
+              label: 'Nueva persona',
+              icon: 'plus',
+              to: '/personal/nuevo',
+              variant: 'primary',
+              soloIcono: true,
+            }
+          : undefined
+      }
     >
       <ul className="flex flex-col divide-y divide-ink-700/60 border-y border-ink-700/60">
         {personas?.map((p) => (

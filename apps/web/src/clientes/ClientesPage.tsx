@@ -9,7 +9,10 @@ import { FilterBar, FilterChip, FilterGroup, FilterSelect, ToolbarFooter } from 
 import { useSesion } from '../app/sesion';
 
 const normaliza = (s: string) =>
-  s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
 /**
  * Sección Clientes (PRD §2.5): listado con filtros compactos (búsqueda, zona,
@@ -62,7 +65,13 @@ export default function ClientesPage() {
       volverA="/"
       accion={
         canEdit
-          ? { label: 'Nuevo cliente', icon: 'plus', to: '/clientes/nuevo', variant: 'primary', soloIcono: true }
+          ? {
+              label: 'Nuevo cliente',
+              icon: 'plus',
+              to: '/clientes/nuevo',
+              variant: 'primary',
+              soloIcono: true,
+            }
           : undefined
       }
     >

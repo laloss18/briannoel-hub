@@ -16,7 +16,11 @@ import { ChipEstado } from '../ui/chips';
 import { IconAction } from '../ui/actions';
 import { DateField, FilterBar, FilterChip, FilterGroup, ToolbarFooter } from '../ui/filtros';
 
-const normaliza = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const normaliza = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
 /** `YYYY-MM-DD` del día local (no UTC: el vendedor filtra por su día). */
 const hoyLocal = () => {
@@ -47,16 +51,19 @@ export default function VentasPage() {
   const canRecord = hasPermission('record_sale', roles);
   const canDeliver = hasPermission('deliver_dispatch', roles);
   const canDelete = hasPermission('delete_dispatch_pending', roles);
-const editorRole = roles[0] ?? 'promotor';
+  const editorRole = roles[0] ?? 'promotor';
   const identidad = useMiIdentidad();
 
-const [busqueda, setBusqueda] = useState('');
+  const [busqueda, setBusqueda] = useState('');
   const [estado, setEstado] = useState('');
   const [condicion, setCondicion] = useState('');
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
   const [rango, setRango] = useState<RangoRapido>('');
-  const [busy, setBusy] = useState<{ id: string; accion: 'entregar' | 'deshacer' | 'eliminar' } | null>(null);
+  const [busy, setBusy] = useState<{
+    id: string;
+    accion: 'entregar' | 'deshacer' | 'eliminar';
+  } | null>(null);
 
   const total = despachos?.length ?? 0;
 
@@ -72,7 +79,12 @@ const [busqueda, setBusqueda] = useState('');
         const nombre = cliente?.nombre ?? d.cliente_nombre;
         if (estado && d.estado !== estado) return false;
         if (condicion && d.condicion !== condicion) return false;
-        if (termino && !normaliza(nombre).includes(termino) && !d.nro_control.toLowerCase().includes(termino)) return false;
+        if (
+          termino &&
+          !normaliza(nombre).includes(termino) &&
+          !d.nro_control.toLowerCase().includes(termino)
+        )
+          return false;
         const f = fechaLocal(d.created_at);
         if (desde && f < desde) return false;
         if (hasta && f > hasta) return false;
@@ -81,7 +93,7 @@ const [busqueda, setBusqueda] = useState('');
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
   }, [despachos, clientesPorId, busqueda, estado, condicion, desde, hasta]);
 
-const hayFiltro = Boolean(busqueda || estado || condicion || desde || hasta);
+  const hayFiltro = Boolean(busqueda || estado || condicion || desde || hasta);
   const limpiar = () => {
     setBusqueda('');
     setEstado('');
@@ -111,7 +123,7 @@ const hayFiltro = Boolean(busqueda || estado || condicion || desde || hasta);
     }
   };
 
-const onEntregar = async (d: Despacho) => {
+  const onEntregar = async (d: Despacho) => {
     setBusy({ id: d.id, accion: 'entregar' });
     try {
       await entregarDespachoLocal(d, identidad, editorRole);
@@ -125,7 +137,11 @@ const onEntregar = async (d: Despacho) => {
     if (!confirm(`¿Deshacer la entrega de ${d.nro_control}? Vuelve a "pedido".`)) return;
     setBusy({ id: d.id, accion: 'deshacer' });
     try {
-      await corregirDespachoLocal(d, { estado: 'pedido', editor: identidad, editor_role: editorRole });
+      await corregirDespachoLocal(d, {
+        estado: 'pedido',
+        editor: identidad,
+        editor_role: editorRole,
+      });
       await recalcularScoreDe(d.cliente_id);
     } finally {
       setBusy(null);
@@ -148,9 +164,15 @@ const onEntregar = async (d: Despacho) => {
       titulo="Ventas"
       icono="cart"
       volverA="/"
-accion={
+      accion={
         canRecord
-          ? { label: 'Registrar venta', icon: 'plus', to: '/ventas/nueva', variant: 'primary', soloIcono: true }
+          ? {
+              label: 'Registrar venta',
+              icon: 'plus',
+              to: '/ventas/nueva',
+              variant: 'primary',
+              soloIcono: true,
+            }
           : undefined
       }
     >
@@ -226,14 +248,16 @@ accion={
           />
         </FilterBar>
 
-{filtrados.length === 0 ? (
+        {filtrados.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-ink-700 p-6 text-center">
             <p className="text-sm text-fog-500">
-              {total === 0 ? 'Aún no hay ventas registradas.' : 'Ningún despacho coincide con los filtros.'}
+              {total === 0
+                ? 'Aún no hay ventas registradas.'
+                : 'Ningún despacho coincide con los filtros.'}
             </p>
           </div>
         ) : (
-<ul className="flex flex-col gap-1.5">
+          <ul className="flex flex-col gap-1.5">
             {filtrados.map((d) => {
               const cliente = clientesPorId.get(d.cliente_id);
               const owner = puedeGestionarDespacho(d, identidad, email, editorRole);
@@ -245,7 +269,10 @@ accion={
               const ocupado = busy?.id === d.id;
 
               return (
-                <li key={d.id} className="flex items-center gap-1 rounded-xl bg-ink-900 px-1.5 py-1.5">
+                <li
+                  key={d.id}
+                  className="flex items-center gap-1 rounded-xl bg-ink-900 px-1.5 py-1.5"
+                >
                   <Link
                     to={`/ventas/${d.id}`}
                     className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2.5 transition-colors hover:bg-ink-800/60"
@@ -255,7 +282,8 @@ accion={
                         {cliente?.nombre ?? d.cliente_nombre}
                       </span>
                       <span className="block truncate font-mono text-2xs text-fog-600">
-                        {d.nro_control} · {d.condicion} · {new Date(d.created_at).toLocaleDateString('es-VE')}
+                        {d.nro_control} · {d.condicion} ·{' '}
+                        {new Date(d.created_at).toLocaleDateString('es-VE')}
                       </span>
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-1">
@@ -266,7 +294,7 @@ accion={
                     </span>
                   </Link>
 
-<div className="flex shrink-0 items-center gap-0.5">
+                  <div className="flex shrink-0 items-center gap-0.5">
                     {showEntregar && (
                       <IconAction
                         label={`Entregar ${d.nro_control}`}
@@ -285,7 +313,11 @@ accion={
                       />
                     )}
                     {showEditar && (
-                      <IconAction label={`Editar ${d.nro_control}`} icon="pencil" to={`/ventas/${d.id}/editar`} />
+                      <IconAction
+                        label={`Editar ${d.nro_control}`}
+                        icon="pencil"
+                        to={`/ventas/${d.id}/editar`}
+                      />
                     )}
                     {showEliminar && (
                       <IconAction

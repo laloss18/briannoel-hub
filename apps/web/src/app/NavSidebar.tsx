@@ -22,8 +22,22 @@ const SECCIONES: readonly Seccion[] = [
   { id: 'clientes', nombre: 'Clientes', to: '/clientes', icono: 'users', estado: 'listo' },
   { id: 'zonas', nombre: 'Zonas', to: '/zonas', icono: 'map', estado: 'listo' },
   { id: 'catalogo', nombre: 'Catálogo', to: '/catalogo', icono: 'package', estado: 'listo' },
-  { id: 'usuarios', nombre: 'Usuarios', to: '/config/usuarios', icono: 'users', estado: 'listo', permiso: 'manage_personal' },
-  { id: 'config', nombre: 'Configuración', to: '/config', icono: 'settings', estado: 'listo', permiso: 'view_kpis' },
+  {
+    id: 'usuarios',
+    nombre: 'Usuarios',
+    to: '/config/usuarios',
+    icono: 'users',
+    estado: 'listo',
+    permiso: 'manage_personal',
+  },
+  {
+    id: 'config',
+    nombre: 'Configuración',
+    to: '/config',
+    icono: 'settings',
+    estado: 'listo',
+    permiso: 'view_kpis',
+  },
 ];
 
 interface NavSidebarProps {
@@ -56,7 +70,8 @@ export default function NavSidebar({
 
   // Gana la sección con el prefijo más largo: `/config/usuarios` activa Usuarios
   // (y NO Configuración), aunque `/config` sea prefijo de ambas.
-  const coincide = (to: string) => (to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`));
+  const coincide = (to: string) =>
+    to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`);
   const activoId = visibles
     .filter((s) => coincide(s.to))
     .sort((a, b) => b.to.length - a.to.length)[0]?.id;
@@ -94,7 +109,9 @@ export default function NavSidebar({
               aria-disabled={s.estado !== 'listo' || undefined}
               title={collapsed ? s.nombre : undefined}
               className={`flex min-h-11 items-center gap-2.5 rounded-md px-2.5 py-2 text-xs transition-colors ${
-                activo ? 'bg-ink-800 text-fog-100' : 'text-fog-300 hover:bg-ink-800/60 hover:text-fog-100'
+                activo
+                  ? 'bg-ink-800 text-fog-100'
+                  : 'text-fog-300 hover:bg-ink-800/60 hover:text-fog-100'
               } ${collapsed ? 'justify-center' : ''} ${
                 s.estado !== 'listo' ? 'cursor-default opacity-50' : ''
               }`}
@@ -159,7 +176,15 @@ export default function NavSidebar({
   );
 }
 
-function MobileDrawer({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
+function MobileDrawer({
+  open,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {

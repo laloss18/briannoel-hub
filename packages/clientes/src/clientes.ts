@@ -185,8 +185,7 @@ export function editarCliente(
     nombre: patch.nombre?.trim() || prev.nombre,
     documento: patch.documento !== undefined ? patch.documento.trim() || undefined : prev.documento,
     telefono: patch.telefono !== undefined ? patch.telefono.trim() || undefined : prev.telefono,
-    telefono2:
-      patch.telefono2 !== undefined ? patch.telefono2.trim() || undefined : prev.telefono2,
+    telefono2: patch.telefono2 !== undefined ? patch.telefono2.trim() || undefined : prev.telefono2,
     notas_referencia:
       patch.notas_referencia !== undefined
         ? patch.notas_referencia.trim() || undefined

@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { hasPermission, approvalSteps } from '../src/permissions';
 import { ROLE_PERMISSIONS, type Permission, type Role } from '../src/constants';
-import { appConfigSchema, appUserSchema, identidadDe, sessionSchema, usernameSchema, type IdentidadIndice } from '../src/schemas';
+import {
+  appConfigSchema,
+  appUserSchema,
+  identidadDe,
+  sessionSchema,
+  usernameSchema,
+  type IdentidadIndice,
+} from '../src/schemas';
 
 const ROLES: readonly Role[] = ['admin', 'supervisor', 'promotor', 'cobrador'];
 

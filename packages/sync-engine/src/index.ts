@@ -1,6 +1,12 @@
 export { StellarDrive } from './drive';
 export { measureClockOffset, normalizeTimestamp } from './clock';
-export { ConflictRegistry, lwwCompare, lwwWins, rolePriorityCompare, rolePriorityWins } from './lww';
+export {
+  ConflictRegistry,
+  lwwCompare,
+  lwwWins,
+  rolePriorityCompare,
+  rolePriorityWins,
+} from './lww';
 export { createOutboxEntry, markAttempted, toFailed, toPending } from './outbox';
 export { newOpId, newRecordId } from './id';
 export type {

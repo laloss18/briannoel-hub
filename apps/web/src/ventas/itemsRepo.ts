@@ -19,7 +19,10 @@ export async function listItems(): Promise<Item[]> {
     .sort((a, b) => a.nombre.localeCompare(b.nombre));
 }
 
-async function persistItem(item: Item, operation: 'create' | 'update' | 'softDelete'): Promise<void> {
+async function persistItem(
+  item: Item,
+  operation: 'create' | 'update' | 'softDelete',
+): Promise<void> {
   await new DexieLocalStore().upsert(ENTITY, { ...item });
   await new DexieOutbox().add(
     createOutboxEntry({
@@ -67,13 +70,10 @@ export async function editarItemLocal(
   prev: Item,
   patch: Partial<Omit<NuevoItemRepoInput, ''>>,
 ): Promise<Item> {
-  const item = validar(
-    patch.nombre ?? prev.nombre,
-    {
-      precio_contado: patch.precio_contado ?? prev.precio_contado,
-      precio_credito: patch.precio_credito ?? prev.precio_credito,
-    },
-  );
+  const item = validar(patch.nombre ?? prev.nombre, {
+    precio_contado: patch.precio_contado ?? prev.precio_contado,
+    precio_credito: patch.precio_credito ?? prev.precio_credito,
+  });
   const updated: Item = {
     ...prev,
     nombre: item.nombre,

@@ -22,7 +22,9 @@ export default function BimonedaCard({ roles }: BimonedaCardProps) {
   const onRefrescar = async () => {
     setAviso(null);
     const v = await refrescar();
-    setAviso(v === null ? 'Sin respuesta de la API oficial' : `Tasa actualizada: ${v.toFixed(2)} Bs/USD`);
+    setAviso(
+      v === null ? 'Sin respuesta de la API oficial' : `Tasa actualizada: ${v.toFixed(2)} Bs/USD`,
+    );
   };
 
   const origen =

@@ -10,7 +10,7 @@ export default function ItemFormPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const items = useLiveQuery(() => listItems(), []);
-  const item = id ? (items ?? []).find((i) => i.id === id) ?? null : null;
+  const item = id ? ((items ?? []).find((i) => i.id === id) ?? null) : null;
   const editando = Boolean(id && item);
   const [nombre, setNombre] = useState('');
   const [precioCredito, setPrecioCredito] = useState('0');
@@ -34,8 +34,12 @@ export default function ItemFormPage() {
     const pco = Number(precioContado);
     const nuevos = {
       ...(nombre.trim() ? {} : { nombre: 'Escribe el nombre del ítem.' }),
-      ...(Number.isFinite(pc) && pc > 0 ? {} : { precioCredito: 'Indica un precio de crédito mayor que cero.' }),
-      ...(Number.isFinite(pco) && pco > 0 ? {} : { precioContado: 'Indica un precio de contado mayor que cero.' }),
+      ...(Number.isFinite(pc) && pc > 0
+        ? {}
+        : { precioCredito: 'Indica un precio de crédito mayor que cero.' }),
+      ...(Number.isFinite(pco) && pco > 0
+        ? {}
+        : { precioContado: 'Indica un precio de contado mayor que cero.' }),
     };
     if (!fail(nuevos)) return;
     setBusy(true);
@@ -65,10 +69,7 @@ export default function ItemFormPage() {
     'w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
 
   return (
-    <PageShell
-      titulo={editando ? 'Editar ítem' : 'Nuevo ítem'}
-      icono="package"
-    >
+    <PageShell titulo={editando ? 'Editar ítem' : 'Nuevo ítem'} icono="package">
       <div className="flex flex-col gap-2.5">
         <FormErrorSummary errors={errors} summaryRef={summaryRef} />
         <label className="flex flex-col gap-1 text-xs text-fog-500">

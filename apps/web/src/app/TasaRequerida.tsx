@@ -94,7 +94,10 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="bcv-manual" className="font-mono text-2xs uppercase tracking-wider text-fog-600">
+              <label
+                htmlFor="bcv-manual"
+                className="font-mono text-2xs uppercase tracking-wider text-fog-600"
+              >
                 Captura manual (Bs/USD)
               </label>
               <div className="flex gap-2">
@@ -128,12 +131,18 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
         )}
 
         {error && (
-          <p role="alert" className="rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger">
+          <p
+            role="alert"
+            className="rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger"
+          >
             {error}
           </p>
         )}
         {aviso && (
-          <p role="status" className="rounded-md border border-ok/40 bg-ok/10 px-3 py-2 text-xs text-ok">
+          <p
+            role="status"
+            className="rounded-md border border-ok/40 bg-ok/10 px-3 py-2 text-xs text-ok"
+          >
             {aviso}
           </p>
         )}
