@@ -14,6 +14,8 @@ import { normaliza } from '../lib/texto';
 import { usd } from '../lib/moneda';
 import { FieldError, FormErrorSummary } from '../ui/form';
 import { fieldAria, useFormErrors, type FieldErrors } from '../ui/formErrors';
+import { FilaProducto } from './venta/FilaProducto';
+import { ResumenTotales } from './venta/ResumenTotales';
 
 export type VentaFormInput = Omit<NuevaVentaRepoInput, 'vendedor' | 'editor_role'>;
 export type EditarVentaFormInput = Omit<EditarVentaRepoInput, 'vendedor' | 'editor_role'>;
@@ -893,97 +895,21 @@ export function VentaForm({
             <p className="text-2xs text-fog-500">
               El precio unitario depende de la condición de la venta: {condicion}.
             </p>
-            {lineas.map((l, idx) => {
-              const item = items.find((i) => i.id === l.itemId);
-              const precioDeOtroTipo = () => {
-                if (!item) return null;
-                const otro = condicion === 'credito' ? 'contado' : 'credito';
-                return {
-                  tipo: otro,
-                  valor: otro === 'credito' ? item.precio_credito : item.precio_contado,
-                };
-              };
-              const otroPrecio = precioDeOtroTipo();
-              return (
-                <div key={idx} className="rounded-md border border-ink-700 bg-ink-950 p-3">
-                  <div className="flex items-start gap-2">
-                    <select
-                      value={l.itemId}
-                      onChange={(e) => updateLinea(idx, { itemId: e.target.value })}
-                      aria-label={`Ítem del producto ${idx + 1}`}
-                      className="min-w-0 flex-1 cursor-pointer bg-ink-950 text-base font-semibold leading-snug text-fog-100 outline-none"
-                    >
-                      <option value="">Elegir ítem</option>
-                      {items.map((i) => (
-                        <option key={i.id} value={i.id}>
-                          {i.nombre}
-                        </option>
-                      ))}
-                    </select>
-                    {lineas.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => setLineas((ls) => ls.filter((_, i) => i !== idx))}
-                        className="shrink-0 rounded-md px-2 py-0.5 font-mono text-xs text-danger transition-colors hover:text-danger-soft"
-                        aria-label="Quitar producto"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                  {item ? (
-                    <p className="mt-1 font-mono text-2xs uppercase tracking-wider text-fog-500">
-                      unitario{' '}
-                      <span className="tabular-nums text-signal">{usd(precioDe(item))}</span> ·{' '}
-                      {condicion}
-                      {otroPrecio && (
-                        <>
-                          {' '}
-                          ·{' '}
-                          <span className="text-fog-600">
-                            {otroPrecio.tipo} {usd(otroPrecio.valor)}
-                          </span>
-                        </>
-                      )}
-                    </p>
-                  ) : (
-                    <p className="mt-1 text-2xs text-fog-600">Elige el ítem del producto.</p>
-                  )}
-                  <div className="mt-2 flex items-center justify-between gap-2 border-t border-ink-800 pt-2">
-                    <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                      cantidad
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => sumarCantidad(idx, -1)}
-                        className="size-11 shrink-0 rounded-md border border-ink-700 text-fog-300 transition-colors hover:border-ink-600 hover:text-fog-100"
-                        aria-label="Quitar una unidad"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        min={1}
-                        step={1}
-                        value={l.cantidad}
-                        onChange={(e) => updateLinea(idx, { cantidad: e.target.value })}
-                        aria-label={`Cantidad de ${item?.nombre ?? 'el producto'}`}
-                        className="w-16 shrink-0 rounded-md border border-ink-700 bg-ink-950 px-2 py-1 text-center text-sm tabular-nums text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => sumarCantidad(idx, 1)}
-                        className="size-11 shrink-0 rounded-md border border-ink-700 text-fog-300 transition-colors hover:border-ink-600 hover:text-fog-100"
-                        aria-label="Añadir una unidad"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {lineas.map((l, idx) => (
+              <FilaProducto
+                key={idx}
+                idx={idx}
+                linea={l}
+                items={items}
+                condicion={condicion}
+                precioDe={precioDe}
+                quitarVisible={lineas.length > 1}
+                onItem={(i, itemId) => updateLinea(i, { itemId })}
+                onCantidad={(i, cantidad) => updateLinea(i, { cantidad })}
+                onSumar={sumarCantidad}
+                onQuitar={(i) => setLineas((ls) => ls.filter((_, j) => j !== i))}
+              />
+            ))}
             <FieldError name="lineas" error={errors.lineas} />
             <button type="button" onClick={anadirLinea} className={optionCls(false)}>
               <span className="text-xs font-medium">+ Añadir producto</span>
@@ -1110,46 +1036,27 @@ export function VentaForm({
               </div>
               <FieldError name="iva" error={errors.iva} />
             </div>
-            <div className="rounded-md border border-ink-700/60 p-2.5 font-mono text-2xs text-fog-500">
-              <div className="flex justify-between">
-                <span>subtotal</span>
-                <span className="tabular-nums text-fog-100">{usd(subtotal)}</span>
-              </div>
-              {descuentoActivo && !descuentoOk && (
-                <div className="flex justify-between text-danger">
-                  <span>descuento</span>
-                  <span>{descuentoModo === 'pct' ? 'máx 100%' : `máx ${usd(subtotal)}`}</span>
-                </div>
-              )}
-              {descuentoActivo && descuentoOk && (
-                <div className="flex justify-between">
-                  <span>descuento · {descuentoEtiqueta}</span>
-                  <span className="tabular-nums text-signal">−{usd(descuentoMonto)}</span>
-                </div>
-              )}
-              {moraActivo && !moraOk && (
-                <div className="flex justify-between text-danger">
-                  <span>recargo por mora</span>
-                  <span>{moraModo === 'pct' ? 'máx 100%' : `máx ${usd(subtotal)}`}</span>
-                </div>
-              )}
-              {moraOk && (
-                <div className="flex justify-between">
-                  <span>recargo por mora · {moraEtiqueta}</span>
-                  <span className="tabular-nums text-signal">+{usd(moraMonto)}</span>
-                </div>
-              )}
-              {ivaUsado > 0 && (
-                <div className="flex justify-between">
-                  <span>IVA {ivaUsado}%</span>
-                  <span className="tabular-nums text-signal">+{usd(ivaMonto)}</span>
-                </div>
-              )}
-              <div className="mt-0.5 flex justify-between border-t border-ink-800 pt-1 text-xs">
-                <span className="uppercase tracking-wider">total</span>
-                <span className="tabular-nums text-signal">{usd(totalFinal)}</span>
-              </div>
-            </div>
+            <ResumenTotales
+              totales={{
+                subtotal,
+                descuento: {
+                  activo: descuentoActivo,
+                  ok: descuentoOk,
+                  modo: descuentoModo,
+                  etiqueta: descuentoEtiqueta,
+                  monto: descuentoMonto,
+                },
+                mora: {
+                  activo: moraActivo,
+                  ok: moraOk,
+                  modo: moraModo,
+                  etiqueta: moraEtiqueta,
+                  monto: moraMonto,
+                },
+                iva: { usado: ivaUsado, monto: ivaMonto },
+                total: totalFinal,
+              }}
+            />
             {items.length === 0 && (
               <p className="text-xs text-fog-600">
                 El catálogo está vacío. El administrador debe cargar los ítems y sincronizar.
