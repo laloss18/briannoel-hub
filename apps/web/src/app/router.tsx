@@ -58,7 +58,7 @@ const rutas: RouteObject[] = [
           { path: 'clientes/:id', lazy: lazy(() => import('../clientes/ClienteDetallePage')) },
           {
             path: 'clientes/:id/editar',
-            lazy: lazy(() => import('../clientes/ClienteDetallePage')),
+            lazy: lazy(() => import('../clientes/ClienteEditarPage')),
           },
 
           { path: 'zonas', lazy: lazy(() => import('../clientes/ZonasPage')) },
