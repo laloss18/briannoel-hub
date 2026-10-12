@@ -7,12 +7,7 @@ import PageShell from '../app/PageShell';
 import { Icon } from '../ui/icons';
 import { FilterBar, FilterChip, FilterGroup, FilterSelect, ToolbarFooter } from '../ui/filtros';
 import { useSesion } from '../app/sesion';
-
-const normaliza = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+import { normaliza } from '../lib/texto';
 
 /**
  * Sección Clientes (PRD §2.5): listado con filtros compactos (búsqueda, zona,

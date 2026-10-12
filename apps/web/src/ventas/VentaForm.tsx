@@ -10,6 +10,7 @@ import { PersonaSelect, type PersonaOpcion } from '../ui/personal';
 import { compressImage } from '../lib/photo';
 import { MiniFoto } from '../ui/fotos';
 import { obtenerCoords } from '../lib/geo';
+import { normaliza } from '../lib/texto';
 import { FieldError, FormErrorSummary } from '../ui/form';
 import { fieldAria, useFormErrors, type FieldErrors } from '../ui/formErrors';
 
@@ -192,11 +193,6 @@ export function VentaForm({
 
   const cliente = clientes.find((c) => c.id === clienteId) ?? null;
 
-  const normaliza = (s: string) =>
-    s
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
   const termino = normaliza(busqueda.trim());
   const coincidencias =
     termino === ''

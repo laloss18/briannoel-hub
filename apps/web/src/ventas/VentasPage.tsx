@@ -1,4 +1,4 @@
-﻿import { useLiveQuery } from 'dexie-react-hooks';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
 import {
   listDespachos,
@@ -15,23 +15,8 @@ import { useMemo, useState } from 'react';
 import { ChipEstado } from '../ui/chips';
 import { IconAction } from '../ui/actions';
 import { DateField, FilterBar, FilterChip, FilterGroup, ToolbarFooter } from '../ui/filtros';
-
-const normaliza = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-
-/** `YYYY-MM-DD` del día local (no UTC: el vendedor filtra por su día). */
-const hoyLocal = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
-const diasAtras = (n: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
+import { normaliza } from '../lib/texto';
+import { diaLocal, diaLocalHace } from '../lib/fechas';
 
 const FILTROS_HOY = 'hoy';
 type RangoRapido = '' | typeof FILTROS_HOY | '7' | '30';
@@ -69,10 +54,6 @@ export default function VentasPage() {
 
   const filtrados = useMemo(() => {
     const termino = normaliza(busqueda.trim());
-    const fechaLocal = (iso: string) => {
-      const d = new Date(iso);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    };
     return (despachos ?? [])
       .filter((d) => {
         const cliente = clientesPorId.get(d.cliente_id);
@@ -85,7 +66,7 @@ export default function VentasPage() {
           !d.nro_control.toLowerCase().includes(termino)
         )
           return false;
-        const f = fechaLocal(d.created_at);
+        const f = diaLocal(d.created_at);
         if (desde && f < desde) return false;
         if (hasta && f > hasta) return false;
         return true;
@@ -112,14 +93,14 @@ export default function VentasPage() {
     }
     setRango(r);
     if (r === FILTROS_HOY) {
-      setDesde(hoyLocal());
-      setHasta(hoyLocal());
+      setDesde(diaLocal());
+      setHasta(diaLocal());
     } else if (r === '7') {
-      setDesde(diasAtras(6));
-      setHasta(hoyLocal());
+      setDesde(diaLocalHace(6));
+      setHasta(diaLocal());
     } else {
-      setDesde(diasAtras(29));
-      setHasta(hoyLocal());
+      setDesde(diaLocalHace(29));
+      setHasta(diaLocal());
     }
   };
 
