@@ -3,9 +3,10 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { editarClienteLocal, listClientes } from './clientesRepo';
 import { listZonas } from './zonasRepo';
 import PageShell from '../app/PageShell';
+import { PrimaryButton, SecondaryButton } from '../ui/actions';
 import { useSesion } from '../app/sesion';
 import { useEffect, useRef, useState } from 'react';
-import { FieldError, FormErrorSummary } from '../ui/form';
+import { FieldError, FormErrorSummary, inputCls, labelCls } from '../ui/form';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 import { GeoBoton } from '../ui/geo';
 import { obtenerCoords } from '../lib/geo';
@@ -99,10 +100,6 @@ export default function ClienteEditarPage() {
       </PageShell>
     );
   }
-
-  const inputCls =
-    'w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
-  const labelCls = 'flex flex-col gap-1 text-xs text-fog-500';
 
   return (
     <PageShell titulo="Editar cliente" icono="userPlus" volverA={`/clientes/${cliente.id}`}>
@@ -203,21 +200,12 @@ export default function ClienteEditarPage() {
         </div>
 
         <div className="mt-1 flex gap-2">
-          <button
-            type="button"
-            onClick={() => void onGuardar()}
-            disabled={busy}
-            className="rounded-md bg-signal px-3.5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-50 btn-lift cta-glow"
-          >
+          <PrimaryButton onClick={() => void onGuardar()} disabled={busy}>
             {busy ? 'Guardando…' : 'Guardar cambios'}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate(`/clientes/${cliente.id}`)}
-            className="btn-lift rounded-md border border-ink-600 px-3.5 py-2 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500"
-          >
+          </PrimaryButton>
+          <SecondaryButton onClick={() => navigate(`/clientes/${cliente.id}`)}>
             Cancelar
-          </button>
+          </SecondaryButton>
         </div>
       </div>
     </PageShell>

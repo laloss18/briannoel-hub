@@ -13,6 +13,7 @@ import { obtenerCoords } from '../lib/geo';
 import { normaliza } from '../lib/texto';
 import { usd } from '../lib/moneda';
 import { FieldError, FormErrorSummary } from '../ui/form';
+import { PrimaryButton } from '../ui/actions';
 import { fieldAria, useFormErrors, type FieldErrors } from '../ui/formErrors';
 import { FilaProducto } from './venta/FilaProducto';
 import { ResumenTotales } from './venta/ResumenTotales';
@@ -1146,20 +1147,13 @@ export function VentaForm({
           <span />
         )}
         {step === 'revisión' ? (
-          <button
-            onClick={onClickGuardar}
-            disabled={busy}
-            className="btn-lift cta-glow rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50"
-          >
+          <PrimaryButton onClick={onClickGuardar} disabled={busy} size="sm">
             {busy ? 'Guardando…' : editing ? 'Guardar cambios' : 'Registrar venta'}
-          </button>
+          </PrimaryButton>
         ) : (
-          <button
-            onClick={stepNext}
-            className="btn-lift cta-glow rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft"
-          >
+          <PrimaryButton onClick={stepNext} size="sm">
             siguiente
-          </button>
+          </PrimaryButton>
         )}
       </div>
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon, type IconName } from './icons';
 
@@ -116,6 +117,68 @@ export function CloseButton({
       className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border border-transparent text-fog-500 hover:border-ink-600 hover:text-fog-300 ${className ?? ''}`}
     >
       <Icon name="close" />
+    </button>
+  );
+}
+
+const BTN_TAMANO = {
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-3.5 py-2 text-sm active:scale-[0.98]',
+} as const;
+
+/**
+ * CTA primario (fondo `signal`): «guardar», «crear», «continuar». Tamaño `md`
+ * por defecto; `sm` para wizards y diálogos anidados.
+ */
+export function PrimaryButton({
+  children,
+  onClick,
+  type = 'button',
+  disabled,
+  size = 'md',
+  className,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  type?: 'button' | 'submit';
+  disabled?: boolean;
+  size?: keyof typeof BTN_TAMANO;
+  className?: string;
+}) {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={`btn-lift cta-glow inline-flex items-center justify-center rounded-md bg-signal font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50 ${BTN_TAMANO[size]} ${className ?? ''}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Botón secundario (contorno neutro): «cancelar», «volver». */
+export function SecondaryButton({
+  children,
+  onClick,
+  type = 'button',
+  disabled,
+  className,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  type?: 'button' | 'submit';
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={`btn-lift inline-flex items-center justify-center rounded-md border border-ink-600 px-3.5 py-2 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 ${className ?? ''}`}
+    >
+      {children}
     </button>
   );
 }

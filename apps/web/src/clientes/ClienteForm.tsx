@@ -8,7 +8,8 @@ import { compressImage } from '../lib/photo';
 import { MiniFoto } from '../ui/fotos';
 import { CrearZonaBoton } from '../ui/zonas';
 import { NuevaZonaDialog } from './NuevaZonaDialog';
-import { FieldError, FormErrorSummary } from '../ui/form';
+import { FieldError, FormErrorSummary, inputCls, labelCls } from '../ui/form';
+import { PrimaryButton } from '../ui/actions';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 
 /** Campos que reúne el formulario; `creado_por` lo inyecta quien lo invoca. */
@@ -143,10 +144,6 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
       fail({ general: err instanceof Error ? err.message : String(err) });
     }
   };
-
-  const labelCls = 'flex flex-col gap-1 text-xs text-fog-500';
-  const inputCls =
-    'w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
 
   if (!canEdit) {
     return (
@@ -369,13 +366,9 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
         {message?.text ?? ''}
       </p>
 
-      <button
-        onClick={onClickGuardar}
-        disabled={busy}
-        className="self-start rounded-md bg-signal px-3.5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-50 btn-lift cta-glow"
-      >
+      <PrimaryButton onClick={onClickGuardar} disabled={busy} className="self-start">
         {busy ? 'Guardando…' : 'Crear cliente'}
-      </button>
+      </PrimaryButton>
 
       <NuevaZonaDialog
         open={zonaDialogOpen}

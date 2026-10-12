@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { municipiosDeEstado, VE_ESTADOS, type Zona } from '@brian/shared';
 import { crearZonaLocal } from './zonasRepo';
-import { CloseButton } from '../ui/actions';
+import { CloseButton, PrimaryButton } from '../ui/actions';
 import { FieldError, FormErrorSummary } from '../ui/form';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 
@@ -139,13 +139,9 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
           <p role="status" className="text-xs text-ok">
             {message?.kind === 'ok' ? message.text : ''}
           </p>
-          <button
-            onClick={onGuardar}
-            disabled={busy}
-            className="btn-lift cta-glow rounded-md bg-signal px-3 py-1.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50"
-          >
+          <PrimaryButton onClick={onGuardar} disabled={busy} size="sm">
             {busy ? 'Guardando…' : 'Crear zona'}
-          </button>
+          </PrimaryButton>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import PageShell from '../app/PageShell';
 import { useSesion } from '../app/sesion';
 import { useAppUsers, adminEditarUsuario } from '../auth/usuariosRepo';
 import { ActionButton } from '../ui/actions';
+import { inputCls } from '../ui/form';
 
 const ETIQUETA_ROL: Record<Rol, string> = {
   admin: 'administrador',
@@ -148,7 +149,7 @@ export default function UsuariosPage() {
                         id={`u-${u.user_id}`}
                         value={borrador.username}
                         onChange={(e) => setBorrador({ ...borrador, username: e.target.value })}
-                        className="rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
+                        className={inputCls}
                       />
                       {usernameSchema.safeParse(borrador.username).success ? null : (
                         <p className="text-2xs text-danger">

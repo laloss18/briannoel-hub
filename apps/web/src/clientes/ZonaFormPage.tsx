@@ -2,9 +2,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { listZonas, crearZonaLocal, editarZonaLocal } from './zonasRepo';
 import PageShell from '../app/PageShell';
+import { PrimaryButton, SecondaryButton } from '../ui/actions';
 import { VE_ESTADOS, municipiosDeEstado } from '@brian/shared';
 import { useEffect, useRef, useState } from 'react';
-import { FieldError, FormErrorSummary } from '../ui/form';
+import { FieldError, FormErrorSummary, inputCls } from '../ui/form';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 
 export default function ZonaFormPage() {
@@ -61,9 +62,6 @@ export default function ZonaFormPage() {
       </PageShell>
     );
   }
-
-  const inputCls =
-    'w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
 
   return (
     <PageShell titulo={editando ? 'Editar zona' : 'Nueva zona'} icono="map">
@@ -127,19 +125,10 @@ export default function ZonaFormPage() {
           <FieldError name="municipio" error={errors.municipio} />
         </label>
         <div className="mt-1 flex gap-2">
-          <button
-            onClick={onGuardar}
-            disabled={busy}
-            className="rounded-md bg-signal px-3.5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-50 btn-lift cta-glow"
-          >
+          <PrimaryButton onClick={onGuardar} disabled={busy}>
             {busy ? 'Guardando…' : editando ? 'Guardar cambios' : 'Crear zona'}
-          </button>
-          <button
-            onClick={() => navigate('/zonas')}
-            className="btn-lift rounded-md border border-ink-600 px-3.5 py-2 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500"
-          >
-            Cancelar
-          </button>
+          </PrimaryButton>
+          <SecondaryButton onClick={() => navigate('/zonas')}>Cancelar</SecondaryButton>
         </div>
       </div>
     </PageShell>

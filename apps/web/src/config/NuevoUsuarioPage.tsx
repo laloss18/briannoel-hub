@@ -5,7 +5,7 @@ import PageShell from '../app/PageShell';
 import { useSesion } from '../app/sesion';
 import { adminCrearUsuario } from '../auth/usuariosRepo';
 import { runSync } from '../sync/useSync';
-import { FieldError, FormErrorSummary } from '../ui/form';
+import { FieldError, FormErrorSummary, inputCls } from '../ui/form';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 
 const ETIQUETA_ROL: Record<Rol, string> = {
@@ -15,8 +15,6 @@ const ETIQUETA_ROL: Record<Rol, string> = {
   cobrador: 'cobrador',
 };
 
-const CAMPO =
-  'w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
 const ETIQUETA = 'text-2xs text-fog-500';
 
 /**
@@ -100,7 +98,7 @@ export default function NuevoUsuarioPage() {
               setEmail(e.target.value);
               clear('email');
             }}
-            className={CAMPO}
+            className={inputCls}
             {...fieldAria('email', errors)}
           />
           <FieldError name="email" error={errors.email} />
@@ -118,7 +116,7 @@ export default function NuevoUsuarioPage() {
               clear('username');
             }}
             placeholder="ej. Luis Pérez"
-            className={CAMPO}
+            className={inputCls}
             {...fieldAria('username', errors)}
           />
           <FieldError name="username" error={errors.username} />
@@ -136,7 +134,7 @@ export default function NuevoUsuarioPage() {
               setPassword(e.target.value);
               clear('password');
             }}
-            className={`${CAMPO} font-mono`}
+            className={`${inputCls} font-mono`}
             {...fieldAria('password', errors)}
           />
           <FieldError name="password" error={errors.password} />
