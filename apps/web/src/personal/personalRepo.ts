@@ -99,11 +99,4 @@ export async function editarPersonalLocal(
 }
 
 /** Baja lógica del roster (deja de aparecer en selecciones). Caller valida `manage_roster`. */
-export async function eliminarPersonalLocal(prev: Personal): Promise<Personal> {
-  const now = new Date().toISOString();
-  const persona: Personal = { ...prev, updated_at: now, deleted_at: now };
-  await persistPersonal(persona, 'softDelete');
-  return persona;
-}
 
-export const PERSONAL_ENTITY = ENTITY;

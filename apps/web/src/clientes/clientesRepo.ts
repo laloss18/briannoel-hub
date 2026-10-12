@@ -136,19 +136,6 @@ export async function editarClienteLocal(
 }
 
 /** Override manual de score (§2.5): solo supervisor/admin lo autoriza (rol validado en la UI). */
-export async function aplicarOverrideLocal(
-  cliente: Cliente,
-  override: ScoreOverrideInput,
-): Promise<Cliente> {
-  const updated = aplicarOverride(cliente, override);
-  await persistLocal(updated);
-  return updated;
-}
-
-/** Recálculo automático del score (§2.5) tras cada venta del cliente: el
- *  historial de compras (frecuencia + monto) se arma con sus despachos no
- *  eliminados y la antigüedad con `created_at`. Un override manual lo congela:
- *  el score recalculado no pisa lo que fijó supervisor/admin. */
 export async function recalcularScoreDe(clienteId: string): Promise<void> {
   const [clientes, despachos] = await Promise.all([listClientes(), listDespachos()]);
   const cliente = clientes.find((c) => c.id === clienteId);
@@ -175,4 +162,3 @@ export function canEditClientes(roles: readonly Role[]): boolean {
 }
 
 export { matchZona };
-export const CLIENTES_ENTITY = ENTITY;

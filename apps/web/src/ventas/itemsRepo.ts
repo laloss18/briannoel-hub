@@ -86,11 +86,4 @@ export async function editarItemLocal(
 }
 
 /** Borrado lógico del ítem (sale del catálogo local; LWW lo propaga). Caller valida `manage_items`. */
-export async function eliminarItemLocal(prev: Item): Promise<Item> {
-  const now = new Date().toISOString();
-  const item: Item = { ...prev, updated_at: now, deleted_at: now };
-  await persistItem(item, 'softDelete');
-  return item;
-}
 
-export const ITEMS_ENTITY = ENTITY;

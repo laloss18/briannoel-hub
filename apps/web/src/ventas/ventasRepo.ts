@@ -31,13 +31,6 @@ export async function listDespachos(): Promise<Despacho[]> {
 }
 
 /** Despachos abiertos a crédito de un cliente (para el indicador "crédito bloqueado"). */
-export async function listDespachosAbiertosCredito(clienteId: string): Promise<Despacho[]> {
-  const todos = await listDespachos();
-  return todos.filter(
-    (d) => d.cliente_id === clienteId && d.condicion === 'credito' && d.estado !== 'anulado',
-  );
-}
-
 export async function persistDespacho(
   despacho: Despacho,
   operation: 'create' | 'update' | 'softDelete',
@@ -159,5 +152,4 @@ export async function corregirDespachoLocal(
   return despacho;
 }
 
-export const DESPACHOS_ENTITY = ENTITY;
 export type { CrearDespachoInput };
