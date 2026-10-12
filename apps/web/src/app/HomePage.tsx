@@ -4,6 +4,7 @@ import { listClientes, canEditClientes } from '../clientes/clientesRepo';
 import { listDespachos } from '../ventas/ventasRepo';
 import { getAppConfig } from '../bimoneda/appConfig';
 import { DexieOutbox } from '../sync/db';
+import { Link } from 'react-router-dom';
 import { Icon, type IconName } from '../ui/icons';
 import { useSesion } from './sesion';
 
@@ -85,14 +86,14 @@ export default function HomePage() {
 
       <nav aria-label="Acciones rápidas" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {acciones.map((a) => (
-          <a
+          <Link
             key={a.to}
             href={`#${a.to}`}
             className="card-lift flex min-h-11 items-center gap-2 rounded-md border border-ink-700 bg-ink-900 px-3 py-2.5 text-xs text-fog-100 transition-colors hover:border-ink-600 active:scale-[0.98]"
           >
             <Icon name={a.icon} className="size-4 shrink-0 text-signal" />
             <span className="truncate">{a.label}</span>
-          </a>
+          </Link>
         ))}
       </nav>
 
