@@ -54,6 +54,13 @@ export default function NavSidebar({
   const { username, email, onLogout } = useSesion();
   const visibles = SECCIONES.filter((s) => !s.permiso || hasPermission(s.permiso, roles));
 
+  // Gana la sección con el prefijo más largo: `/config/usuarios` activa Usuarios
+  // (y NO Configuración), aunque `/config` sea prefijo de ambas.
+  const coincide = (to: string) => (to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`));
+  const activoId = visibles
+    .filter((s) => coincide(s.to))
+    .sort((a, b) => b.to.length - a.to.length)[0]?.id;
+
   const nav = (
     <>
       <div className={collapsed ? 'flex justify-center px-2 py-4' : 'px-2 py-4'}>
@@ -77,7 +84,7 @@ export default function NavSidebar({
 
       <nav aria-label="Secciones" className="flex flex-1 flex-col gap-1 overflow-y-auto px-2">
         {visibles.map((s) => {
-          const activo = s.to === '/' ? pathname === '/' : pathname.startsWith(s.to);
+          const activo = s.id === activoId;
           const Etiqueta = s.estado === 'listo' ? Link : 'span';
           return (
             <Etiqueta

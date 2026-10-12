@@ -52,7 +52,7 @@ export default function AppShell() {
                 onClick={() => setMobileOpen(true)}
                 aria-label="Abrir menú"
                 aria-expanded={mobileOpen}
-                className="btn-lift flex size-11 items-center justify-center rounded-md border border-ink-700 text-fog-100 transition-colors hover:border-ink-600 active:brightness-90 md:hidden"
+                className="btn-lift flex size-11 items-center justify-center rounded-full text-fog-100 transition-colors hover:bg-ink-800 active:brightness-90 md:hidden"
               >
                 <Icon name="menu" />
               </button>

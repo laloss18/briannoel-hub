@@ -226,36 +226,38 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
       <p className="font-mono text-xs uppercase tracking-wider text-fog-500">
         Ubicación para la zona
       </p>
-      <div className="grid grid-cols-[1fr_1fr_auto] items-start gap-2">
-        <label className={labelCls}>
-          Latitud
-          <input
-            type="number"
-            step="any"
-            value={lat}
-            onChange={(e) => {
-              setLat(e.target.value);
-              setZonaId('');
-              clear('geo');
-            }}
-            className={inputCls}
-          />
-        </label>
-        <label className={labelCls}>
-          Longitud
-          <input
-            type="number"
-            step="any"
-            value={lng}
-            onChange={(e) => {
-              setLng(e.target.value);
-              setZonaId('');
-              clear('geo');
-            }}
-            className={inputCls}
-          />
-        </label>
-        <div className="pt-5">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+        <div className="grid grid-cols-2 gap-2 sm:contents">
+          <label className={labelCls}>
+            Latitud
+            <input
+              type="number"
+              step="any"
+              value={lat}
+              onChange={(e) => {
+                setLat(e.target.value);
+                setZonaId('');
+                clear('geo');
+              }}
+              className={inputCls}
+            />
+          </label>
+          <label className={labelCls}>
+            Longitud
+            <input
+              type="number"
+              step="any"
+              value={lng}
+              onChange={(e) => {
+                setLng(e.target.value);
+                setZonaId('');
+                clear('geo');
+              }}
+              className={inputCls}
+            />
+          </label>
+        </div>
+        <div className="flex items-end">
           <GeoBoton onClick={usarMiUbicacion} busy={geoBusy} />
         </div>
       </div>

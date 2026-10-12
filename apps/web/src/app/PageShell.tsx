@@ -85,7 +85,7 @@ export default function PageShell({
             type="button"
             onClick={onVolver}
             aria-label={volver}
-            className="btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border border-ink-600 text-fog-500 hover:bg-ink-800 hover:text-fog-100 active:brightness-90"
+            className="btn-lift flex size-11 shrink-0 items-center justify-center rounded-full text-fog-500 transition-colors hover:bg-ink-800 hover:text-fog-100 active:brightness-90"
           >
             <Icon name="arrowLeft" />
           </button>

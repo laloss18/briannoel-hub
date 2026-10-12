@@ -52,7 +52,9 @@ const PATHS = {
   undo: ['M9 14 4 9l5-5', 'M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11'],
   /** Camión de reparto: entregar desde la lista. Las ruedas van en SHAPES. */
   truck: ['M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2', 'M15 18H9', 'M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14'],
-  /** Embudo: abre/cierra el panel de filtros (desplegable compacto). */
+  /** Lupa: búsqueda de la barra de filtros. El disco va en SHAPES. */
+  search: ['m21 21-4.35-4.35'],
+  /** Embudo: filtros (por si se necesita un disparador compacto). */
   filter: ['M22 3H2l8 9.46V19l4 2v-8.54Z'],
   /** Chevron abajo: indica que el panel de filtros se despliega. */
   chevronDown: ['m6 9 6 6 6-6'],
@@ -62,6 +64,7 @@ export type IconName = keyof typeof PATHS;
 
 /** Formas que no son `<path>` (círculos) para no romper la geometría del glifo. */
 const SHAPES: Partial<Record<IconName, ReadonlyArray<{ cx: number; cy: number; r: number }>>> = {
+  search: [{ cx: 11, cy: 11, r: 8 }],
   eye: [{ cx: 12, cy: 12, r: 3 }],
   coins: [{ cx: 12, cy: 5, r: 3 }],
   sun: [{ cx: 12, cy: 12, r: 4 }],

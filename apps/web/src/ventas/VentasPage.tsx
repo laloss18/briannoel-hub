@@ -14,7 +14,7 @@ import { puedeGestionarDespacho } from '@brian/ventas';
 import { useMemo, useState } from 'react';
 import { ChipEstado } from '../ui/chips';
 import { IconAction } from '../ui/actions';
-import { Icon } from '../ui/icons';
+import { DateField, FilterBar, FilterChip, FilterGroup, ToolbarFooter } from '../ui/filtros';
 
 const normaliza = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
@@ -56,7 +56,6 @@ const [busqueda, setBusqueda] = useState('');
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
   const [rango, setRango] = useState<RangoRapido>('');
-  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [busy, setBusy] = useState<{ id: string; accion: 'entregar' | 'deshacer' | 'eliminar' } | null>(null);
 
   const total = despachos?.length ?? 0;
@@ -83,7 +82,6 @@ const [busqueda, setBusqueda] = useState('');
   }, [despachos, clientesPorId, busqueda, estado, condicion, desde, hasta]);
 
 const hayFiltro = Boolean(busqueda || estado || condicion || desde || hasta);
-  const activosFiltros = [estado, condicion, desde, hasta].filter(Boolean).length;
   const limpiar = () => {
     setBusqueda('');
     setEstado('');
@@ -157,147 +155,85 @@ accion={
       }
     >
       <div className="flex flex-col gap-4">
-<section className="rounded-xl border border-ink-700 bg-ink-900 p-3 shadow-card">
-          <div className="flex items-center gap-2">
-            <input
-              type="search"
-              placeholder="Cliente o nº de control"
-              aria-label="Buscar por cliente o número de control"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="min-w-0 flex-1 rounded-md border border-ink-600 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors placeholder:text-fog-600 focus:border-signal"
+        <FilterBar
+          searchValue={busqueda}
+          onSearchChange={setBusqueda}
+          placeholder="Cliente o nº de control"
+          ariaLabel="Buscar por cliente o número de control"
+          activos={(estado ? 1 : 0) + (condicion ? 1 : 0) + (desde || hasta ? 1 : 0)}
+        >
+          <FilterGroup label="Estado">
+            <FilterChip active={estado === ''} onClick={() => setEstado('')}>
+              Todos
+            </FilterChip>
+            <FilterChip active={estado === 'pedido'} onClick={() => setEstado('pedido')}>
+              Pedido
+            </FilterChip>
+            <FilterChip active={estado === 'entregado'} onClick={() => setEstado('entregado')}>
+              Entregado
+            </FilterChip>
+            <FilterChip active={estado === 'anulado'} onClick={() => setEstado('anulado')}>
+              Anulado
+            </FilterChip>
+          </FilterGroup>
+          <FilterGroup label="Condición">
+            <FilterChip active={condicion === ''} onClick={() => setCondicion('')}>
+              Todas
+            </FilterChip>
+            <FilterChip active={condicion === 'credito'} onClick={() => setCondicion('credito')}>
+              Crédito
+            </FilterChip>
+            <FilterChip active={condicion === 'contado'} onClick={() => setCondicion('contado')}>
+              Contado
+            </FilterChip>
+          </FilterGroup>
+          <FilterGroup label="Fecha">
+            <FilterChip active={rango === FILTROS_HOY} onClick={() => aplicarRango(FILTROS_HOY)}>
+              Hoy
+            </FilterChip>
+            <FilterChip active={rango === '7'} onClick={() => aplicarRango('7')}>
+              7 días
+            </FilterChip>
+            <FilterChip active={rango === '30'} onClick={() => aplicarRango('30')}>
+              30 días
+            </FilterChip>
+          </FilterGroup>
+          <div className="grid grid-cols-2 gap-3">
+            <DateField
+              label="Desde"
+              value={desde}
+              onChange={(v) => {
+                setDesde(v);
+                setRango('');
+              }}
             />
-            <button
-              type="button"
-              aria-expanded={filtrosAbiertos}
-              aria-label={filtrosAbiertos ? 'Ocultar filtros' : 'Mostrar filtros'}
-              onClick={() => setFiltrosAbiertos((v) => !v)}
-              className="btn-lift flex size-11 shrink-0 items-center justify-center gap-1 rounded-full text-fog-300 transition-colors hover:bg-ink-800 hover:text-fog-100"
-            >
-              <Icon name="filter" />
-              {activosFiltros > 0 && (
-                <span
-                  aria-hidden="true"
-                  className="flex min-w-4 items-center justify-center rounded-full bg-signal px-1 font-mono text-2xs tabular-nums text-ink-950"
-                >
-                  {activosFiltros}
-                </span>
-              )}
-              <Icon
-                name="chevronDown"
-                className={`size-3.5 transition-transform ${filtrosAbiertos ? 'rotate-180' : ''}`}
-              />
-            </button>
+            <DateField
+              label="Hasta"
+              value={hasta}
+              onChange={(v) => {
+                setHasta(v);
+                setRango('');
+              }}
+            />
           </div>
-
-          {filtrosAbiertos && (
-            <div className="mt-3 flex flex-col gap-2 border-t border-ink-800 pt-3">
-              <div className="flex flex-wrap gap-1.5">
-                <select
-                  aria-label="Filtrar por estado"
-                  value={estado}
-                  onChange={(e) => setEstado(e.target.value)}
-                  className="rounded-md border border-ink-600 bg-ink-950 px-2 py-2 text-xs text-fog-100 outline-none transition-colors focus:border-signal"
-                >
-                  <option value="">estado</option>
-                  <option value="pedido">pedido</option>
-                  <option value="entregado">entregado</option>
-                  <option value="anulado">anulado</option>
-                </select>
-                <div className="flex overflow-hidden rounded-md border border-ink-600" role="group" aria-label="Filtrar por condición">
-                  {(
-                    [
-                      ['', 'condición'],
-                      ['credito', 'crédito'],
-                      ['contado', 'contado'],
-                    ] as const
-                  ).map(([valor, label]) => (
-                    <button
-                      key={valor}
-                      type="button"
-                      aria-pressed={condicion === valor}
-                      onClick={() => setCondicion(valor)}
-                      className={`px-2 py-2 text-xs transition-colors ${
-                        condicion === valor
-                          ? 'bg-signal text-ink-950'
-                          : 'text-fog-100 hover:bg-ink-800'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <label className="flex flex-1 items-center gap-1.5 rounded-md border border-ink-600 bg-ink-950 px-2 py-1 text-2xs text-fog-500 focus-within:border-signal">
-                  <span className="font-mono uppercase tracking-wider">desde</span>
-                  <input
-                    type="date"
-                    value={desde}
-                    onChange={(e) => {
-                      setDesde(e.target.value);
-                      setRango('');
-                    }}
-                    className="min-w-0 flex-1 bg-transparent py-1 font-mono text-xs text-fog-100 outline-none"
-                  />
-                </label>
-                <label className="flex flex-1 items-center gap-1.5 rounded-md border border-ink-600 bg-ink-950 px-2 py-1 text-2xs text-fog-500 focus-within:border-signal">
-                  <span className="font-mono uppercase tracking-wider">hasta</span>
-                  <input
-                    type="date"
-                    value={hasta}
-                    onChange={(e) => {
-                      setHasta(e.target.value);
-                      setRango('');
-                    }}
-                    className="min-w-0 flex-1 bg-transparent py-1 font-mono text-xs text-fog-100 outline-none"
-                  />
-                </label>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-1.5">
-                {([
-                  [FILTROS_HOY, 'Hoy'],
-                  ['7', '7 días'],
-                  ['30', '30 días'],
-                ] as const).map(([valor, label]) => (
-                  <button
-                    key={valor}
-                    type="button"
-                    aria-pressed={rango === valor}
-                    onClick={() => aplicarRango(valor)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                      rango === valor
-                        ? 'border-signal bg-signal/10 text-signal'
-                        : 'border-ink-600 text-fog-100 hover:bg-ink-800'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-                {hayFiltro && (
-                  <button
-                    type="button"
-                    onClick={limpiar}
-                    className="rounded-full border border-ink-600 px-3 py-1.5 text-xs font-medium text-fog-100 transition-colors hover:bg-ink-800"
-                  >
-                    Limpiar
-                  </button>
-                )}
-                <span className="ml-auto font-mono text-2xs tabular-nums text-fog-600" aria-live="polite">
-                  {filtrados.length} de {total}
-                </span>
-              </div>
-            </div>
-          )}
-        </section>
+          <ToolbarFooter
+            meta={
+              <>
+                {filtrados.length} de {total}
+              </>
+            }
+            onClear={hayFiltro ? limpiar : undefined}
+          />
+        </FilterBar>
 
 {filtrados.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-ink-700 p-6 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-ink-700 p-6 text-center">
             <p className="text-sm text-fog-500">
               {total === 0 ? 'Aún no hay ventas registradas.' : 'Ningún despacho coincide con los filtros.'}
             </p>
           </div>
         ) : (
-          <ul className="flex flex-col divide-y divide-ink-700/60 border-y border-ink-700/60">
+<ul className="flex flex-col gap-1.5">
             {filtrados.map((d) => {
               const cliente = clientesPorId.get(d.cliente_id);
               const owner = puedeGestionarDespacho(d, identidad, email, editorRole);
@@ -309,10 +245,10 @@ accion={
               const ocupado = busy?.id === d.id;
 
               return (
-                <li key={d.id} className="flex items-center gap-1">
+                <li key={d.id} className="flex items-center gap-1 rounded-xl bg-ink-900 px-1.5 py-1.5">
                   <Link
                     to={`/ventas/${d.id}`}
-                    className="flex min-w-0 flex-1 items-center gap-3 rounded-l-md py-2.5 pr-1 transition-colors hover:bg-ink-800/60"
+                    className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2.5 transition-colors hover:bg-ink-800/60"
                   >
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-fog-100">
@@ -330,7 +266,7 @@ accion={
                     </span>
                   </Link>
 
-<div className="flex shrink-0 items-center gap-1 py-2">
+<div className="flex shrink-0 items-center gap-0.5">
                     {showEntregar && (
                       <IconAction
                         label={`Entregar ${d.nro_control}`}

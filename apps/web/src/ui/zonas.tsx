@@ -16,7 +16,7 @@ export function CrearZonaBoton({
       disabled={disabled}
       aria-label={label}
       title={label}
-      className="btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border border-ink-700 bg-ink-950 text-fog-300 transition-colors hover:border-ink-600 hover:text-fog-100 disabled:opacity-50"
+      className="btn-lift flex size-11 shrink-0 items-center justify-center rounded-full text-fog-300 transition-colors hover:bg-ink-800 hover:text-fog-100 disabled:opacity-50"
     >
       <svg
         viewBox="0 0 24 24"
