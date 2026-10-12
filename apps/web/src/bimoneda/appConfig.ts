@@ -1,6 +1,5 @@
 import { createOutboxEntry } from '@brian/sync-engine';
-import { appConfigSchema, type AppConfig, SYNC_ENTITIES } from '@brian/shared';
-import { fetchBcvRate } from './api';
+import { appConfigSchema, type AppConfig } from '@brian/shared';
 import { DexieLocalStore, DexieOutbox, hub } from '../sync/db';
 
 const CONFIG_ID = 'global';
@@ -45,8 +44,7 @@ async function writeLocal(
   await new DexieOutbox().add(entry);
 }
 
-/** Actualiza la tasa BCV (fuente automática o manual). */
-export async function saveBcvRate(
+/** Actualiza la tasa BCV (fuente automática o manual). */ export async function saveBcvRate(
   rate: number,
   bcv_rate_source: AppConfig['bcv_rate_source'],
 ): Promise<void> {
@@ -58,5 +56,3 @@ export async function saveBcvRate(
     bcv_rate_source,
   });
 }
-
-/** Crea el registro config inicial si no existe (trata de obtener la tasa BCV). */

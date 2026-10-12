@@ -26,9 +26,13 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const precargadoId = useRef<string | null>(null);
   const { errors, fail, clear, summaryRef, setErrors } = useFormErrors();
 
   useEffect(() => {
+    const key = persona?.id ?? 'nuevo';
+    if (precargadoId.current === key) return;
+    precargadoId.current = key;
     setNombre(persona?.nombre ?? '');
     setTelefono(persona?.telefono ?? '');
     setEmail(persona?.email ?? '');

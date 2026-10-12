@@ -88,7 +88,7 @@ export default function HomePage() {
         {acciones.map((a) => (
           <Link
             key={a.to}
-            href={`#${a.to}`}
+            to={a.to}
             className="card-lift flex min-h-11 items-center gap-2 rounded-md border border-ink-700 bg-ink-900 px-3 py-2.5 text-xs text-fog-100 transition-colors hover:border-ink-600 active:scale-[0.98]"
           >
             <Icon name={a.icon} className="size-4 shrink-0 text-signal" />

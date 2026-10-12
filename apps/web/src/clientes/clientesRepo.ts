@@ -1,12 +1,5 @@
 import { createOutboxEntry } from '@brian/sync-engine';
-import {
-  aplicarOverride,
-  aplicarScore,
-  crearCliente,
-  editarCliente,
-  matchZona,
-  type ScoreOverrideInput,
-} from '@brian/clientes';
+import { aplicarScore, crearCliente, editarCliente, matchZona } from '@brian/clientes';
 import { clienteSchema, type Cliente, type Consentimiento, type Zona } from '@brian/shared';
 import { hasPermission, type Role } from '@brian/shared';
 import { DexieLocalStore, DexieOutbox, hub } from '../sync/db';
@@ -28,16 +21,19 @@ export async function listClientes(): Promise<Cliente[]> {
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 }
 
-async function persistLocal(cliente: Cliente): Promise<void> {
+async function persistLocal(
+  cliente: Cliente,
+  operation: 'create' | 'update' | 'softDelete',
+): Promise<void> {
   await new DexieLocalStore().upsert(ENTITY, { ...cliente });
   await new DexieOutbox().add(
     createOutboxEntry({
       entity: ENTITY,
-      operation: 'create',
+      operation,
       id: cliente.id,
       created_at: cliente.created_at,
       updated_at: cliente.updated_at,
-      deleted_at: null,
+      deleted_at: cliente.deleted_at,
       data: { ...cliente },
     }),
   );
@@ -93,7 +89,7 @@ export async function crearClienteLocal(
     zonaOverride !== undefined && zonaOverride !== null && cliente.zona_id !== zonaOverride
       ? { ...cliente, zona_id: zonaOverride }
       : cliente;
-  await persistLocal(final);
+  await persistLocal(final, 'create');
   return final;
 }
 
@@ -131,7 +127,7 @@ export async function editarClienteLocal(
     },
     zonas,
   );
-  await persistLocal(updated);
+  await persistLocal(updated, 'update');
   return updated;
 }
 
@@ -153,7 +149,7 @@ export async function recalcularScoreDe(clienteId: string): Promise<void> {
     purchases: compras,
     asOf: new Date().toISOString(),
   });
-  await persistLocal(actualizado);
+  await persistLocal(actualizado, 'update');
 }
 
 /** Permiso para editar clientes / fijar score (PRD §3.2). */

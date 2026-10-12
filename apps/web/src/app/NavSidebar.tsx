@@ -5,29 +5,27 @@ import { Icon, type IconName } from '../ui/icons';
 import { Monogram } from '../ui/brand';
 import { useSesion } from './sesion';
 
-/** Secciones del MVP (PRD §2). `listo` navega; el resto queda atenuado y sin ruta. */
+/** Secciones del MVP (PRD §2). */
 export interface Seccion {
   id: string;
   nombre: string;
   to: string;
   icono: IconName;
-  estado: 'listo' | 'pendiente';
   /** Permiso requerido para verla; sin rol no aparece. */
   permiso?: Parameters<typeof hasPermission>[0];
 }
 
 const SECCIONES: readonly Seccion[] = [
-  { id: 'inicio', nombre: 'Inicio', to: '/', icono: 'home', estado: 'listo' },
-  { id: 'ventas', nombre: 'Ventas', to: '/ventas', icono: 'cart', estado: 'listo' },
-  { id: 'clientes', nombre: 'Clientes', to: '/clientes', icono: 'users', estado: 'listo' },
-  { id: 'zonas', nombre: 'Zonas', to: '/zonas', icono: 'map', estado: 'listo' },
-  { id: 'catalogo', nombre: 'Catálogo', to: '/catalogo', icono: 'package', estado: 'listo' },
+  { id: 'inicio', nombre: 'Inicio', to: '/', icono: 'home' },
+  { id: 'ventas', nombre: 'Ventas', to: '/ventas', icono: 'cart' },
+  { id: 'clientes', nombre: 'Clientes', to: '/clientes', icono: 'users' },
+  { id: 'zonas', nombre: 'Zonas', to: '/zonas', icono: 'map' },
+  { id: 'catalogo', nombre: 'Catálogo', to: '/catalogo', icono: 'package' },
   {
     id: 'usuarios',
     nombre: 'Usuarios',
     to: '/config/usuarios',
     icono: 'users',
-    estado: 'listo',
     permiso: 'manage_personal',
   },
   {
@@ -35,7 +33,6 @@ const SECCIONES: readonly Seccion[] = [
     nombre: 'Configuración',
     to: '/config',
     icono: 'settings',
-    estado: 'listo',
     permiso: 'view_kpis',
   },
 ];
@@ -100,25 +97,22 @@ export default function NavSidebar({
       <nav aria-label="Secciones" className="flex flex-1 flex-col gap-1 overflow-y-auto px-2">
         {visibles.map((s) => {
           const activo = s.id === activoId;
-          const Etiqueta = s.estado === 'listo' ? Link : 'span';
           return (
-            <Etiqueta
+            <Link
               key={s.id}
-              {...(s.estado === 'listo' ? { to: s.to, onClick: onMobileClose } : { to: s.to })}
+              to={s.to}
+              onClick={onMobileClose}
               aria-current={activo ? 'page' : undefined}
-              aria-disabled={s.estado !== 'listo' || undefined}
               title={collapsed ? s.nombre : undefined}
               className={`flex min-h-11 items-center gap-2.5 rounded-md px-2.5 py-2 text-xs transition-colors ${
                 activo
                   ? 'bg-ink-800 text-fog-100'
                   : 'text-fog-300 hover:bg-ink-800/60 hover:text-fog-100'
-              } ${collapsed ? 'justify-center' : ''} ${
-                s.estado !== 'listo' ? 'cursor-default opacity-50' : ''
-              }`}
+              } ${collapsed ? 'justify-center' : ''}`}
             >
               <Icon name={s.icono} className="size-4 shrink-0" />
               {!collapsed && <span className="truncate">{s.nombre}</span>}
-            </Etiqueta>
+            </Link>
           );
         })}
       </nav>
