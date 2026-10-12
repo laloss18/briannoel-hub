@@ -28,9 +28,13 @@ for (let i = 0; i < 50; i++) {
 const seed = async () => {
   const now = new Date().toISOString();
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('1234'), 'PBKDF2', false, [
-    'deriveBits',
-  ]);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode('1234'),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
   const bits = await crypto.subtle.deriveBits(
     { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
     key,
@@ -50,55 +54,127 @@ const seed = async () => {
     iterations: 100000,
     attempts: 0,
     lockout_until: null,
-    session: { email: mail, username: 'edalv', roles: ['admin'], refresh_token: 'smoke', last_active_at: now },
+    session: {
+      email: mail,
+      username: 'edalv',
+      roles: ['admin'],
+      refresh_token: 'smoke',
+      last_active_at: now,
+    },
   };
   const clienteId = ulid('C7C');
   const records = [
     {
-      id: 'global', entity: 'app_config', created_at: now, updated_at: now, deleted_at: null,
-      base_currency: 'USD', bcv_rate: 873.87, bcv_rate_updated_at: now, bcv_rate_source: 'BCV_API',
+      id: 'global',
+      entity: 'app_config',
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
+      base_currency: 'USD',
+      bcv_rate: 873.87,
+      bcv_rate_updated_at: now,
+      bcv_rate_source: 'BCV_API',
     },
     {
-      id: clienteId, entity: 'clientes', created_at: now, updated_at: now, deleted_at: null,
-      nombre: 'Mercado La Esquina', documento: 'V-12345678', telefono: '0414-1234567',
-      telefono2: '0424-7654321', direccion: 'Av. Principal, casa 12, Urb. El Rosal',
-      lat: 10.4806, lng: -66.9036, zona_id: ulid('Z7Z'),
-      consentimiento: { fecha: now, foto_casa: false, foto_documento: false, aviso_documento: false },
-      credito_limite: 300, credito_dias: 30, score: 82, score_grado: 'A',
+      id: clienteId,
+      entity: 'clientes',
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
+      nombre: 'Mercado La Esquina',
+      documento: 'V-12345678',
+      telefono: '0414-1234567',
+      telefono2: '0424-7654321',
+      direccion: 'Av. Principal, casa 12, Urb. El Rosal',
+      lat: 10.4806,
+      lng: -66.9036,
+      zona_id: ulid('Z7Z'),
+      consentimiento: {
+        fecha: now,
+        foto_casa: false,
+        foto_documento: false,
+        aviso_documento: false,
+      },
+      credito_limite: 300,
+      credito_dias: 30,
+      score: 82,
+      score_grado: 'A',
       /* override fijado → el recálculo automático tras cada venta lo respeta */
       score_override: 82,
-      notas_referencia: 'Paga los martes.', created_by: mail, updated_by: mail,
+      notas_referencia: 'Paga los martes.',
+      created_by: mail,
+      updated_by: mail,
     },
     {
-      id: ulid('Z7Z'), entity: 'zonas', created_at: now, updated_at: now, deleted_at: null,
-      nombre: 'Zona Norte', municipio: 'Chacao', estado: 'Miranda', lat: 10.49, lng: -66.85,
-      created_by: mail, updated_by: mail,
+      id: ulid('Z7Z'),
+      entity: 'zonas',
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
+      nombre: 'Zona Norte',
+      municipio: 'Chacao',
+      estado: 'Miranda',
+      lat: 10.49,
+      lng: -66.85,
+      created_by: mail,
+      updated_by: mail,
     },
     {
-      id: ulid('B1V'), entity: 'despachos', created_at: now, updated_at: now, deleted_at: null,
-      nro_control: 'VTA-0001', cliente_id: clienteId, cliente_nombre: 'Mercado La Esquina',
+      id: ulid('B1V'),
+      entity: 'despachos',
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
+      nro_control: 'VTA-0001',
+      cliente_id: clienteId,
+      cliente_nombre: 'Mercado La Esquina',
       condicion: 'credito',
       lineas: [
         { item_id: 'ITEM01', nombre: 'Aceite vegetal 1 L', cantidad: 6, precio_unitario: 4.5 },
         { item_id: 'ITEM02', nombre: 'Arroz 5 kg', cantidad: 4, precio_unitario: 7.25 },
       ],
-      subtotal: 56, total: 56, tasa_bcv: 873.87, estado: 'pedido',
-      descuento_pct: 0, descuento_monto_usd: null, descuento_aprobado_por: null, descuento_pasos: null,
-      promotor: 'Luis Pérez', supervisor: null, created_by: mail, updated_by: mail,
-      editor_role: 'admin', entregado_at: null, entregado_por: null,
+      subtotal: 56,
+      total: 56,
+      tasa_bcv: 873.87,
+      estado: 'pedido',
+      descuento_pct: 0,
+      descuento_monto_usd: null,
+      descuento_aprobado_por: null,
+      descuento_pasos: null,
+      promotor: 'Luis Pérez',
+      supervisor: null,
+      created_by: mail,
+      updated_by: mail,
+      editor_role: 'admin',
+      entregado_at: null,
+      entregado_por: null,
     },
     {
-      id: ulid('B2V'), entity: 'despachos',
+      id: ulid('B2V'),
+      entity: 'despachos',
       created_at: new Date(Date.now() - 864e5 * 3).toISOString(),
       updated_at: new Date(Date.now() - 864e5 * 2).toISOString(),
-      deleted_at: null, nro_control: 'VTA-0002', cliente_id: clienteId,
-      cliente_nombre: 'Mercado La Esquina', condicion: 'contado',
+      deleted_at: null,
+      nro_control: 'VTA-0002',
+      cliente_id: clienteId,
+      cliente_nombre: 'Mercado La Esquina',
+      condicion: 'contado',
       lineas: [{ item_id: 'ITEM03', nombre: 'Azúcar 1 kg', cantidad: 10, precio_unitario: 1.2 }],
-      subtotal: 12, total: 12, tasa_bcv: 870, estado: 'entregado',
-      descuento_pct: 0, descuento_monto_usd: null, descuento_aprobado_por: null, descuento_pasos: null,
-      promotor: 'Luis Pérez', supervisor: null, created_by: mail, updated_by: mail,
+      subtotal: 12,
+      total: 12,
+      tasa_bcv: 870,
+      estado: 'entregado',
+      descuento_pct: 0,
+      descuento_monto_usd: null,
+      descuento_aprobado_por: null,
+      descuento_pasos: null,
+      promotor: 'Luis Pérez',
+      supervisor: null,
+      created_by: mail,
+      updated_by: mail,
       editor_role: 'promotor',
-      entregado_at: new Date(Date.now() - 864e5 * 2).toISOString(), entregado_por: 'Luis Pérez',
+      entregado_at: new Date(Date.now() - 864e5 * 2).toISOString(),
+      entregado_por: 'Luis Pérez',
     },
   ];
 
@@ -121,7 +197,8 @@ const seed = async () => {
 
 const check = [];
 const errores = [];
-const ok = (nombre, pass, detalle = '') => check.push(`${pass ? 'PASS' : 'FAIL'} · ${nombre}${detalle ? ` — ${detalle}` : ''}`);
+const ok = (nombre, pass, detalle = '') =>
+  check.push(`${pass ? 'PASS' : 'FAIL'} · ${nombre}${detalle ? ` — ${detalle}` : ''}`);
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({
@@ -197,16 +274,25 @@ const sinOverflow = async (ruta) => {
 /* ── CLARO ──────────────────────────────────────────────────────── */
 await ir('');
 const claro = await estilos();
-ok('tema por defecto = claro', claro.theme === null || claro.theme === 'claro', `data-theme=${claro.theme}`);
+ok(
+  'tema por defecto = claro',
+  claro.theme === null || claro.theme === 'claro',
+  `data-theme=${claro.theme}`,
+);
 ok('color-scheme light en claro', claro.colorScheme === 'light', claro.colorScheme);
 ok('fondo claro en claro', claro.bg === 'rgb(244, 245, 247)', claro.bg);
 
 await ir('ventas');
-ok('lista: filtros colapsados por defecto', (await page.locator('input[type="date"]').count()) === 0);
+ok(
+  'lista: filtros colapsados por defecto',
+  (await page.locator('input[type="date"]').count()) === 0,
+);
 ok(
   'lista: botón Registrar venta es solo "+"',
   await page.evaluate(() => {
-    const b = [...document.querySelectorAll('a,button')].find((x) => x.getAttribute('aria-label') === 'Registrar venta');
+    const b = [...document.querySelectorAll('a,button')].find(
+      (x) => x.getAttribute('aria-label') === 'Registrar venta',
+    );
     return b ? (b.textContent ?? '').trim() === '' : false;
   }),
 );
@@ -219,10 +305,7 @@ ok(
   'lista: sin acción entregar en entregado',
   (await page.locator('button[aria-label^="Entregar VTA-0002"]').count()) === 0,
 );
-ok(
-  'lista: editar en fila',
-  (await page.locator('a[aria-label^="Editar VTA-"]').count()) >= 1,
-);
+ok('lista: editar en fila', (await page.locator('a[aria-label^="Editar VTA-"]').count()) >= 1);
 ok(
   'lista: eliminar en fila',
   (await page.locator('button[aria-label^="Eliminar VTA-"]').count()) >= 1,
@@ -230,7 +313,9 @@ ok(
 ok(
   'lista: iconos de fila sin borde',
   await page.evaluate(() => {
-    const iconos = [...document.querySelectorAll('main ul li a, main ul li button')].filter((e) => e.getAttribute('aria-label'));
+    const iconos = [...document.querySelectorAll('main ul li a, main ul li button')].filter((e) =>
+      e.getAttribute('aria-label'),
+    );
     return iconos.length > 0 && iconos.every((e) => getComputedStyle(e).borderWidth === '0px');
   }),
 );
@@ -239,7 +324,11 @@ ok(
 await page.locator('button[aria-label="Mostrar filtros"]').click();
 await page.waitForTimeout(200);
 const fechas = page.locator('input[type="date"]');
-ok('lista: inputs desde/hasta', (await fechas.count()) === 2, `${await fechas.count()} date inputs`);
+ok(
+  'lista: inputs desde/hasta',
+  (await fechas.count()) === 2,
+  `${await fechas.count()} date inputs`,
+);
 ok('lista: contador con filtros', (await page.getByText(/\d+ de \d+/).count()) > 0);
 const contador = () => page.locator('[aria-live="polite"]').first().innerText();
 const antesContador = await contador();
@@ -271,46 +360,88 @@ const chipEntregado = await page.locator('text=entregado').count();
 ok('entregar desde la lista cambia estado', chipEntregado >= 1);
 await page.locator('button[aria-label^="Deshacer entrega de VTA-0001"]').click();
 await page.waitForTimeout(600);
-ok('deshacer entrega desde la lista', (await page.locator('button[aria-label^="Entregar VTA-0001"]').count()) === 1);
+ok(
+  'deshacer entrega desde la lista',
+  (await page.locator('button[aria-label^="Entregar VTA-0001"]').count()) === 1,
+);
 
 /* ── detalle de venta ───────────────────────────────────────────── */
 await ir(`ventas/${idVenta}`);
 await page.waitForTimeout(700);
 ok('detalle: nro_control en cabecera', (await page.locator('h1').innerText()).includes('VTA-0001'));
-ok('detalle: 4 secciones', await page.evaluate(() => {
-  const t = document.body.innerText.toLowerCase();
-  return ['metadata', 'datos de cliente', 'detalles de venta', 'resumen de ventas'].every((s) => t.includes(s));
-}));
-ok('detalle: orden resumen→detalles→cliente→metadata', await page.evaluate(() => {
-  const orden = [...document.querySelectorAll('main section h2')].map((h) => h.textContent.trim());
-  return orden.join('|') === 'resumen de ventas|detalles de venta|datos de cliente|metadata';
-}));
+ok(
+  'detalle: 4 secciones',
+  await page.evaluate(() => {
+    const t = document.body.innerText.toLowerCase();
+    return ['metadata', 'datos de cliente', 'detalles de venta', 'resumen de ventas'].every((s) =>
+      t.includes(s),
+    );
+  }),
+);
+ok(
+  'detalle: orden resumen→detalles→cliente→metadata',
+  await page.evaluate(() => {
+    const orden = [...document.querySelectorAll('main section h2')].map((h) =>
+      h.textContent.trim(),
+    );
+    return orden.join('|') === 'resumen de ventas|detalles de venta|datos de cliente|metadata';
+  }),
+);
 const resumen = await page.locator('section', { hasText: 'resumen de ventas' }).innerText();
-ok('detalle: total US$ en resumen', resumen.includes('US$ 56.00'), resumen.split('\n').slice(0, 8).join(' | '));
+ok(
+  'detalle: total US$ en resumen',
+  resumen.includes('US$ 56.00'),
+  resumen.split('\n').slice(0, 8).join(' | '),
+);
 ok('detalle: equivalente Bs', resumen.includes('Bs'), resumen.match(/Bs [\d.]+/)?.[0] ?? 'sin Bs');
-ok('detalle: resumen con pedido, cliente y estado', resumen.includes('VTA-0001') && resumen.includes('Mercado La Esquina') && /entregado|pedido/gi.test(resumen));
+ok(
+  'detalle: resumen con pedido, cliente y estado',
+  resumen.includes('VTA-0001') &&
+    resumen.includes('Mercado La Esquina') &&
+    /entregado|pedido/gi.test(resumen),
+);
 const crud = await page.evaluate(() => {
   const grupo = document.querySelector('[role="group"][aria-label="acciones del pedido"]');
   if (!grupo) return null;
   const enHeader = Boolean(grupo.closest('header'));
-  const conBorde = [...grupo.querySelectorAll('button, a')].filter((b) => getComputedStyle(b).borderWidth !== '0px').length;
+  const conBorde = [...grupo.querySelectorAll('button, a')].filter(
+    (b) => getComputedStyle(b).borderWidth !== '0px',
+  ).length;
   const s = getComputedStyle(grupo);
   return { posicion: s.position, enHeader, conBorde };
 });
-ok('detalle: CRUD en cabecera junto al nro_control (sin borde)', crud?.posicion === 'static' && crud?.enHeader === true && crud?.conBorde === 0, JSON.stringify(crud));
-ok('detalle: sin barra sticky en el cuerpo', (await page.evaluate(() => [...document.querySelectorAll('main *')].some((e) => getComputedStyle(e).position === 'sticky'))).toString() === 'false');
-ok('detalle: seguimiento con hitos', await page.evaluate(() => {
-  const t = document.body.innerText;
-  return /seguimiento/i.test(t) && /pedido registrado/i.test(t);
-}));
-ok('detalle: botón Entregar ≥44px', await page.evaluate(() => {
-  const b = [...document.querySelectorAll('button')].find((x) => x.getAttribute('aria-label') === 'Entregar');
-  return b ? b.getBoundingClientRect().height >= 44 : false;
-}));
 ok(
-  'detalle: sección productos con ítems',
-  (await page.getByText(/productos · 2/).count()) === 1,
+  'detalle: CRUD en cabecera junto al nro_control (sin borde)',
+  crud?.posicion === 'static' && crud?.enHeader === true && crud?.conBorde === 0,
+  JSON.stringify(crud),
 );
+ok(
+  'detalle: sin barra sticky en el cuerpo',
+  (
+    await page.evaluate(() =>
+      [...document.querySelectorAll('main *')].some(
+        (e) => getComputedStyle(e).position === 'sticky',
+      ),
+    )
+  ).toString() === 'false',
+);
+ok(
+  'detalle: seguimiento con hitos',
+  await page.evaluate(() => {
+    const t = document.body.innerText;
+    return /seguimiento/i.test(t) && /pedido registrado/i.test(t);
+  }),
+);
+ok(
+  'detalle: botón Entregar ≥44px',
+  await page.evaluate(() => {
+    const b = [...document.querySelectorAll('button')].find(
+      (x) => x.getAttribute('aria-label') === 'Entregar',
+    );
+    return b ? b.getBoundingClientRect().height >= 44 : false;
+  }),
+);
+ok('detalle: sección productos con ítems', (await page.getByText(/productos · 2/).count()) === 1);
 await sinOverflow(`ventas/${idVenta}`);
 
 /* foco visible: el primer Tab debe pintar el outline global (:focus-visible) */
@@ -319,18 +450,33 @@ await page.keyboard.press('Tab');
 const foco = await page.evaluate(() => {
   const b = document.activeElement;
   const s = getComputedStyle(b);
-  return { texto: b.textContent?.trim().slice(0, 24), outline: s.outlineStyle, color: s.outlineColor, width: s.outlineWidth };
+  return {
+    texto: b.textContent?.trim().slice(0, 24),
+    outline: s.outlineStyle,
+    color: s.outlineColor,
+    width: s.outlineWidth,
+  };
 });
-ok('foco visible con outline', foco.outline !== 'none' && parseFloat(foco.width) >= 2, JSON.stringify(foco));
+ok(
+  'foco visible con outline',
+  foco.outline !== 'none' && parseFloat(foco.width) >= 2,
+  JSON.stringify(foco),
+);
 
 /* ── detalle de cliente ─────────────────────────────────────────── */
 await ir(`clientes/${idCliente}`);
 await page.waitForTimeout(500);
-ok('cliente: título = nombre', (await page.locator('h1').innerText()).includes('Mercado La Esquina'));
-ok('cliente: indicadores score/límite/plazo', await page.evaluate(() => {
-  const t = document.body.innerText;
-  return /score/i.test(t) && t.includes('82') && t.includes('/100') && t.includes('US$ 300');
-}));
+ok(
+  'cliente: título = nombre',
+  (await page.locator('h1').innerText()).includes('Mercado La Esquina'),
+);
+ok(
+  'cliente: indicadores score/límite/plazo',
+  await page.evaluate(() => {
+    const t = document.body.innerText;
+    return /score/i.test(t) && t.includes('82') && t.includes('/100') && t.includes('US$ 300');
+  }),
+);
 ok('cliente: llamar en barra sticky', (await page.locator('a[href^="tel:"]').count()) >= 1);
 ok('cliente: deep-link de edición', (await page.locator('a[href$="/editar"]').count()) >= 1);
 await sinOverflow(`clientes/${idCliente}`);
@@ -362,15 +508,29 @@ ok('fondo oscuro en oscuro', oscuro.bg === 'rgb(11, 18, 32)', oscuro.bg);
 await ir('config/tasa');
 await page.waitForTimeout(700);
 const tTasa = await page.locator('main').innerText();
-ok('tasa: cifra visible', /\d+\.\d{2}\s*Bs\/USD/.test(tTasa), tTasa.replace(/\n/g, ' | ').slice(0, 200));
+ok(
+  'tasa: cifra visible',
+  /\d+\.\d{2}\s*Bs\/USD/.test(tTasa),
+  tTasa.replace(/\n/g, ' | ').slice(0, 200),
+);
 const btnApi = page.locator('button', { hasText: /API oficial|Obtener la tasa oficial/ }).first();
 ok('tasa: botón principal de refresco', (await btnApi.count()) === 1);
 await btnApi.click();
 const estado = page.locator('[role="status"], [role="alert"]');
-await estado.first().waitFor({ timeout: 15000 }).catch(() => {});
+await estado
+  .first()
+  .waitFor({ timeout: 15000 })
+  .catch(() => {});
 const msg = (await estado.count()) ? await estado.first().innerText() : '';
-ok('tasa: la API oficial responde (bug 404 corregido)', /aplicada|actualizada|\d/.test(msg), msg.slice(0, 120));
-ok('tasa: origen sigue siendo api oficial', /api oficial/i.test(await page.locator('main').innerText()));
+ok(
+  'tasa: la API oficial responde (bug 404 corregido)',
+  /aplicada|actualizada|\d/.test(msg),
+  msg.slice(0, 120),
+);
+ok(
+  'tasa: origen sigue siendo api oficial',
+  /api oficial/i.test(await page.locator('main').innerText()),
+);
 
 /* captura manual */
 await page.locator('#bcv-manual').fill('900.5');

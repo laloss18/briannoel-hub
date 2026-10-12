@@ -16,11 +16,15 @@ mkdirSync(OUT, { recursive: true });
 
 const startServer = () =>
   new Promise((res) => {
-    const server = spawn(process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', ['--filter', '@brian/web', 'dev'], {
-      cwd: ROOT,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      shell: true,
-    });
+    const server = spawn(
+      process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
+      ['--filter', '@brian/web', 'dev'],
+      {
+        cwd: ROOT,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        shell: true,
+      },
+    );
     server.stdout.on('data', (d) => log('dev:', String(d).trim().split('\n').at(-1)));
     server.stderr.on('data', (d) => log('dev-err:', String(d).trim().split('\n').at(-1)));
     server.on('exit', (code) => log('dev salió con', code));
@@ -81,8 +85,18 @@ try {
   const seed = async () => {
     const now = new Date().toISOString();
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('1234'), 'PBKDF2', false, ['deriveBits']);
-    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, 256);
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode('1234'),
+      'PBKDF2',
+      false,
+      ['deriveBits'],
+    );
+    const bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      key,
+      256,
+    );
     const b64 = (buf) => {
       const b = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
       let s = '';
@@ -172,7 +186,9 @@ try {
   }));
   log('después de unlock:', JSON.stringify(estadoPostUnlock));
 
-  const idsAppUsers = recs.rows.filter((r) => r.startsWith('app_users:')).map((r) => r.split(':')[1]);
+  const idsAppUsers = recs.rows
+    .filter((r) => r.startsWith('app_users:'))
+    .map((r) => r.split(':')[1]);
   const idDesp = recs.rows.find((r) => r.startsWith('despachos:'))?.split(':')[1];
   const idCli = recs.rows.find((r) => r.startsWith('clientes:'))?.split(':')[1];
 
@@ -212,7 +228,9 @@ try {
     txtUsuarios.includes('pedro.soto@example.com');
   log('app_users en mirror:', idsAppUsers.length);
   log('UsuariosPage muestra usuarios demo (incl. username con espacios y legacy):', ok);
-  log(errors.length ? `ERRORES (${errors.length}):\n${errors.join('\n')}` : 'sin errores de consola');
+  log(
+    errors.length ? `ERRORES (${errors.length}):\n${errors.join('\n')}` : 'sin errores de consola',
+  );
   process.exitCode = ok ? 0 : 1;
 } finally {
   stop(server);

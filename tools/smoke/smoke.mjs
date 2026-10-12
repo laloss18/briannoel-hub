@@ -31,9 +31,13 @@ for (let i = 0; i < 50; i++) {
 const seed = async () => {
   const now = new Date().toISOString();
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('1234'), 'PBKDF2', false, [
-    'deriveBits',
-  ]);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode('1234'),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
   const bits = await crypto.subtle.deriveBits(
     { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
     key,
@@ -89,7 +93,12 @@ const seed = async () => {
       lat: 10.4806,
       lng: -66.9036,
       zona_id: ulid('ZON'),
-      consentimiento: { fecha: now, foto_casa: false, foto_documento: false, aviso_documento: false },
+      consentimiento: {
+        fecha: now,
+        foto_casa: false,
+        foto_documento: false,
+        aviso_documento: false,
+      },
       credito_limite: 300,
       credito_dias: 30,
       score: 82,
@@ -275,15 +284,20 @@ const colorScheme = await page.evaluate(() => getComputedStyle(document.body).co
 await browser.close();
 server.kill();
 
-writeFileSync(join(OUT, 'report.txt'), [
-  `data-theme: ${tema}`,
-  `color-scheme: ${colorScheme}`,
-  `screenshots: ${results.length}`,
-  '',
-  'CONSOLE ERRORS:',
-  errors.length ? errors.join('\n') : '(ninguno)',
-].join('\n'));
+writeFileSync(
+  join(OUT, 'report.txt'),
+  [
+    `data-theme: ${tema}`,
+    `color-scheme: ${colorScheme}`,
+    `screenshots: ${results.length}`,
+    '',
+    'CONSOLE ERRORS:',
+    errors.length ? errors.join('\n') : '(ninguno)',
+  ].join('\n'),
+);
 
 console.log('data-theme:', tema, '| color-scheme:', colorScheme);
 console.log('screenshots:', results.length);
-console.log(errors.length ? `ERRORES (${errors.length}):\n` + errors.join('\n') : 'sin errores de consola');
+console.log(
+  errors.length ? `ERRORES (${errors.length}):\n` + errors.join('\n') : 'sin errores de consola',
+);
