@@ -14,7 +14,7 @@ export interface Totales {
 export function ResumenTotales({ totales }: { totales: Totales }) {
   const { subtotal, descuento, mora, iva, total } = totales;
   return (
-    <div className="rounded-md border border-ink-700/60 p-2.5 font-mono text-2xs text-fog-500">
+    <div className="rounded-lg border border-ink-700/60 p-2.5 font-mono text-2xs text-fog-500">
       <div className="flex justify-between">
         <span>subtotal</span>
         <span className="tabular-nums text-fog-100">{usd(subtotal)}</span>

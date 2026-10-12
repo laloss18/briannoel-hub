@@ -34,7 +34,7 @@ export default function BimonedaCard({ roles }: BimonedaCardProps) {
     source === 'BCV_API' ? 'api oficial' : source === 'manual' ? 'captura manual' : 'sin origen';
 
   return (
-    <div className="card-lift rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-card">
+    <div className="card-lift rounded-2xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">

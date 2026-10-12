@@ -130,7 +130,7 @@ export default function HomePage() {
       {puedeKpis ? (
         <section
           aria-label="Distribución de score"
-          className="rounded-xl border border-ink-700 bg-ink-900 p-4"
+          className="rounded-2xl border border-ink-700 bg-ink-900 p-4"
         >
           <div className="flex items-center justify-between gap-4">
             <p className="text-xs font-medium text-fog-100">Distribución de score</p>
@@ -172,7 +172,7 @@ export default function HomePage() {
       ) : (
         <section
           aria-label="Resumen del día"
-          className="flex flex-col gap-1.5 rounded-xl border border-ink-700 bg-ink-900 p-4"
+          className="flex flex-col gap-1.5 rounded-2xl border border-ink-700 bg-ink-900 p-4"
         >
           <p className="text-xs font-medium text-fog-100">{cargando ? 'Cargando…' : fecha}</p>
           <p className="text-xs text-fog-500">
@@ -202,7 +202,7 @@ function EstadoSync({ pendientes, fallidos }: { pendientes: number; fallidos: nu
   return (
     <div
       role="status"
-      className="flex items-center gap-2.5 rounded-xl border border-ink-700 bg-ink-900 px-3 py-2.5"
+      className="flex items-center gap-2.5 rounded-2xl border border-ink-700 bg-ink-900 px-3 py-2.5"
     >
       <span className={`size-1.5 shrink-0 rounded-full ${dot}`} aria-hidden="true" />
       <span className="truncate text-xs text-fog-100">{texto}</span>
@@ -215,7 +215,7 @@ function AccionDia({ to, icon, label }: { to: string; icon: IconName; label: str
   return (
     <Link
       to={to}
-      className="card-lift flex min-h-11 items-center gap-2 rounded-xl border border-ink-700 bg-ink-900 px-3 py-2.5 text-xs text-fog-100 transition-colors hover:border-ink-600 active:scale-[0.98]"
+      className="card-lift flex min-h-11 items-center gap-2 rounded-2xl border border-ink-700 bg-ink-900 px-3 py-2.5 text-xs text-fog-100 transition-colors hover:border-ink-600 active:scale-[0.98]"
     >
       <Icon name={icon} className="size-4 shrink-0 text-fog-300" />
       <span className="truncate">{label}</span>
@@ -235,7 +235,7 @@ function Kpi({
   cargando?: boolean;
 }) {
   return (
-    <div className="rounded-md border border-ink-700 bg-ink-900 p-3">
+    <div className="rounded-lg border border-ink-700 bg-ink-900 p-3">
       <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">{label}</p>
       {cargando ? (
         <div className="mt-2 h-5 w-12 animate-pulse rounded bg-ink-800" aria-hidden="true" />

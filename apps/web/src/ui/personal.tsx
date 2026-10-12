@@ -7,7 +7,7 @@ export interface PersonaOpcion {
 }
 
 const inputCls =
-  'w-full rounded-md border border-ink-700 bg-ink-950 px-2.5 py-1.5 text-xs text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
+  'w-full rounded-lg border border-ink-700 bg-ink-950 px-2.5 py-1.5 text-xs text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
 
 /** Selector de persona: las opciones SIEMPRE vienen de identidades registradas
  *  (usuarios `app_users` + roster `personal`, filtradas por rol desde el caller),

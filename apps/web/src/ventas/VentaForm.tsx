@@ -519,10 +519,10 @@ export function VentaForm({
   };
 
   const inputCls =
-    'w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
+    'w-full rounded-lg border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
 
   const optionCls = (active: boolean) =>
-    `flex flex-col items-start gap-0.5 rounded-md border px-3 py-2 text-left transition-[border-color,background-color] ${
+    `flex flex-col items-start gap-0.5 rounded-lg border px-3 py-2 text-left transition-[border-color,background-color] ${
       active ? 'border-signal bg-ink-950' : 'border-ink-700 hover:border-ink-600'
     }`;
 
@@ -551,7 +551,7 @@ export function VentaForm({
         {step === 'cliente' && (
           <>
             {cliente ? (
-              <div className="rounded-md border border-signal/40 p-2.5">
+              <div className="rounded-lg border border-signal/40 p-2.5">
                 <p className="truncate text-xs font-medium text-fog-100">{cliente.nombre}</p>
                 <p className="truncate font-mono text-2xs text-fog-600">
                   {cliente.documento || 'sin documento'} · {cliente.telefono || 'sin teléfono'}
@@ -576,7 +576,7 @@ export function VentaForm({
                             key={i}
                             src={f}
                             alt={`Foto ${['fachada', 'cliente', 'cédula'][i]}`}
-                            className="size-9 rounded-md border border-ink-700 object-cover"
+                            className="size-9 rounded-lg border border-ink-700 object-cover"
                           />
                         ) : null,
                     )}
@@ -626,7 +626,7 @@ export function VentaForm({
                         key={c.id}
                         type="button"
                         onClick={() => setClienteId(c.id)}
-                        className="flex flex-col items-start gap-0.5 rounded-md border border-ink-700 px-3 py-2 text-left transition-[border-color,background-color] hover:border-ink-600"
+                        className="flex flex-col items-start gap-0.5 rounded-lg border border-ink-700 px-3 py-2 text-left transition-[border-color,background-color] hover:border-ink-600"
                       >
                         <span className="w-full truncate text-xs font-medium">{c.nombre}</span>
                         <span className="w-full truncate font-mono text-2xs text-fog-600">
@@ -769,7 +769,7 @@ export function VentaForm({
                         clear('zona');
                       }}
                       onBlur={() => validarCampo('zona', validadoresCliente.zona())}
-                      className="min-w-0 flex-1 rounded-md border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
+                      className="min-w-0 flex-1 rounded-lg border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
                       {...fieldAria('zona', errors)}
                     >
                       <option value="">Zona del cliente *</option>
@@ -873,7 +873,7 @@ export function VentaForm({
                   <button
                     type="button"
                     onClick={() => setPersonaDialog('promotor')}
-                    className="self-start rounded-md border border-dashed border-ink-600 px-2.5 py-1.5 text-2xs text-fog-300 transition-colors hover:border-ink-500 hover:text-fog-100"
+                    className="self-start rounded-lg border border-dashed border-ink-600 px-2.5 py-1.5 text-2xs text-fog-300 transition-colors hover:border-ink-500 hover:text-fog-100"
                   >
                     + Crear promotor
                   </button>
@@ -906,14 +906,14 @@ export function VentaForm({
                   <button
                     type="button"
                     onClick={() => setPersonaDialog('supervisor')}
-                    className="self-start rounded-md border border-dashed border-ink-600 px-2.5 py-1.5 text-2xs text-fog-300 transition-colors hover:border-ink-500 hover:text-fog-100"
+                    className="self-start rounded-lg border border-dashed border-ink-600 px-2.5 py-1.5 text-2xs text-fog-300 transition-colors hover:border-ink-500 hover:text-fog-100"
                   >
                     + Crear supervisor
                   </button>
                 )}
               </label>
             </div>
-            <div className="rounded-md border border-ink-700/60 p-2.5 text-xs text-fog-500">
+            <div className="rounded-lg border border-ink-700/60 p-2.5 text-xs text-fog-500">
               El promotor que toma el pedido y el supervisor responsable se eligen del personal
               registrado: solo ellos (o el admin) podrán gestionar este registro (§3.3).
               {canManagePersonal
@@ -979,13 +979,13 @@ export function VentaForm({
               <span className="text-2xs text-fog-500">agrega otro producto al despacho</span>
             </button>
             {canDiscount && (
-              <div className="rounded-md border border-ink-700/60 p-2.5">
+              <div className="rounded-lg border border-ink-700/60 p-2.5">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-mono text-2xs uppercase tracking-wider text-fog-100">
                     Descuento <span className="text-fog-500">(aprobado)</span>
                   </p>
                   <div
-                    className="flex overflow-hidden rounded-md border border-ink-700"
+                    className="flex overflow-hidden rounded-lg border border-ink-700"
                     role="group"
                     aria-label="Tipo de descuento"
                   >
@@ -1026,13 +1026,13 @@ export function VentaForm({
               </div>
             )}
             {condicion === 'credito' && (
-              <div className="rounded-md border border-ink-700/60 p-2.5">
+              <div className="rounded-lg border border-ink-700/60 p-2.5">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-mono text-2xs uppercase tracking-wider text-fog-100">
                     Recargo por mora <span className="text-fog-500">(crédito)</span>
                   </p>
                   <div
-                    className="flex overflow-hidden rounded-md border border-ink-700"
+                    className="flex overflow-hidden rounded-lg border border-ink-700"
                     role="group"
                     aria-label="Tipo de recargo por mora"
                   >
@@ -1078,7 +1078,7 @@ export function VentaForm({
                 <FieldError name="mora" error={errors.mora} />
               </div>
             )}
-            <div className="rounded-md border border-ink-700/60 p-2.5">
+            <div className="rounded-lg border border-ink-700/60 p-2.5">
               <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <span className="font-mono text-2xs uppercase tracking-wider text-fog-100">
                   IVA <span className="text-fog-500">(incluido en el total)</span>
@@ -1132,7 +1132,7 @@ export function VentaForm({
 
         {step === 'revisión' && (
           <div className="flex flex-col gap-2">
-            <div className="rounded-md border border-ink-700/60 p-2.5 text-xs text-fog-500">
+            <div className="rounded-lg border border-ink-700/60 p-2.5 text-xs text-fog-500">
               <div className="flex justify-between gap-3">
                 <span>cliente</span>
                 <span className="truncate text-right font-medium text-fog-100">
@@ -1181,7 +1181,7 @@ export function VentaForm({
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between rounded-md border border-signal/40 p-2.5 font-mono text-2xs">
+            <div className="flex items-center justify-between rounded-lg border border-signal/40 p-2.5 font-mono text-2xs">
               <span className="text-fog-500">total</span>
               <span className="tabular-nums text-signal-strong">{usd(totalFinal)}</span>
             </div>

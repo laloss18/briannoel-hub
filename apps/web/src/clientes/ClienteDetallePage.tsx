@@ -1,4 +1,4 @@
-﻿import { useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { listClientes, canEditClientes } from './clientesRepo';
 import { listZonas } from './zonasRepo';
@@ -6,6 +6,7 @@ import PageShell from '../app/PageShell';
 import { useSesion } from '../app/sesion';
 import { useMemo, type ReactNode } from 'react';
 import { Icon } from '../ui/icons';
+import { Section, eyebrow } from '../ui/section';
 import { usd } from '../lib/moneda';
 
 /**
@@ -46,10 +47,10 @@ export default function ClienteDetallePage() {
     <PageShell eyebrow="ficha de cliente" titulo={cliente.nombre} icono="users">
       <div className="flex flex-col gap-4">
         {/* Indicadores: el dato de instrumento, en cifra grande */}
-        <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
+        <Section>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">score</p>
+              <p className={eyebrow}>score</p>
               <p className="font-mono text-2xl tabular-nums text-fog-100">
                 {cliente.score ?? '—'}
                 <span className="ml-1 text-xs font-medium text-fog-500">/100</span>
@@ -59,14 +60,14 @@ export default function ClienteDetallePage() {
               </p>
             </div>
             <div>
-              <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">límite</p>
+              <p className={eyebrow}>límite</p>
               <p className="font-mono text-2xl tabular-nums text-fog-100">
                 US$ {cliente.credito_limite.toFixed(0)}
               </p>
               <p className="text-2xs text-fog-500">crédito</p>
             </div>
             <div>
-              <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">plazo</p>
+              <p className={eyebrow}>plazo</p>
               <p className="font-mono text-2xl tabular-nums text-fog-100">
                 {cliente.credito_dias}
                 <span className="ml-1 text-xs font-medium text-fog-500">días</span>
@@ -74,7 +75,7 @@ export default function ClienteDetallePage() {
               <p className="text-2xs text-fog-500">{zona?.nombre ?? 'sin zona'}</p>
             </div>
           </div>
-        </section>
+        </Section>
 
         {/* Acciones rápidas: llamada + edición, al alcance del pulgar */}
         <div
@@ -84,7 +85,7 @@ export default function ClienteDetallePage() {
           {cliente.telefono ? (
             <a
               href={`tel:${cliente.telefono}`}
-              className="btn-lift inline-flex min-w-[9rem] flex-1 items-center justify-center gap-2 rounded-md border border-ok/60 bg-ok/10 px-4 py-2.5 text-sm font-semibold text-ok transition-colors hover:bg-ok/20"
+              className="btn-lift inline-flex min-w-[9rem] flex-1 items-center justify-center gap-2 rounded-lg border border-ok/60 bg-ok/10 px-4 py-2.5 text-sm font-semibold text-ok transition-colors hover:bg-ok/20"
             >
               <Icon name="phone" className="size-4 shrink-0" />
               Llamar
@@ -95,7 +96,7 @@ export default function ClienteDetallePage() {
           {puedeEditar && (
             <Link
               to={`/clientes/${cliente.id}/editar`}
-              className="btn-lift inline-flex items-center justify-center gap-2 rounded-md border border-ink-600 px-4 py-2.5 text-sm font-semibold text-fog-100 transition-colors hover:bg-ink-800"
+              className="btn-lift inline-flex items-center justify-center gap-2 rounded-lg border border-ink-600 px-4 py-2.5 text-sm font-semibold text-fog-100 transition-colors hover:bg-ink-800"
             >
               <Icon name="pencil" className="size-4 shrink-0" />
               Editar
@@ -103,8 +104,7 @@ export default function ClienteDetallePage() {
           )}
         </div>
 
-        <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">datos</h2>
+        <Section titulo="datos">
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="nombre">{cliente.nombre}</Campo>
             <Campo label="cédula/rif">{cliente.documento ?? '—'}</Campo>
@@ -145,12 +145,9 @@ export default function ClienteDetallePage() {
               )}
             </Campo>
           </dl>
-        </section>
+        </Section>
 
-        <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-            condiciones de crédito
-          </h2>
+        <Section titulo="condiciones de crédito">
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="límite">{usd(cliente.credito_limite)}</Campo>
             <Campo label="plazo">{cliente.credito_dias} días</Campo>
@@ -171,7 +168,7 @@ export default function ClienteDetallePage() {
               {cliente.notas_referencia ?? '—'}
             </Campo>
           </dl>
-        </section>
+        </Section>
       </div>
     </PageShell>
   );
@@ -188,7 +185,7 @@ function Campo({
 }) {
   return (
     <div className={className}>
-      <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">{label}</dt>
+      <dt className={eyebrow}>{label}</dt>
       <dd className="text-sm text-fog-100">{children}</dd>
     </div>
   );

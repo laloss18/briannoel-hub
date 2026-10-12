@@ -62,7 +62,7 @@ export default function PageShell({
   const navigate = useNavigate();
 
   const onVolver = () => (volverA ? navigate(volverA) : navigate(-1));
-  const accionCls = `btn-lift flex shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium active:brightness-90 ${
+  const accionCls = `btn-lift flex shrink-0 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium active:brightness-90 ${
     accion?.variant === 'primary' ? ACCION_PRIMARY : ACCION_DEFAULT
   }`;
   const accionIconoCls =

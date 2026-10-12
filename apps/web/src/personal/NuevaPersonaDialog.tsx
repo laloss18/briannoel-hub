@@ -90,7 +90,7 @@ export function NuevaPersonaDialog({
       aria-modal="true"
       aria-labelledby="persona-dialog-title"
     >
-      <div className="w-full max-w-md overscroll-contain rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-popover">
+      <div className="w-full max-w-md overscroll-contain rounded-2xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-popover">
         <div className="flex items-center justify-between gap-4">
           <p
             id="persona-dialog-title"

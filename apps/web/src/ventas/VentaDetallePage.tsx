@@ -16,7 +16,8 @@ import { useTasaGate } from '../app/RequireBcvRateGate';
 import { bs, dosDecimales, usd, usdConEspacio } from '../lib/moneda';
 import { useMemo, useState } from 'react';
 import { ChipEstado } from '../ui/chips';
-import { fechaCorta, haceRelativo } from '../ui/tiempo';
+import { Section, eyebrow } from '../ui/section';
+import { fechaCorta } from '../ui/tiempo';
 import type { ReactNode } from 'react';
 
 /**
@@ -190,7 +191,7 @@ export default function VentaDetallePage() {
 
   const estadoEntrega =
     despacho.entregado_at !== null && despacho.entregado_at !== undefined
-      ? `${haceRelativo(despacho.entregado_at)}${despacho.entregado_por ? ` · ${identidadDe(despacho.entregado_por)}` : ''}`
+      ? `${fechaCorta(despacho.entregado_at)}${despacho.entregado_por ? ` · ${identidadDe(despacho.entregado_por)}` : ''}`
       : 'pendiente';
 
   return (
@@ -205,16 +206,13 @@ export default function VentaDetallePage() {
 
         {/* 1 · Resumen de ventas: pedido, cliente, total, saldo y estado — lo
             primero que el operador quiere saber de un vistazo. */}
-        <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-            resumen de ventas
-          </h2>
+        <Section titulo="resumen de ventas">
           <div className="mt-2 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
             <div>
               <p className="text-lg font-semibold tracking-[-0.01em] text-fog-100">
                 {cliente?.nombre ?? despacho.cliente_nombre}
               </p>
-              <p className="mt-0.5 font-mono text-2xs uppercase tracking-wider text-fog-600">
+              <p className={`mt-0.5 ${eyebrow}`}>
                 pedido {despacho.nro_control} · {despacho.condicion}
               </p>
             </div>
@@ -223,16 +221,14 @@ export default function VentaDetallePage() {
 
           <dl className="mt-3 flex flex-col gap-1 border-t border-ink-800 pt-3">
             <div className="flex justify-between gap-3">
-              <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">total</dt>
+              <dt className={eyebrow}>total</dt>
               <dd className="font-mono text-3xl tabular-nums text-signal-strong">
                 {usdConEspacio(despacho.total)}
               </dd>
             </div>
             {esCredito ? (
               <div className="flex justify-between gap-3">
-                <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                  saldo a cancelar · crédito
-                </dt>
+                <dt className={eyebrow}>saldo a cancelar · crédito</dt>
                 <dd className="text-right font-mono text-sm tabular-nums text-fog-100">
                   {usdConEspacio(despacho.total)}
                   {saldoBs !== null && (
@@ -244,9 +240,7 @@ export default function VentaDetallePage() {
               </div>
             ) : saldoBs !== null ? (
               <div className="flex justify-between gap-3">
-                <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                  equivalente
-                </dt>
+                <dt className={eyebrow}>equivalente</dt>
                 <dd className="text-right font-mono text-sm tabular-nums text-fog-100">
                   ≈ {bs(saldoBs)}
                   <span className="block text-2xs text-fog-500">
@@ -256,17 +250,11 @@ export default function VentaDetallePage() {
               </div>
             ) : null}
           </dl>
-        </section>
+        </Section>
 
         {/* 2 · Detalles de venta: productos, totales, supervisión y entrega */}
-        <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-            detalles de venta
-          </h2>
-
-          <h3 className="mt-2 font-mono text-2xs uppercase tracking-wider text-fog-600">
-            productos · {despacho.lineas.length}
-          </h3>
+        <Section titulo="detalles de venta">
+          <h3 className={`mt-2 ${eyebrow}`}>productos · {despacho.lineas.length}</h3>
           <div className="mt-1 flex flex-col divide-y divide-ink-800">
             {despacho.lineas.map((l) => (
               <div key={l.item_id} className="flex items-baseline justify-between gap-3 py-2">
@@ -285,9 +273,7 @@ export default function VentaDetallePage() {
 
           <div className="mt-3 flex flex-col gap-1 border-t border-ink-800 pt-3">
             <div className="flex justify-between gap-3">
-              <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                subtotal
-              </span>
+              <span className={eyebrow}>subtotal</span>
               <span className="font-mono text-sm tabular-nums text-fog-100">
                 {usd(despacho.subtotal)}
               </span>
@@ -337,9 +323,7 @@ export default function VentaDetallePage() {
               );
             })()}
             <div className="mt-1 flex items-baseline justify-between gap-3 border-t border-ink-800 pt-2">
-              <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                total
-              </span>
+              <span className={eyebrow}>total</span>
               <span className="font-mono text-lg tabular-nums text-signal-strong">
                 {usd(despacho.total)}
               </span>
@@ -352,13 +336,10 @@ export default function VentaDetallePage() {
             <Campo label="supervisor">{despacho.supervisor ?? '—'}</Campo>
             <Campo label="fecha de entrega">{estadoEntrega}</Campo>
           </dl>
-        </section>
+        </Section>
 
         {/* 3 · Datos de cliente: contacto + ubicación */}
-        <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-            datos de cliente
-          </h2>
+        <Section titulo="datos de cliente">
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="nombre">{cliente?.nombre ?? despacho.cliente_nombre}</Campo>
             <Campo label="cédula/rif">{cliente?.documento ?? '—'}</Campo>
@@ -399,12 +380,11 @@ export default function VentaDetallePage() {
               )}
             </Campo>
           </dl>
-        </section>
+        </Section>
 
         {/* 4 · Metadata: auditoría + seguimiento (changelog) — lo último, solo
             cuando hace falta auditar. */}
-        <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <h2 className="font-mono text-2xs uppercase tracking-wider text-fog-600">metadata</h2>
+        <Section titulo="metadata">
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="creado por">{identidadDe(despacho.created_by)}</Campo>
             <Campo label="creado">{fechaCorta(despacho.created_at)}</Campo>
@@ -416,9 +396,7 @@ export default function VentaDetallePage() {
           </dl>
 
           <div className="mt-3 border-t border-ink-800 pt-3">
-            <h3 className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-              seguimiento · {hitos.length}
-            </h3>
+            <h3 className={eyebrow}>seguimiento · {hitos.length}</h3>
             <ol className="mt-3 flex flex-col gap-4 border-l border-ink-700 pl-4">
               {hitos.map((h, i) => (
                 <li key={i} className="relative">
@@ -427,9 +405,7 @@ export default function VentaDetallePage() {
                     aria-hidden="true"
                   />
                   <div className="flex items-baseline justify-between gap-3">
-                    <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                      {h.etiqueta}
-                    </p>
+                    <p className={eyebrow}>{h.etiqueta}</p>
                     <time className="shrink-0 font-mono text-2xs tabular-nums text-fog-500">
                       {fechaCorta(h.cuando)}
                     </time>
@@ -443,7 +419,7 @@ export default function VentaDetallePage() {
               ))}
             </ol>
           </div>
-        </section>
+        </Section>
       </div>
     </PageShell>
   );
@@ -460,7 +436,7 @@ function Campo({
 }) {
   return (
     <div className={className}>
-      <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">{label}</dt>
+      <dt className={eyebrow}>{label}</dt>
       <dd className="mt-0.5 text-sm text-fog-100">{children}</dd>
     </div>
   );

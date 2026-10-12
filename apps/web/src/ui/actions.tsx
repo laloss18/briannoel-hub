@@ -39,7 +39,7 @@ export function ActionButton({
       disabled={disabled}
       aria-label={label}
       title={label}
-      className={`btn-lift inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium disabled:opacity-50 ${VARIANTS[variant]} ${variant === 'primary' ? 'cta-glow' : ''} ${className ?? ''}`}
+      className={`btn-lift inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium disabled:opacity-50 ${VARIANTS[variant]} ${variant === 'primary' ? 'cta-glow' : ''} ${className ?? ''}`}
     >
       {icon && <Icon name={icon} />}
       <span className="hidden sm:inline">{label}</span>
@@ -114,7 +114,7 @@ export function CloseButton({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border border-transparent text-fog-500 hover:border-ink-600 hover:text-fog-300 ${className ?? ''}`}
+      className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-lg border border-transparent text-fog-500 hover:border-ink-600 hover:text-fog-300 ${className ?? ''}`}
     >
       <Icon name="close" />
     </button>
@@ -150,7 +150,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`btn-lift cta-glow inline-flex items-center justify-center rounded-md bg-signal font-semibold text-on-signal transition-colors hover:bg-signal-soft disabled:opacity-50 ${BTN_TAMANO[size]} ${className ?? ''}`}
+      className={`btn-lift cta-glow inline-flex items-center justify-center rounded-lg bg-signal font-semibold text-on-signal transition-colors hover:bg-signal-soft disabled:opacity-50 ${BTN_TAMANO[size]} ${className ?? ''}`}
     >
       {children}
     </button>
@@ -176,7 +176,7 @@ export function SecondaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`btn-lift inline-flex items-center justify-center rounded-md border border-ink-600 px-3.5 py-2 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 ${className ?? ''}`}
+      className={`btn-lift inline-flex items-center justify-center rounded-lg border border-ink-600 px-3.5 py-2 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 ${className ?? ''}`}
     >
       {children}
     </button>

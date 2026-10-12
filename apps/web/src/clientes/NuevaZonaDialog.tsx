@@ -59,7 +59,7 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
   };
 
   const inputCls =
-    'w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
+    'w-full rounded-lg border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
 
   return (
     <div
@@ -71,7 +71,7 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
       aria-modal="true"
       aria-labelledby="zona-dialog-title"
     >
-      <div className="w-full max-w-md overscroll-contain rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-popover">
+      <div className="w-full max-w-md overscroll-contain rounded-2xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-popover">
         <div className="flex items-center justify-between gap-4">
           <p
             id="zona-dialog-title"

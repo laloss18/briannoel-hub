@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 /** Monograma candado del hub (acción naranja única). */
 export function Monogram() {
   return (
-    <div className="flex size-10 items-center justify-center rounded-md bg-ink-800 text-signal-strong shadow-[inset_0_0_0_1px_var(--color-ink-700)]">
+    <div className="flex size-10 items-center justify-center rounded-lg bg-ink-800 text-signal-strong shadow-[inset_0_0_0_1px_var(--color-ink-700)]">
       <svg
         viewBox="0 0 24 24"
         fill="none"

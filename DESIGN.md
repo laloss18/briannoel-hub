@@ -179,14 +179,19 @@ Reglas (combinan `ui-ux-pro-max` + directrices Vercel):
    `blur-over-shadow`).
 3. **Altura completa**: `min-h-dvh` (NUNCA `h-screen` — regla `viewport-stability`).
 4. **Safe areas**: fondos full-bleed usan `env(safe-area-inset-*)` para notch.
-5. **Radios**: una sola escala — botones/interactivos `rounded-md` (6px),
-   tarjetas `rounded-xl` (12px), inputs `rounded-md`. **Se mantiene en TODA la
-   app** (regla `shape-consistency-lock`). En línea, `rounded` de 4px solo para
+5. **Radios** (revisado 2026-10-12): una sola escala —
+   **controles** (botones, inputs, selects) `rounded-lg` (8px),
+   **tarjetas/secciones** `rounded-2xl` (16px), **filas/ítems de lista**
+   `rounded-xl` (12px), **chips/píldoras** `rounded-full`. **Se mantiene en
+   TODA la app** (regla `shape-consistency-lock`); ningún componente inventa un
+   radio fuera de esta escala. En línea, `rounded` de 4px solo para
    `<code>`/badges mono.
 6. **Tarjetas solo cuando hay jerarquía real** que comunicar; en listas densas
-   preferir `divide-y` de `ink-700` o aire negativo. Se permite la tarjeta
-   estándar `border-ink-700 bg-ink-900 rounded-xl p-4` para tarjetas de
-   dato/estado (BimonedaCard, SyncPanel).
+   preferir aire negativo o filas sueltas. La tarjeta estándar
+   (`border-ink-700 bg-ink-900 rounded-2xl p-4 shadow-card`) se usa para
+   tarjetas de dato/estado y para las **secciones** de los detalles; vive una
+   sola vez en `ui/section.tsx` (`Section` + `surface`/`eyebrow`), no copiada
+   por cada página.
 7. **Estados de vacío / carga / error siempre presentes** (regla
    `full-state-cycle`): skeletons del mismo shape del contenido, error inline
    bajo el campo, vacío con instrucción de cómo llenarlo.
@@ -250,17 +255,18 @@ equivalente; variantes y estados se deciden aquí, no dentro de los componentes.
 
 | Componente | Ubicación | Anatomía y reglas                                                                     |
 | ---------- | --------- | ------------------------------------------------------------------------------------- |
-| `ActionButton` | `ui/actions.tsx` | Texto + icono opcional; en móvil queda solo el icono (`hidden sm:inline`). Bordeado, `rounded-md`, `btn-lift` (sube 1px al hover). Variantes: `default` (borde `ink-600`), `ok`, `danger`, `primary` (sólido naranja, texto `on-signal`, `+cta-glow`). Estados: reposo / hover / focus (outline naranja) / `disabled` (`opacity-50`). |
-| `PrimaryButton` | `ui/actions.tsx` | CTA sólido naranja (`bg-signal`, texto `on-signal`, `+cta-glow`), `rounded-md`, `btn-lift`; tamaños `md`/`sm`. CTA estándar de los formularios-página («Guardar», «Continuar»). |
-| `SecondaryButton` | `ui/actions.tsx` | Contorno neutro (`border-ink-600`), `rounded-md`, `btn-lift`; «Cancelar»/«Volver». |
-| `Chip` | `ui/chips.tsx` | Chip genérico por `tono` (neutral/ok/danger/signal); base mono 11 `uppercase`. `ChipEstado` lo especializa para la condición de despacho. |
+| `ActionButton` | `ui/actions.tsx` | Texto + icono opcional; en móvil queda solo el icono (`hidden sm:inline`). Bordeado, `rounded-lg`, `btn-lift` (sube 1px al hover). Variantes: `default` (borde `ink-600`), `ok`, `danger`, `primary` (sólido naranja, texto `on-signal`, `+cta-glow`). Estados: reposo / hover / focus (outline naranja) / `disabled` (`opacity-50`). |
+| `PrimaryButton` | `ui/actions.tsx` | CTA sólido naranja (`bg-signal`, texto `on-signal`, `+cta-glow`), `rounded-lg`, `btn-lift`; tamaños `md`/`sm`. CTA estándar de los formularios-página («Guardar», «Continuar»). |
+| `SecondaryButton` | `ui/actions.tsx` | Contorno neutro (`border-ink-600`), `rounded-lg`, `btn-lift`; «Cancelar»/«Volver». |
+| `Section` | `ui/section.tsx` | Superficie estándar de **sección/tarjeta**: `rounded-2xl border-ink-700 bg-ink-900 p-4 shadow-card`, con `eyebrow` mono opcional (icono + título) y slot de acción. Reemplaza el `<section>` copiado por página; exporta también `surface`/`eyebrow` para casos sueltos. |
+| `Chip` | `ui/chips.tsx` | Píldora por `tono` (neutral/ok/danger/signal): relleno suave (`bg-<tono>/10`) + texto del mismo tono, `rounded-full`, mono 11 `uppercase`. Ya no usa borde: el relleno tenue lee como badge sin competir con el contenido denso. |
 | `IconAction` | `ui/actions.tsx` | Icon-only 44px circular (`rounded-full`) **sin borde** — el glifo vive libre; fondo suave solo en hover/active. Variantes `default`/`ok`/`danger`; acepta `to` (Link) para navegación. Uso: acciones de fila y CRUD del detalle junto al id (§5.9). **Todo** icon-only del proyecto es así: **nunca bordearlo**. `aria-label`+`title` siempre (§10 "Bots icon-only"). |
 | `CloseButton` | `ui/actions.tsx` | X 44px, borde transparente que se revela al hover (cierre de diálogos/overlays). |
-| `ChipEstado` | `ui/chips.tsx` | Chip de condición de despacho (pendiente/crédito/pagado/entregado/…); mono 11 `uppercase`, tinte por semántica, naranja cuando es filtro activo. |
+| `ChipEstado` | `ui/chips.tsx` | `Chip` de condición de despacho (pendiente/crédito/pagado/entregado/…) con **punto de estado** (`size-1.5`, `bg-current`) delante del texto; mono 11 `uppercase`, tinte por semántica, naranja cuando es filtro activo. |
 | `PageShell` | `app/PageShell.tsx` | Página con título + volver (44px) + `acciones` (icon-group SIN borde, `role="group"` junto al id) y opción `accion.soloIcono` ("+" circular naranja). **Es el largo de toda alta/edición/detalle** (§5.8). Grupo de acciones del detalle: ≤4 iconos. **Convención de alta:** todos los CTA de creación de sección (venta, cliente, catálogo, zona, personal, usuarios) usan `accion.soloIcono` con el mismo "+" circular; el nombre va en `aria-label`/`title`. |
 | `NuevaZonaDialog` | `clientes/NuevaZonaDialog.tsx` | **Único diálogo permitido** (creación rápida anidada, §5.8). Overlay con `shadow-popover`; `aria-labelledby`. |
 | `MiniFoto` | `ui/fotos.tsx` | Captura de foto (cámara/galería) con preview 40px + compresión en el device (`lib/photo.ts`). Label-envolvente = target (el `input[type=file]` va `sr-only`). Compartido por alta de cliente y wizard de venta; el texto de error de compresión es `text-danger`. |
-| Inputs / labels | común `inputCls` | Campo Archivo 14, borde `ink-600`, `rounded-md`, `min-block-size:44px` (regla global); label visible con `htmlFor`, nunca placeholder-como-label (§10 Formularios). Estados: reposo / focus (`caret-signal` + outline) / error (`role="alert"` inline bajo el campo) / `disabled`. |
+| Inputs / labels | común `inputCls` | Campo Archivo 14, borde `ink-600`, `rounded-lg`, `min-block-size:44px` (regla global); foco con `caret-signal` + borde `signal` (+ outline global); label visible con `htmlFor`, nunca placeholder-como-label (§10 Formularios). Estados: reposo / focus / error (`role="alert"` inline bajo el campo) / `disabled`. |
 
 Reglas de inventario:
 

@@ -54,7 +54,7 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
   return (
     <PageShell titulo="Configurar tasa BCV" icono="coins">
       <div className="flex flex-col gap-4">
-        <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
+        <div className="rounded-2xl border border-ink-700 bg-ink-900 p-4 shadow-card">
           <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
             Para operar necesitas la tasa BCV
           </p>
@@ -83,7 +83,7 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
               onClick={() => void onRefrescar()}
               disabled={refrescando}
               aria-busy={refrescando}
-              className="btn-lift cta-glow inline-flex w-full items-center justify-center gap-2 rounded-md bg-signal px-4 py-2.5 text-sm font-semibold text-on-signal transition-colors hover:bg-signal-soft active:scale-[0.99] disabled:opacity-60"
+              className="btn-lift cta-glow inline-flex w-full items-center justify-center gap-2 rounded-lg bg-signal px-4 py-2.5 text-sm font-semibold text-on-signal transition-colors hover:bg-signal-soft active:scale-[0.99] disabled:opacity-60"
             >
               <Icon name="refresh" className={`size-4 ${refrescando ? 'animate-spin' : ''}`} />
               {refrescando ? 'Consultando la BCV…' : 'Obtener la tasa oficial'}
@@ -111,13 +111,13 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
                   placeholder="0.00"
                   value={manual}
                   onChange={(e) => setManual(e.target.value)}
-                  className="w-full rounded-md border border-ink-600 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-signal"
+                  className="w-full rounded-lg border border-ink-600 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-signal"
                 />
                 <button
                   type="button"
                   onClick={() => void onGuardar()}
                   disabled={guardando}
-                  className="btn-lift shrink-0 rounded-md border border-ink-600 px-4 text-sm font-medium text-fog-100 transition-colors hover:bg-ink-800 disabled:opacity-50"
+                  className="btn-lift shrink-0 rounded-lg border border-ink-600 px-4 text-sm font-medium text-fog-100 transition-colors hover:bg-ink-800 disabled:opacity-50"
                 >
                   {guardando ? 'Guardando…' : 'Guardar'}
                 </button>
@@ -125,7 +125,7 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
             </div>
           </>
         ) : (
-          <p className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-sm text-fog-500">
+          <p className="rounded-2xl border border-ink-700 bg-ink-900 p-4 text-sm text-fog-500">
             Tu rol consulta la tasa pero no la configura. Pide a un administrador o supervisor que
             la actualice para continuar.
           </p>
@@ -134,7 +134,7 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
         {error && (
           <p
             role="alert"
-            className="rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger"
+            className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger"
           >
             {error}
           </p>
@@ -142,7 +142,7 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
         {aviso && (
           <p
             role="status"
-            className="rounded-md border border-ok/40 bg-ok/10 px-3 py-2 text-xs text-ok"
+            className="rounded-lg border border-ok/40 bg-ok/10 px-3 py-2 text-xs text-ok"
           >
             {aviso}
           </p>

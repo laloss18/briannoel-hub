@@ -36,14 +36,6 @@ const rutas: RouteObject[] = [
           { index: true, Component: HomePage },
           { path: 'config', lazy: lazy(() => import('../config/ConfigPage')) },
           { path: 'config/tasa', lazy: lazy(() => import('../bimoneda/BcvRatePage')) },
-          {
-            path: 'config/usuarios',
-            lazy: lazy(() => import('../config/UsuariosPage')),
-          },
-          {
-            path: 'config/usuarios/nuevo',
-            lazy: lazy(() => import('../config/NuevoUsuarioPage')),
-          },
 
           { path: 'ventas', lazy: lazy(() => import('../ventas/VentasPage')) },
           { path: 'ventas/nueva', lazy: lazy(() => import('../ventas/VentaFormPage')) },

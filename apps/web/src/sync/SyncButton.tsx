@@ -18,7 +18,7 @@ export default function SyncButton({ busy, onSync }: SyncButtonProps) {
       aria-label={busy ? 'Sincronizando datos' : 'Sincronizar datos'}
       aria-busy={busy}
       title={hayCambios ? 'Hay cambios por sincronizar' : 'Sincronizar'}
-      className={`btn-lift flex size-11 items-center justify-center rounded-md border hover:brightness-95 disabled:cursor-wait disabled:opacity-60 ${cls} ${hayCambios ? 'cta-glow' : ''}`}
+      className={`btn-lift flex size-11 items-center justify-center rounded-lg border hover:brightness-95 disabled:cursor-wait disabled:opacity-60 ${cls} ${hayCambios ? 'cta-glow' : ''}`}
     >
       <svg
         viewBox="0 0 24 24"

@@ -24,21 +24,21 @@ export default function RouteError() {
         No llegó el módulo de esta sección. Suele ser la conexión o un reinicio del servidor de
         desarrollo: vuelve a intentar.
       </p>
-      <p className="rounded-md border border-ink-700 bg-ink-900 p-2 font-mono text-2xs text-fog-600">
+      <p className="rounded-lg border border-ink-700 bg-ink-900 p-2 font-mono text-2xs text-fog-600">
         {detalle}
       </p>
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="btn-lift rounded-md border border-signal bg-signal px-3 py-2 text-sm font-medium text-on-signal hover:bg-signal-soft cta-glow active:brightness-90"
+          className="btn-lift rounded-lg border border-signal bg-signal px-3 py-2 text-sm font-medium text-on-signal hover:bg-signal-soft cta-glow active:brightness-90"
         >
           Reintentar
         </button>
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="btn-lift rounded-md border border-ink-600 px-3 py-2 text-sm font-medium text-fog-100 hover:bg-ink-800 active:brightness-90"
+          className="btn-lift rounded-lg border border-ink-600 px-3 py-2 text-sm font-medium text-fog-100 hover:bg-ink-800 active:brightness-90"
         >
           Ir al inicio
         </button>

@@ -21,11 +21,11 @@ export function MiniFoto({
   onError: FotoChangeHandler;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 rounded-md border border-ink-700 p-2 transition-colors hover:border-ink-600">
+    <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-ink-700 p-2 transition-colors hover:border-ink-600">
       {foto ? (
         <img src={foto} alt="Vista previa" className="size-10 shrink-0 rounded object-cover" />
       ) : (
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-dashed border-ink-600 font-mono text-2xs text-fog-600">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-dashed border-ink-600 font-mono text-2xs text-fog-600">
           foto
         </span>
       )}

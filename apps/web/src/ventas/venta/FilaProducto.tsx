@@ -34,7 +34,7 @@ export function FilaProducto({
     : null;
 
   return (
-    <div className="rounded-md border border-ink-700 bg-ink-950 p-3">
+    <div className="rounded-lg border border-ink-700 bg-ink-950 p-3">
       <div className="flex items-start gap-2">
         <select
           value={linea.itemId}
@@ -53,7 +53,7 @@ export function FilaProducto({
           <button
             type="button"
             onClick={() => onQuitar(idx)}
-            className="shrink-0 rounded-md px-2 py-0.5 font-mono text-xs text-danger transition-colors hover:text-danger-soft"
+            className="shrink-0 rounded-lg px-2 py-0.5 font-mono text-xs text-danger transition-colors hover:text-danger-soft"
             aria-label="Quitar producto"
           >
             ×
@@ -83,7 +83,7 @@ export function FilaProducto({
           <button
             type="button"
             onClick={() => onSumar(idx, -1)}
-            className="size-11 shrink-0 rounded-md border border-ink-700 text-fog-300 transition-colors hover:border-ink-600 hover:text-fog-100"
+            className="size-11 shrink-0 rounded-lg border border-ink-700 text-fog-300 transition-colors hover:border-ink-600 hover:text-fog-100"
             aria-label="Quitar una unidad"
           >
             −
@@ -95,12 +95,12 @@ export function FilaProducto({
             value={linea.cantidad}
             onChange={(e) => onCantidad(idx, e.target.value)}
             aria-label={`Cantidad de ${item?.nombre ?? 'el producto'}`}
-            className="w-16 shrink-0 rounded-md border border-ink-700 bg-ink-950 px-2 py-1 text-center text-sm tabular-nums text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
+            className="w-16 shrink-0 rounded-lg border border-ink-700 bg-ink-950 px-2 py-1 text-center text-sm tabular-nums text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
           />
           <button
             type="button"
             onClick={() => onSumar(idx, 1)}
-            className="size-11 shrink-0 rounded-md border border-ink-700 text-fog-300 transition-colors hover:border-ink-600 hover:text-fog-100"
+            className="size-11 shrink-0 rounded-lg border border-ink-700 text-fog-300 transition-colors hover:border-ink-600 hover:text-fog-100"
             aria-label="Añadir una unidad"
           >
             +

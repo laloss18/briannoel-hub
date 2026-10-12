@@ -119,7 +119,7 @@ export default function ClientesPage() {
             <button
               type="button"
               onClick={limpiar}
-              className="rounded-md border border-ink-600 px-3 py-2 text-sm font-medium text-fog-100 transition-colors hover:bg-ink-800"
+              className="rounded-lg border border-ink-600 px-3 py-2 text-sm font-medium text-fog-100 transition-colors hover:bg-ink-800"
             >
               Limpiar filtros
             </button>
@@ -189,7 +189,7 @@ export default function ClientesPage() {
 function ScoreBadge({ score, grado }: { score: number | null; grado: string | null }) {
   return (
     <span
-      className={`shrink-0 rounded-md border px-2 py-0.5 font-mono text-2xs tabular-nums ${
+      className={`shrink-0 rounded-lg border px-2 py-0.5 font-mono text-2xs tabular-nums ${
         grado === null ? 'border-ink-700 text-fog-600' : 'border-ok/40 text-fog-300'
       }`}
       title={`score ${score ?? '—'} · grado ${grado ?? '—'}`}

@@ -139,7 +139,6 @@ try {
 
   await grab('', '01-home.png');
   await grab('config', '02-config.png');
-  await grab('config/usuarios', '03-usuarios.png');
   await grab('clientes', '04-clientes.png');
   if (idCli) await grab(`clientes/${idCli}`, '05-cliente-detalle.png');
   await grab('ventas', '06-ventas.png');
@@ -148,11 +147,11 @@ try {
   await grab('zonas', '09-zonas.png');
   await grab('catalogo', '10-catalogo.png');
 
-  await nav(page, 'config/usuarios');
+  await nav(page, 'personal');
   await page.waitForTimeout(1300);
-  const txtUsuarios = await page.locator('body').innerText();
+  const txtPersonal = await page.locator('body').innerText();
   log('hash:', await page.evaluate(() => location.hash));
-  log('texto usuarios (primeros 900):\n' + txtUsuarios.slice(0, 900));
+  log('texto personal (primeros 900):\n' + txtPersonal.slice(0, 900));
 
   await browser.close();
 
@@ -168,11 +167,10 @@ try {
 
   const ok =
     idsAppUsers.length >= 5 &&
-    txtUsuarios.includes('María Esperanza Pérez') &&
-    txtUsuarios.includes('Luis Antonio Sánchez') &&
-    txtUsuarios.includes('pedro.soto@example.com');
+    txtPersonal.includes('María Esperanza Pérez') &&
+    txtPersonal.includes('Luis Antonio Sánchez');
   log('app_users en mirror:', idsAppUsers.length);
-  log('UsuariosPage muestra usuarios demo (incl. username con espacios y legacy):', ok);
+  log('PersonalPage lista el roster demo (supervisor y promotor):', ok);
   log(
     errors.length ? `ERRORES (${errors.length}):\n${errors.join('\n')}` : 'sin errores de consola',
   );

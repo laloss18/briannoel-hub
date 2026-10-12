@@ -77,7 +77,7 @@ function DatosDemo() {
             type="button"
             onClick={cargar}
             disabled={busy}
-            className="btn-lift rounded-md border border-signal bg-signal/10 px-3 py-1.5 text-sm font-medium text-signal-strong transition-colors hover:bg-signal hover:text-on-signal disabled:opacity-50"
+            className="btn-lift rounded-lg border border-signal bg-signal/10 px-3 py-1.5 text-sm font-medium text-signal-strong transition-colors hover:bg-signal hover:text-on-signal disabled:opacity-50"
           >
             {busy ? 'Procesando…' : 'Cargar datos de prueba'}
           </button>
@@ -85,7 +85,7 @@ function DatosDemo() {
             type="button"
             onClick={vaciar}
             disabled={busy}
-            className="btn-lift rounded-md border border-ink-600 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 disabled:opacity-50"
+            className="btn-lift rounded-lg border border-ink-600 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 disabled:opacity-50"
           >
             Vaciar
           </button>
@@ -108,7 +108,7 @@ function Apariencia() {
   const [tema, cambiarTema] = useTema();
 
   return (
-    <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
+    <section className="rounded-2xl border border-ink-700 bg-ink-900 p-4 shadow-card">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-fog-100">Tema</p>
@@ -123,7 +123,7 @@ function Apariencia() {
               aria-label={t === 'claro' ? 'Tema claro' : 'Tema oscuro'}
               title={t === 'claro' ? 'Tema claro' : 'Tema oscuro'}
               onClick={() => cambiarTema(t)}
-              className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border transition-colors ${
+              className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                 tema === t
                   ? 'border-signal bg-signal text-on-signal'
                   : 'border-ink-600 text-fog-300 hover:bg-ink-800 hover:text-fog-100'
@@ -180,7 +180,7 @@ function MiPerfil() {
   };
 
   return (
-    <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100">
+    <div className="rounded-2xl border border-ink-700 bg-ink-900 p-4 text-fog-100">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium">Mi perfil</p>
@@ -194,7 +194,7 @@ function MiPerfil() {
             type="email"
             value={sesion.email}
             disabled
-            className="w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-500"
+            className="w-full rounded-lg border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-500"
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -204,13 +204,13 @@ function MiPerfil() {
             value={uname}
             onChange={(e) => setUname(e.target.value)}
             placeholder="tu_usuario"
-            className="w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100"
+            className="w-full rounded-lg border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100"
           />
         </label>
         <button
           onClick={onGuardar}
           disabled={busy}
-          className="btn-lift mt-1 self-start rounded-md border border-ink-600 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 disabled:opacity-50"
+          className="btn-lift mt-1 self-start rounded-lg border border-ink-600 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 disabled:opacity-50"
         >
           {busy ? 'Guardando…' : 'Guardar username'}
         </button>

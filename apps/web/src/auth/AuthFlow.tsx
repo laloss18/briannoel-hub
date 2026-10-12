@@ -75,7 +75,7 @@ function LoginScreen({ auth }: { auth: UseAuthResult }) {
   };
 
   const input =
-    'w-full rounded-md bg-ink-900 px-3.5 py-2.5 text-sm text-fog-100 placeholder:text-fog-600 caret-signal outline-none transition-colors hover:bg-ink-800';
+    'w-full rounded-lg bg-ink-900 px-3.5 py-2.5 text-sm text-fog-100 placeholder:text-fog-600 caret-signal outline-none transition-colors hover:bg-ink-800';
 
   return (
     <Card title="Entrar a tu operación" hint="Sesión cifrada y guardada en este dispositivo.">
@@ -125,7 +125,7 @@ function LoginScreen({ auth }: { auth: UseAuthResult }) {
         <button
           type="submit"
           disabled={busy}
-          className="mt-1 rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-on-signal transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
+          className="mt-1 rounded-lg bg-signal px-3.5 py-2.5 text-sm font-semibold text-on-signal transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
         >
           {busy ? 'Verificando…' : 'Entrar'}
         </button>
@@ -160,7 +160,7 @@ function SetupPinScreen({ auth }: { auth: UseAuthResult }) {
   };
 
   const pinInput =
-    'w-full rounded-md bg-ink-900 px-3.5 py-3 text-center font-mono text-lg tracking-[0.5em] text-fog-100 caret-signal outline-none transition-colors hover:bg-ink-800';
+    'w-full rounded-lg bg-ink-900 px-3.5 py-3 text-center font-mono text-lg tracking-[0.5em] text-fog-100 caret-signal outline-none transition-colors hover:bg-ink-800';
 
   return (
     <Card title="Crea tu PIN" hint="4 a 8 dígitos. Es la llave para abrir el hub sin conexión.">
@@ -215,7 +215,7 @@ function SetupPinScreen({ auth }: { auth: UseAuthResult }) {
         <button
           type="submit"
           disabled={busy || pin.length < 4 || confirm.length < 4}
-          className="rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-on-signal transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
+          className="rounded-lg bg-signal px-3.5 py-2.5 text-sm font-semibold text-on-signal transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
         >
           {busy ? 'Guardando…' : 'Guardar PIN'}
         </button>
@@ -249,7 +249,7 @@ function UnlockScreen({ auth }: { auth: UseAuthResult }) {
   };
 
   const pinInput =
-    'w-full rounded-md bg-ink-900 px-3.5 py-3 text-center font-mono text-lg tracking-[0.5em] text-fog-100 caret-signal outline-none transition-colors hover:bg-ink-800';
+    'w-full rounded-lg bg-ink-900 px-3.5 py-3 text-center font-mono text-lg tracking-[0.5em] text-fog-100 caret-signal outline-none transition-colors hover:bg-ink-800';
 
   return (
     <Card
@@ -290,7 +290,7 @@ function UnlockScreen({ auth }: { auth: UseAuthResult }) {
         <button
           type="submit"
           disabled={busy || auth.state.locked || pin.length < 4}
-          className="rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-on-signal transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
+          className="rounded-lg bg-signal px-3.5 py-2.5 text-sm font-semibold text-on-signal transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
         >
           {busy ? 'Verificando…' : 'Entrar'}
         </button>

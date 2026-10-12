@@ -3,7 +3,7 @@ import type { FieldErrors } from './formErrors';
 
 /** Clase base de un campo de formulario (input / select / textarea). */
 export const inputCls =
-  'w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600';
+  'w-full rounded-lg border border-ink-600 bg-ink-950 px-3 py-2 text-sm text-fog-100 caret-signal outline-none transition-colors placeholder:text-fog-600 focus:border-signal';
 
 /** Clase de la `<label>` que envuelve a un campo y su mensaje de error. */
 export const labelCls = 'flex flex-col gap-1 text-xs text-fog-500';
@@ -34,12 +34,12 @@ export function FormErrorSummary({
       tabIndex={-1}
       role="alert"
       aria-labelledby="form-error-title"
-      className="rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger outline-none"
+      className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger outline-none"
     >
       <p id="form-error-title" className="font-medium">
         Revisa el formulario
       </p>
-      <ul className="mt-1 list-disc pl-4">
+      <ul className="mt-1 list-disc pl-4 marker:text-danger">
         {mensajes.map((m) => (
           <li key={m}>{m}</li>
         ))}

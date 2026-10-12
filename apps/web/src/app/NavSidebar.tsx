@@ -22,13 +22,6 @@ const SECCIONES: readonly Seccion[] = [
   { id: 'zonas', nombre: 'Zonas', to: '/zonas', icono: 'map' },
   { id: 'catalogo', nombre: 'Catálogo', to: '/catalogo', icono: 'package' },
   {
-    id: 'usuarios',
-    nombre: 'Usuarios',
-    to: '/config/usuarios',
-    icono: 'users',
-    permiso: 'manage_personal',
-  },
-  {
     id: 'personal',
     nombre: 'Personal',
     to: '/personal',
@@ -72,8 +65,8 @@ export default function NavSidebar({
   const { username, email, onLogout } = useSesion();
   const visibles = SECCIONES.filter((s) => !s.permiso || hasPermission(s.permiso, roles));
 
-  // Gana la sección con el prefijo más largo: `/config/usuarios` activa Usuarios
-  // (y NO Configuración), aunque `/config` sea prefijo de ambas.
+  // Gana la sección con el prefijo más largo (p. ej. `/personal/nuevo` activa
+  // Personal y no una sección padre más corta).
   const coincide = (to: string) =>
     to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`);
   const activoId = visibles
@@ -86,7 +79,7 @@ export default function NavSidebar({
         <Link
           to="/"
           onClick={onMobileClose}
-          className="flex min-w-0 items-center gap-2 rounded-md px-1 py-0.5 transition-colors hover:brightness-110 active:brightness-95"
+          className="flex min-w-0 items-center gap-2 rounded-lg px-1 py-0.5 transition-colors hover:brightness-110 active:brightness-95"
           aria-label="Ir al inicio"
         >
           <Monogram />
@@ -111,7 +104,7 @@ export default function NavSidebar({
               onClick={onMobileClose}
               aria-current={activo ? 'page' : undefined}
               title={collapsed ? s.nombre : undefined}
-              className={`flex min-h-11 items-center gap-2.5 rounded-md px-2.5 py-2 text-xs transition-colors ${
+              className={`flex min-h-11 items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
                 activo
                   ? 'bg-ink-800 text-fog-100'
                   : 'text-fog-300 hover:bg-ink-800/60 hover:text-fog-100'
@@ -129,7 +122,7 @@ export default function NavSidebar({
           type="button"
           onClick={onToggleCollapse}
           title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
-          className={`hidden w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-xs text-fog-500 transition-colors hover:bg-ink-800/60 hover:text-fog-100 md:flex ${
+          className={`hidden w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs text-fog-500 transition-colors hover:bg-ink-800/60 hover:text-fog-100 md:flex ${
             collapsed ? 'justify-center' : ''
           }`}
         >
@@ -145,7 +138,7 @@ export default function NavSidebar({
           type="button"
           onClick={() => void onLogout()}
           title={collapsed ? 'Salir' : undefined}
-          className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-xs text-fog-500 transition-colors hover:bg-ink-800/60 hover:text-fog-100 ${
+          className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs text-fog-500 transition-colors hover:bg-ink-800/60 hover:text-fog-100 ${
             collapsed ? 'justify-center' : ''
           }`}
         >
