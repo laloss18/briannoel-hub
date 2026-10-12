@@ -54,7 +54,7 @@ export default function NuevoUsuarioPage() {
         : { email: 'Escribe un correo válido (clave de acceso y auditoría).' }),
       ...(usernameSchema.safeParse(username).success
         ? {}
-        : { username: 'El nombre de usuario necesita 3 a 24 caracteres válidos (letras, números, . _ -).' }),
+        : { username: 'El nombre de usuario necesita 3 a 40 caracteres (letras, números y espacios).' }),
       ...(password.length >= 8
         ? {}
         : { password: 'La contraseña necesita al menos 8 caracteres.' }),
@@ -114,8 +114,8 @@ export default function NuevoUsuarioPage() {
               setUsername(e.target.value);
               clear('username');
             }}
-            placeholder="ej. luis.p"
-            className={`${CAMPO} font-mono`}
+            placeholder="ej. Luis Pérez"
+            className={CAMPO}
             {...fieldAria('username', errors)}
           />
           <FieldError name="username" error={errors.username} />

@@ -18,15 +18,15 @@ export const syncDemoSchema = baseRecordSchema.extend({
 
 export type SyncDemo = z.infer<typeof syncDemoSchema>;
 
-/** Nombre de usuario: identidad visible de la app (PRD §3.4). Alfanumérico,
- *  sin espacios ni acentos (3–24), para poder escribirlo en un formulario y
- *  mostrarlo en cualquier lugar sin formato. */
+/** Nombre de usuario: identidad visible de la app (PRD §3.4). Es el **nombre de
+ *  la persona** ("María José", "Luis P."), así que admite letras (con acentos),
+ *  números, espacios y puntuación de nombre (3–40); no exige caracteres especiales. */
 export const usernameSchema = z
   .string()
   .trim()
-  .min(3, 'el usuario necesita al menos 3 caracteres')
-  .max(24, 'el usuario admite hasta 24 caracteres')
-  .regex(/^[a-zA-Z0-9._-]+$/, 'solo letras, números, punto, guion y guion bajo');
+  .min(3, 'el nombre de usuario necesita al menos 3 caracteres')
+  .max(40, 'el nombre de usuario admite hasta 40 caracteres')
+  .regex(/^[\p{L}\p{N}][\p{L}\p{N} .,'_-]*$/u, "usa letras, números y espacios (no se permiten símbolos raros)");
 
 /** Sesión de usuario cacheada offline (PRD §3.4: indispensble offline, expira por inactividad 5 días).
  *  `username` es opcional: las sesiones cacheadas antes del alta por admin no lo traen y
@@ -46,12 +46,14 @@ export type CachedSession = z.infer<typeof sessionSchema>;
 /** Perfil de usuario materializado por la RPC `upsert_app_user` (entidad `app_users`,
  *  solo en servidor; nunca en la outbox del dispositivo — lo escribe el admin).
  *  `id` es el `user_id` de auth (uuid en texto), no un ULID: así el perfil y la
- *  cuenta comparten clave. */
+ *  cuenta comparten clave. `username` es opcional: los perfiles dados de alta
+ *  antes de la migración 0009 (body de `upsert_app_user` sin `username`) deben
+ *  seguir apareciendo; la UI degrada la identidad a `name`/`email`. */
 export const appUserSchema = z.object({
   id: z.string().min(1),
   user_id: z.string().min(1),
   email: z.string().email(),
-  username: usernameSchema,
+  username: usernameSchema.optional(),
   name: z.string().trim().optional(),
   roles: z.array(z.enum(ROLES)),
   active: z.boolean(),

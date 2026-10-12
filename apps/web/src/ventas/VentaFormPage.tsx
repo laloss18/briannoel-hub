@@ -6,6 +6,7 @@ import { listZonas } from '../clientes/zonasRepo';
 import { listItems } from './itemsRepo';
 import { listDespachos, crearDespachoLocal, editarDespachoLocal } from './ventasRepo';
 import { listPersonal } from '../personal/personalRepo';
+import { useAppUsers } from '../auth/usuariosRepo';
 import { useSesion } from '../app/sesion';
 import PageShell from '../app/PageShell';
 import type { EditarVentaFormInput, VentaFormInput } from './VentaForm';
@@ -21,6 +22,7 @@ export default function VentaFormPage() {
   const items = useLiveQuery(() => listItems(), []);
   const zonas = useLiveQuery(() => listZonas(), []);
   const personal = useLiveQuery(() => listPersonal(), []);
+  const usuarios = useAppUsers();
   const despachos = useLiveQuery(() => listDespachos(), []);
   const editing = useMemo(() => (id ? (despachos ?? []).find((d) => d.id === id) ?? null : null), [despachos, id]);
   const titulo = id ? 'Editar venta' : 'Registrar venta';
@@ -63,6 +65,7 @@ export default function VentaFormPage() {
             items={items ?? []}
             zonas={zonas ?? []}
             personal={personal ?? []}
+            usuarios={usuarios}
             email={email}
             editing={editing}
             onSubmit={onSubmit}

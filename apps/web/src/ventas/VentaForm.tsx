@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
-import type { Cliente, Despacho, Item, Personal, Role, Zona } from '@brian/shared';
+import type { AppUser, Cliente, Despacho, Item, Personal, Role, Zona } from '@brian/shared';
 import { hasPermission } from '@brian/shared';
 import type { EditarVentaRepoInput, NuevaVentaRepoInput } from './ventasRepo';
 import { crearClienteLocal, matchZona } from '../clientes/clientesRepo';
 import { NuevaZonaDialog } from '../clientes/NuevaZonaDialog';
 import { AbrirMapa, GeoBoton } from '../ui/geo';
 import { CrearZonaBoton } from '../ui/zonas';
-import { PersonaSelect } from '../ui/personal';
+import { PersonaSelect, type PersonaOpcion } from '../ui/personal';
 import { compressImage } from '../lib/photo';
 import { MiniFoto } from '../ui/fotos';
 import { obtenerCoords } from '../lib/geo';
@@ -21,8 +21,11 @@ export interface VentaFormProps {
   clientes: Cliente[];
   items: Item[];
   zonas: Zona[];
-  /** Roster de personal: de aquí se eligen promotor y supervisor del pedido. */
+  /** Roster de personal: fuente secundaria de promotor/supervisor (legacy). */
   personal: Personal[];
+  /** Usuarios registrados (`app_users`): identidades visibles (username) para
+   *  elegir promotor y supervisor del pedido (PRD §3.4). */
+  usuarios: AppUser[];
   /** Email del usuario de la sesión activa para auditoría (§3.1). */
   email: string;
   /** Despacho en `pedido` que se está editando (propietario o admin) o null en alta. */
@@ -48,7 +51,7 @@ type Step = (typeof STEPS)[number];
  * del cierre (PRD §2.6). Con `editing` el formulario precarga y entrega a
  * `onEdit`.
  */
-export function VentaForm({ roles, clientes, items, zonas, personal, email, editing, onSubmit, onEdit, onSuccess }: VentaFormProps) {
+export function VentaForm({ roles, clientes, items, zonas, personal, usuarios, email, editing, onSubmit, onEdit, onSuccess }: VentaFormProps) {
   const [step, setStep] = useState<Step>('cliente');
   const [clienteId, setClienteId] = useState('');
   const [busqueda, setBusqueda] = useState('');
@@ -67,7 +70,6 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
   const [fotoCliente, setFotoCliente] = useState('');
   const [fotoCedula, setFotoCedula] = useState('');
   const [fotoError, setFotoError] = useState('');
-  const [nuevoAceptaConsent, setNuevoAceptaConsent] = useState(false);
   const [condicion, setCondicion] = useState<'credito' | 'contado'>('contado');
   const [lineas, setLineas] = useState<{ itemId: string; cantidad: string }[]>(() => {
     const unico = items.length === 1 ? items[0].id : '';
@@ -86,11 +88,33 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
   const { errors, fail, clear, summaryRef, setErrors } = useFormErrors();
 
   const canDiscount = hasPermission('discount', roles);
-  /** Identidad operativa del usuario autenticado: nombre del roster si está,
-   *  si no el email (para autocompletar supervisor/promotor según el rol). */
-  const identidad = personal.find((p) => p.email === email)?.nombre ?? email;
+  /** Identidad operativa del usuario autenticado: username del perfil si está
+   *  registrado, si no `name`/email, si no el roster, si no el email (para
+   *  autocompletar supervisor/promotor según el rol). */
+  const miPerfil = usuarios.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  const identidad =
+    miPerfil?.username ??
+    miPerfil?.name ??
+    personal.find((p) => p.email === email)?.nombre ??
+    email;
   const userEsPromotor = roles.includes('promotor');
   const userEsSupervisor = roles.includes('supervisor');
+
+  /** Candidatos para un slot de personal: usuarios registrados del rol + roster.
+   *  El `value` guardado en el despacho es el username/nombre (identidad visible). */
+  const candidatos = (rolesOk: readonly Role[]): PersonaOpcion[] => {
+    const permitidos = new Set(rolesOk);
+    const deApp = usuarios
+      .filter((u) => u.active && u.roles.some((r) => permitidos.has(r)))
+      .map((u) => ({ value: u.username ?? u.name ?? u.email, detalle: u.roles[0] }))
+      .filter((o) => o.value.trim() !== '');
+    const deRoster = personal
+      .filter((p) => permitidos.has(p.rol))
+      .map((p) => ({ value: p.nombre, detalle: p.rol }));
+    const unicos = new Map<string, PersonaOpcion>();
+    for (const o of [...deApp, ...deRoster]) unicos.set(o.value, o);
+    return [...unicos.values()].sort((a, b) => a.value.localeCompare(b.value));
+  };
 
   useEffect(() => {
     setStep('cliente');
@@ -109,7 +133,6 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
     setFotoCliente('');
     setFotoCedula('');
     setFotoError('');
-    setNuevoAceptaConsent(false);
     setCondicion(editing?.condicion ?? 'contado');
     setLineas(
       editing
@@ -189,9 +212,6 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
       e.zona = zonas.length
         ? 'La ubicación no coincide con una zona registrada. Elige o crea la zona del cliente.'
         : 'No hay zonas registradas. Créala con el icono «+» y úsala de inmediato.';
-    }
-    if (!nuevoAceptaConsent) {
-      e.consentimiento = 'Marca el consentimiento del cliente para poder darlo de alta.';
     }
     return e;
   };
@@ -311,7 +331,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
       }
     }
     if (step === 'productos' && !lineasCompletas) {
-      fail({ lineas: 'Cada línea necesita un ítem y una cantidad entera positiva.' });
+      fail({ lineas: 'Cada producto necesita un ítem y una cantidad entera positiva.' });
       return false;
     }
     setMessage(null);
@@ -364,7 +384,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
       }
       if (!lineasCompletas) {
         setBusy(false);
-        fail({ lineas: 'Agrega al menos una línea con ítem y cantidad entera.' });
+        fail({ lineas: 'Agrega al menos un producto con ítem y cantidad entera.' });
         return;
       }
       if (moraActivo && !moraOk) {
@@ -393,7 +413,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
       });
       if (prepared.some((p) => p === null)) {
         setBusy(false);
-        fail({ lineas: 'Una línea no corresponde a un ítem del catálogo.' });
+        fail({ lineas: 'Un producto no corresponde a un ítem del catálogo.' });
         return;
       }
       const lineas: { item: Item; cantidad: number }[] = prepared as { item: Item; cantidad: number }[];
@@ -607,7 +627,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     </div>
                     <FieldError name="nuevoDocumento" error={errors.nuevoDocumento} />
                     <FieldError name="nuevoTelefono" error={errors.nuevoTelefono} />
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <input
                         type="text"
                         placeholder="Teléfono secundario (opcional)"
@@ -634,35 +654,39 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                     <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
                       ubicación para la zona
                     </p>
-                    <div className="grid grid-cols-[1fr_1fr_auto] items-start gap-2">
-                      <input
-                        type="number"
-                        step="any"
-                        placeholder="Latitud"
-                        aria-label="Latitud del cliente nuevo"
-                        value={lat}
-                        onChange={(e) => {
-                          setLat(e.target.value);
-                          setZonaId('');
-                          clear('lat');
-                        }}
-                        className={inputCls}
-                        {...fieldAria('lat', errors)}
-                      />
-                      <input
-                        type="number"
-                        step="any"
-                        placeholder="Longitud"
-                        aria-label="Longitud del cliente nuevo"
-                        value={lng}
-                        onChange={(e) => {
-                          setLng(e.target.value);
-                          setZonaId('');
-                          clear('lat');
-                        }}
-                        className={inputCls}
-                      />
-                      <GeoBoton onClick={usarMiUbicacion} busy={geoBusy} />
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                      <div className="grid grid-cols-2 gap-2 sm:contents">
+                        <input
+                          type="number"
+                          step="any"
+                          placeholder="Latitud"
+                          aria-label="Latitud del cliente nuevo"
+                          value={lat}
+                          onChange={(e) => {
+                            setLat(e.target.value);
+                            setZonaId('');
+                            clear('lat');
+                          }}
+                          className={inputCls}
+                          {...fieldAria('lat', errors)}
+                        />
+                        <input
+                          type="number"
+                          step="any"
+                          placeholder="Longitud"
+                          aria-label="Longitud del cliente nuevo"
+                          value={lng}
+                          onChange={(e) => {
+                            setLng(e.target.value);
+                            setZonaId('');
+                            clear('lat');
+                          }}
+                          className={inputCls}
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <GeoBoton onClick={usarMiUbicacion} busy={geoBusy} />
+                      </div>
                     </div>
                     <FieldError name="lat" error={errors.lat} />
                     <div className="flex items-start gap-2">
@@ -702,21 +726,10 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                       el registro.
                     </p>
 
-                    <label className="flex items-start gap-2 text-2xs text-fog-500">
-                      <input
-                        type="checkbox"
-                        checked={nuevoAceptaConsent}
-                        onChange={(e) => {
-                          setNuevoAceptaConsent(e.target.checked);
-                          clear('consentimiento');
-                        }}
-                        className="mt-0.5"
-                        {...fieldAria('consentimiento', errors)}
-                      />
-                      El cliente autoriza registrar y usar sus datos y las fotos que se tomen (fachada, cliente y
-                      cédula) y fue informado del tratamiento del documento (consentimiento §3.5).
-                    </label>
-                    <FieldError name="consentimiento" error={errors.consentimiento} />
+                    <p className="text-2xs text-fog-500">
+                      Al capturar las fotos, el cliente autoriza registrar y usar sus datos y las imágenes que se
+                      tomen (consentimiento §3.5).
+                    </p>
                   </div>
                   {clientes.length === 0 && (
                     <p className="text-xs text-fog-600">
@@ -767,9 +780,9 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                   </span>
                   <PersonaSelect
                     value={promotor}
-                    personas={personal.filter((p) => p.rol === 'promotor' || p.rol === 'admin')}
+                    opciones={candidatos(['promotor', 'admin'])}
                     placeholder={userEsPromotor ? identidad : 'Elegir promotor de la lista…'}
-                    emptyMessage="Registra promotores en Configuración → Personal"
+                    emptyMessage="Registra promotores en Configuración → Usuarios"
                     onChange={(v) => {
                       setPromotor(v);
                       clear('promotor');
@@ -786,9 +799,9 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                   </span>
                   <PersonaSelect
                     value={supervisor}
-                    personas={personal.filter((p) => p.rol === 'supervisor' || p.rol === 'admin')}
+                    opciones={candidatos(['supervisor', 'admin'])}
                     placeholder={userEsSupervisor ? identidad : 'Elegir supervisor de la lista…'}
-                    emptyMessage="Registra supervisores en Configuración → Personal"
+                    emptyMessage="Registra supervisores en Configuración → Usuarios"
                     onChange={(v) => {
                       setSupervisor(v);
                       clear('supervisor');
@@ -828,7 +841,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                       <select
                         value={l.itemId}
                         onChange={(e) => updateLinea(idx, { itemId: e.target.value })}
-                        aria-label={`Ítem de la línea ${idx + 1}`}
+                        aria-label={`Ítem del producto ${idx + 1}`}
                         className="min-w-0 flex-1 cursor-pointer bg-ink-950 text-base font-semibold leading-snug text-fog-100 outline-none"
                       >
                         <option value="">Elegir ítem</option>
@@ -843,7 +856,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                           type="button"
                           onClick={() => setLineas((ls) => ls.filter((_, i) => i !== idx))}
                           className="shrink-0 rounded-md px-2 py-0.5 font-mono text-xs text-danger transition-colors hover:text-danger-soft"
-                          aria-label="Quitar línea"
+                          aria-label="Quitar producto"
                         >
                           ×
                         </button>
@@ -862,7 +875,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                         )}
                       </p>
                     ) : (
-                      <p className="mt-1 text-2xs text-fog-600">Elige el ítem de la línea.</p>
+                      <p className="mt-1 text-2xs text-fog-600">Elige el ítem del producto.</p>
                     )}
                     <div className="mt-2 flex items-center justify-between gap-2 border-t border-ink-800 pt-2">
                       <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">cantidad</span>
@@ -881,7 +894,7 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
                           step={1}
                           value={l.cantidad}
                           onChange={(e) => updateLinea(idx, { cantidad: e.target.value })}
-                          aria-label={`Cantidad de ${item?.nombre ?? 'la línea'}`}
+                          aria-label={`Cantidad de ${item?.nombre ?? 'el producto'}`}
                           className="w-16 shrink-0 rounded-md border border-ink-700 bg-ink-950 px-2 py-1 text-center text-sm tabular-nums text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
                         />
                         <button
@@ -899,8 +912,8 @@ export function VentaForm({ roles, clientes, items, zonas, personal, email, edit
               })}
               <FieldError name="lineas" error={errors.lineas} />
               <button type="button" onClick={anadirLinea} className={optionCls(false)}>
-                <span className="text-xs font-medium">+ Añadir línea</span>
-                <span className="text-2xs text-fog-500">agrega otra línea al despacho</span>
+                <span className="text-xs font-medium">+ Añadir producto</span>
+                <span className="text-2xs text-fog-500">agrega otro producto al despacho</span>
               </button>
               {canDiscount && (
                 <div className="rounded-md border border-ink-700/60 p-2.5">

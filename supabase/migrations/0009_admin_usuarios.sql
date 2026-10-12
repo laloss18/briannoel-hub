@@ -45,8 +45,10 @@ as $$
   );
 $$;
 
--- Filtro de entrada compartido: username con el mismo formato que
--- `usernameSchema` de packages/shared (letras, números, `.`, `-`, `_`, 3–24).
+-- Filtro de entrada compartido: el nombre de usuario es el nombre visible de la
+-- persona, así que admite letras (con acentos), números y espacios (3–40), en
+-- línea con `usernameSchema` de packages/shared. Solo se rechazan los caracteres
+-- de control y las longitudes extremas.
 create or replace function public.admin_check_username(p_username text)
 returns text
 language plpgsql
@@ -55,8 +57,8 @@ as $$
 declare
   v text := btrim(coalesce(p_username, ''));
 begin
-  if v !~ '^[A-Za-z0-9._-]{3,24}$' then
-    raise exception 'nombre de usuario inválido: 3-24 caracteres, solo letras, números, punto, guion y guion bajo'
+  if length(v) < 3 or length(v) > 40 or v ~ '[[:cntrl:]]' then
+    raise exception 'nombre de usuario inválido: 3-40 caracteres'
       using errcode = '22023';
   end if;
   return v;

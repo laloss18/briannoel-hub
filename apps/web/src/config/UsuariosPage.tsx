@@ -42,9 +42,9 @@ export default function UsuariosPage() {
     );
   }
 
-  const abrir = (userId: string, username: string, roles: readonly Rol[]) => {
+  const abrir = (userId: string, username: string | undefined, roles: readonly Rol[]) => {
     setEditando(userId);
-    setBorrador({ username, rol: roles[0] ?? 'promotor' });
+    setBorrador({ username: username ?? '', rol: roles[0] ?? 'promotor' });
     setError(null);
   };
 
@@ -56,7 +56,7 @@ export default function UsuariosPage() {
   const guardar = async (userId: string) => {
     if (!borrador) return;
     if (!usernameSchema.safeParse(borrador.username).success) {
-      setError('El nombre de usuario necesita 3 a 24 caracteres válidos (letras, números, . _ -).');
+      setError('El nombre de usuario necesita 3 a 40 caracteres (letras, números y espacios).');
       return;
     }
     setGuardando(true);
@@ -146,7 +146,7 @@ export default function UsuariosPage() {
                       />
                       {usernameSchema.safeParse(borrador.username).success ? null : (
                         <p className="text-2xs text-danger">
-                          3 a 24 caracteres: solo letras, números, punto, guion y guion bajo.
+                          Usa 3 a 40 caracteres: letras, números y espacios.
                         </p>
                       )}
                     </div>

@@ -124,14 +124,14 @@ describe('schemas Fase 1', () => {
 });
 
 describe('identidad por nombre de usuario (PRD §3.4)', () => {
-  it('usernameSchema acepta alfanuméricos con punto, guion y guion bajo', () => {
-    for (const ok of ['luis', 'brian.noel', 'admin_1', 'Ana-03']) {
+  it('usernameSchema acepta nombres con acentos, espacios y puntuación', () => {
+    for (const ok of ['luis', 'brian.noel', 'María José', "O'Brien", 'Ana-03', 'Luis P.']) {
       expect(usernameSchema.safeParse(ok).success, ok).toBe(true);
     }
   });
 
-  it('usernameSchema rechaza espacios, acentos, símbolos y longitudes extremas', () => {
-    for (const bad of ['luis perez', 'ánimo', 'user@host', 'ab', '', 'a'.repeat(25), 'con espacio ']) {
+  it('usernameSchema rechaza símbolos raros, vacío y longitudes extremas', () => {
+    for (const bad of ['user@host', 'a#b', 'ab', '', 'a'.repeat(41), '<script>']) {
       expect(usernameSchema.safeParse(bad).success, JSON.stringify(bad)).toBe(false);
     }
   });
@@ -147,7 +147,8 @@ describe('identidad por nombre de usuario (PRD §3.4)', () => {
     };
     expect(sessionSchema.safeParse({ ...base, username: 'luis' }).success).toBe(true);
     expect(sessionSchema.safeParse(base).success).toBe(true);
-    expect(sessionSchema.safeParse({ ...base, username: 'luis perez' }).success).toBe(false);
+    expect(sessionSchema.safeParse({ ...base, username: 'Luis Pérez' }).success).toBe(true);
+    expect(sessionSchema.safeParse({ ...base, username: 'u$er' }).success).toBe(false);
   });
 
   it('identidadDe resuelve el username y cae al email si no hay índice o no está', () => {
@@ -159,7 +160,7 @@ describe('identidad por nombre de usuario (PRD §3.4)', () => {
     expect(identidadDe(indice, null)).toBe('—');
   });
 
-  it('appUserSchema exige username y roles válidos en el perfil del admin', () => {
+  it('appUserSchema acepta perfiles sin username (pre-0009) y valida roles', () => {
     const base = {
       id: '09ce4f19-0130-4184-a5da-22f2c1b61c3f',
       user_id: '09ce4f19-0130-4184-a5da-22f2c1b61c3f',
@@ -171,7 +172,8 @@ describe('identidad por nombre de usuario (PRD §3.4)', () => {
       deleted_at: null,
     };
     expect(appUserSchema.safeParse({ ...base, username: 'luis' }).success).toBe(true);
-    expect(appUserSchema.safeParse(base).success).toBe(false);
+    expect(appUserSchema.safeParse(base).success).toBe(true);
     expect(appUserSchema.safeParse({ ...base, username: 'l' }).success).toBe(false);
+    expect(appUserSchema.safeParse({ ...base, roles: ['otro'] }).success).toBe(false);
   });
 });

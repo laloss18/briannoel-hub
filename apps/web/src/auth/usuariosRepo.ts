@@ -24,7 +24,8 @@ export async function listAppUsers(): Promise<AppUser[]> {
 }
 
 export async function getAppUserByUsername(username: string): Promise<AppUser | null> {
-  const u = (await listAppUsers()).find((x) => x.username === username.toLowerCase());
+  const busca = username.toLowerCase();
+  const u = (await listAppUsers()).find((x) => (x.username ?? '').toLowerCase() === busca);
   return u ?? null;
 }
 
