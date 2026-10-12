@@ -3,7 +3,7 @@ import { municipiosDeEstado, VE_ESTADOS, type Zona } from '@brian/shared';
 import { crearZonaLocal } from './zonasRepo';
 import { CloseButton, PrimaryButton } from '../ui/actions';
 import { FieldError, FormErrorSummary } from '../ui/form';
-import { fieldAria, useFormErrors } from '../ui/formErrors';
+import { erroresDe, fieldAria, useFormErrors, type Validadores } from '../ui/formErrors';
 
 interface NuevaZonaDialogProps {
   open: boolean;
@@ -24,19 +24,20 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
   const [municipio, setMunicipio] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
-  const { errors, fail, clear, summaryRef } = useFormErrors();
+  const { errors, fail, clear, validarCampo, summaryRef } = useFormErrors();
 
   if (!open) return null;
 
   const municipios = estado ? municipiosDeEstado(estado) : [];
 
+  const validadores = {
+    nombre: () => (nombre.trim() ? undefined : 'Escribe el nombre de la zona.'),
+    estado: () => (estado ? undefined : 'Selecciona el estado al que pertenece la zona.'),
+    municipio: () => (municipio ? undefined : 'Selecciona el municipio de la zona.'),
+  } satisfies Validadores;
+
   const onGuardar = async () => {
-    const nuevos = {
-      ...(nombre.trim() ? {} : { nombre: 'Escribe el nombre de la zona.' }),
-      ...(estado ? {} : { estado: 'Selecciona el estado al que pertenece la zona.' }),
-      ...(municipio ? {} : { municipio: 'Selecciona el municipio de la zona.' }),
-    };
-    if (!fail(nuevos)) return;
+    if (!fail(erroresDe(validadores))) return;
     setBusy(true);
     setMessage(null);
     try {
@@ -91,6 +92,7 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
               setNombre(e.target.value);
               clear('nombre');
             }}
+            onBlur={() => validarCampo('nombre', validadores.nombre())}
             className={inputCls}
             {...fieldAria('nombre', errors)}
           />
@@ -103,6 +105,7 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
               clear('estado');
               clear('municipio');
             }}
+            onBlur={() => validarCampo('estado', validadores.estado())}
             className={inputCls}
             {...fieldAria('estado', errors)}
           >
@@ -120,6 +123,7 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
               setMunicipio(e.target.value);
               clear('municipio');
             }}
+            onBlur={() => validarCampo('municipio', validadores.municipio())}
             disabled={!estado}
             className={`${inputCls} disabled:opacity-50`}
             {...fieldAria('municipio', errors)}

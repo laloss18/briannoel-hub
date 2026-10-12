@@ -7,7 +7,7 @@ import { EstadoNoEncontrado } from '../app/EstadoNoEncontrado';
 import { usePrecargaUnaVez, useRegistroPorId } from '../lib/hooks';
 import { useState } from 'react';
 import { FieldError, FormErrorSummary, inputCls } from '../ui/form';
-import { fieldAria, useFormErrors } from '../ui/formErrors';
+import { erroresDe, fieldAria, useFormErrors, type Validadores } from '../ui/formErrors';
 
 export default function ItemFormPage() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function ItemFormPage() {
   const [precioCredito, setPrecioCredito] = useState('0');
   const [precioContado, setPrecioContado] = useState('0');
   const [busy, setBusy] = useState(false);
-  const { errors, fail, clear, summaryRef } = useFormErrors();
+  const { errors, fail, clear, validarCampo, summaryRef } = useFormErrors();
 
   usePrecargaUnaVez(item, (i) => {
     setNombre(i.nombre);
@@ -26,19 +26,22 @@ export default function ItemFormPage() {
     setPrecioContado(i.precio_contado.toString());
   });
 
+  const validadores = {
+    nombre: () => (nombre.trim() ? undefined : 'Escribe el nombre del ítem.'),
+    precioCredito: () =>
+      Number.isFinite(Number(precioCredito)) && Number(precioCredito) > 0
+        ? undefined
+        : 'Indica un precio de crédito mayor que cero.',
+    precioContado: () =>
+      Number.isFinite(Number(precioContado)) && Number(precioContado) > 0
+        ? undefined
+        : 'Indica un precio de contado mayor que cero.',
+  } satisfies Validadores;
+
   const onGuardar = async () => {
     const pc = Number(precioCredito);
     const pco = Number(precioContado);
-    const nuevos = {
-      ...(nombre.trim() ? {} : { nombre: 'Escribe el nombre del ítem.' }),
-      ...(Number.isFinite(pc) && pc > 0
-        ? {}
-        : { precioCredito: 'Indica un precio de crédito mayor que cero.' }),
-      ...(Number.isFinite(pco) && pco > 0
-        ? {}
-        : { precioContado: 'Indica un precio de contado mayor que cero.' }),
-    };
-    if (!fail(nuevos)) return;
+    if (!fail(erroresDe(validadores))) return;
     setBusy(true);
     try {
       if (editando && item) {
@@ -73,6 +76,7 @@ export default function ItemFormPage() {
               setNombre(e.target.value);
               clear('nombre');
             }}
+            onBlur={() => validarCampo('nombre', validadores.nombre())}
             className={inputCls}
             {...fieldAria('nombre', errors)}
           />
@@ -91,6 +95,7 @@ export default function ItemFormPage() {
                 setPrecioCredito(e.target.value);
                 clear('precioCredito');
               }}
+              onBlur={() => validarCampo('precioCredito', validadores.precioCredito())}
               className={`${inputCls} tabular-nums`}
               {...fieldAria('precioCredito', errors)}
             />
@@ -108,6 +113,7 @@ export default function ItemFormPage() {
                 setPrecioContado(e.target.value);
                 clear('precioContado');
               }}
+              onBlur={() => validarCampo('precioContado', validadores.precioContado())}
               className={`${inputCls} tabular-nums`}
               {...fieldAria('precioContado', errors)}
             />

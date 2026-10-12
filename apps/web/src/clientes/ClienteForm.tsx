@@ -10,7 +10,7 @@ import { CrearZonaBoton } from '../ui/zonas';
 import { NuevaZonaDialog } from './NuevaZonaDialog';
 import { FieldError, FormErrorSummary, inputCls, labelCls } from '../ui/form';
 import { PrimaryButton } from '../ui/actions';
-import { fieldAria, useFormErrors } from '../ui/formErrors';
+import { erroresDe, fieldAria, useFormErrors, type Validadores } from '../ui/formErrors';
 
 /** Campos que reúne el formulario; `creado_por` lo inyecta quien lo invoca. */
 type ClienteFormInput = Omit<NuevoClienteRepoInput, 'creado_por'>;
@@ -53,7 +53,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { errors, fail, clear, summaryRef } = useFormErrors();
+  const { errors, fail, clear, validarCampo, summaryRef } = useFormErrors();
 
   // En Fase 2 la edición solo la autoriza quien tenga `edit_client` (§3.2).
   const canEdit = roles.includes('admin') || roles.includes('supervisor');
@@ -99,18 +99,21 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
     }
   };
 
+  const hayConsentimiento = () =>
+    fotoCasa || fotoDocumento || fotoFachada !== '' || fotoCedula !== '';
+
+  const validadores = {
+    nombre: () => (nombre.trim() ? undefined : 'Escribe el nombre del cliente.'),
+    zona: () =>
+      zonas.length > 0 && !zonaFinal
+        ? 'Elige o crea la zona del cliente (se sugiere por cercanía).'
+        : undefined,
+    consentimiento: () =>
+      hayConsentimiento() ? undefined : 'Marca una opción de consentimiento para continuar.',
+  } satisfies Validadores;
+
   const onClickGuardar = async () => {
-    const hayConsentimiento = fotoCasa || fotoDocumento || fotoFachada !== '' || fotoCedula !== '';
-    const nuevos = {
-      ...(nombre.trim() ? {} : { nombre: 'Escribe el nombre del cliente.' }),
-      ...(zonas.length > 0 && !zonaFinal
-        ? { zona: 'Elige o crea la zona del cliente (se sugiere por cercanía).' }
-        : {}),
-      ...(hayConsentimiento
-        ? {}
-        : { consentimiento: 'Marca una opción de consentimiento para continuar.' }),
-    };
-    if (!fail(nuevos)) return;
+    if (!fail(erroresDe(validadores))) return;
     setBusy(true);
     setMessage(null);
     try {
@@ -166,6 +169,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
             setNombre(e.target.value);
             clear('nombre');
           }}
+          onBlur={() => validarCampo('nombre', validadores.nombre())}
           className={inputCls}
           {...fieldAria('nombre', errors)}
         />
@@ -268,6 +272,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
               setZonaId(e.target.value);
               clear('zona');
             }}
+            onBlur={() => validarCampo('zona', validadores.zona())}
             className={`${inputCls} min-w-0 flex-1 appearance-none`}
             {...fieldAria('zona', errors)}
           >
@@ -329,6 +334,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
               setFotoCasa(e.target.checked);
               clear('consentimiento');
             }}
+            onBlur={() => validarCampo('consentimiento', validadores.consentimiento())}
             className="size-4 accent-signal"
           />
           Foto de la vivienda
@@ -341,6 +347,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
               setFotoDocumento(e.target.checked);
               clear('consentimiento');
             }}
+            onBlur={() => validarCampo('consentimiento', validadores.consentimiento())}
             className="size-4 accent-signal"
           />
           Foto del documento de identidad (opcional)

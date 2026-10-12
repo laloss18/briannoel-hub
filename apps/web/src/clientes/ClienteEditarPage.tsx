@@ -9,7 +9,7 @@ import { usePrecargaUnaVez, useRegistroPorId } from '../lib/hooks';
 import { useSesion } from '../app/sesion';
 import { useState } from 'react';
 import { FieldError, FormErrorSummary, inputCls, labelCls } from '../ui/form';
-import { fieldAria, useFormErrors } from '../ui/formErrors';
+import { erroresDe, fieldAria, useFormErrors, type Validadores } from '../ui/formErrors';
 import { GeoBoton } from '../ui/geo';
 import { obtenerCoords } from '../lib/geo';
 
@@ -37,7 +37,7 @@ export default function ClienteEditarPage() {
   const [lng, setLng] = useState('');
   const [geoBusy, setGeoBusy] = useState(false);
   const [busy, setBusy] = useState(false);
-  const { errors, fail, clear, summaryRef } = useFormErrors();
+  const { errors, fail, clear, validarCampo, summaryRef } = useFormErrors();
 
   usePrecargaUnaVez(cliente, (c) => {
     setNombre(c.nombre);
@@ -61,9 +61,13 @@ export default function ClienteEditarPage() {
     }
   };
 
+  const validadores = {
+    nombre: () => (nombre.trim() ? undefined : 'Escribe el nombre del cliente.'),
+  } satisfies Validadores;
+
   const onGuardar = async () => {
     if (!cliente) return;
-    if (!fail(nombre.trim() ? {} : { nombre: 'Escribe el nombre del cliente.' })) return;
+    if (!fail(erroresDe(validadores))) return;
     setBusy(true);
     try {
       await editarClienteLocal(cliente, email, zonas ?? [], {
@@ -115,6 +119,7 @@ export default function ClienteEditarPage() {
               setNombre(e.target.value);
               clear('nombre');
             }}
+            onBlur={() => validarCampo('nombre', validadores.nombre())}
             className={inputCls}
             {...fieldAria('nombre', errors)}
           />

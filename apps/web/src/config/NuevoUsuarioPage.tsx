@@ -6,7 +6,7 @@ import { useSesion } from '../app/sesion';
 import { adminCrearUsuario } from '../auth/usuariosRepo';
 import { runSync } from '../sync/useSync';
 import { FieldError, FormErrorSummary, inputCls } from '../ui/form';
-import { fieldAria, useFormErrors } from '../ui/formErrors';
+import { erroresDe, fieldAria, useFormErrors, type Validadores } from '../ui/formErrors';
 
 const ETIQUETA_ROL: Record<Rol, string> = {
   admin: 'administrador',
@@ -33,7 +33,7 @@ export default function NuevoUsuarioPage() {
   const [rol, setRol] = useState<Rol>('promotor');
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState('');
-  const { errors, fail, clear, summaryRef } = useFormErrors();
+  const { errors, fail, clear, validarCampo, summaryRef } = useFormErrors();
 
   if (!hasPermission('manage_personal', misRoles)) {
     return (
@@ -45,22 +45,21 @@ export default function NuevoUsuarioPage() {
     );
   }
 
+  const validadores = {
+    email: () =>
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+        ? undefined
+        : 'Escribe un correo válido (clave de acceso y auditoría).',
+    username: () =>
+      usernameSchema.safeParse(username).success
+        ? undefined
+        : 'El nombre de usuario necesita 3 a 40 caracteres (letras, números y espacios).',
+    password: () =>
+      password.length >= 8 ? undefined : 'La contraseña necesita al menos 8 caracteres.',
+  } satisfies Validadores;
+
   const onGuardar = async () => {
-    const nuevos = {
-      ...(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-        ? {}
-        : { email: 'Escribe un correo válido (clave de acceso y auditoría).' }),
-      ...(usernameSchema.safeParse(username).success
-        ? {}
-        : {
-            username:
-              'El nombre de usuario necesita 3 a 40 caracteres (letras, números y espacios).',
-          }),
-      ...(password.length >= 8
-        ? {}
-        : { password: 'La contraseña necesita al menos 8 caracteres.' }),
-    };
-    if (!fail(nuevos)) return;
+    if (!fail(erroresDe(validadores))) return;
     setGuardando(true);
     setEstado('');
     try {
@@ -98,6 +97,7 @@ export default function NuevoUsuarioPage() {
               setEmail(e.target.value);
               clear('email');
             }}
+            onBlur={() => validarCampo('email', validadores.email())}
             className={inputCls}
             {...fieldAria('email', errors)}
           />
@@ -115,6 +115,7 @@ export default function NuevoUsuarioPage() {
               setUsername(e.target.value);
               clear('username');
             }}
+            onBlur={() => validarCampo('username', validadores.username())}
             placeholder="ej. Luis Pérez"
             className={inputCls}
             {...fieldAria('username', errors)}
@@ -134,6 +135,7 @@ export default function NuevoUsuarioPage() {
               setPassword(e.target.value);
               clear('password');
             }}
+            onBlur={() => validarCampo('password', validadores.password())}
             className={`${inputCls} font-mono`}
             {...fieldAria('password', errors)}
           />

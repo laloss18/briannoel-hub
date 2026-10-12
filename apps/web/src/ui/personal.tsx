@@ -22,6 +22,7 @@ export function PersonaSelect({
   id,
   invalid,
   describedBy,
+  onBlur,
 }: {
   value: string;
   opciones: PersonaOpcion[];
@@ -31,6 +32,7 @@ export function PersonaSelect({
   id?: string;
   invalid?: boolean;
   describedBy?: string;
+  onBlur?: () => void;
 }) {
   const aria = {
     id,
@@ -49,6 +51,7 @@ export function PersonaSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onBlur={onBlur}
       aria-label={placeholder}
       className={`${inputCls} appearance-none`}
       {...aria}

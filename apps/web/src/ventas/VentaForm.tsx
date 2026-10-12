@@ -14,7 +14,13 @@ import { normaliza } from '../lib/texto';
 import { usd } from '../lib/moneda';
 import { FieldError, FormErrorSummary } from '../ui/form';
 import { PrimaryButton } from '../ui/actions';
-import { fieldAria, useFormErrors, type FieldErrors } from '../ui/formErrors';
+import {
+  erroresDe,
+  fieldAria,
+  useFormErrors,
+  type FieldErrors,
+  type Validadores,
+} from '../ui/formErrors';
 import { FilaProducto } from './venta/FilaProducto';
 import { ResumenTotales } from './venta/ResumenTotales';
 
@@ -102,7 +108,7 @@ export function VentaForm({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const firstRef = useRef<HTMLInputElement>(null);
-  const { errors, fail, clear, summaryRef, setErrors } = useFormErrors();
+  const { errors, fail, clear, validarCampo, summaryRef, setErrors } = useFormErrors();
 
   const canDiscount = hasPermission('discount', roles);
   /** Identidad operativa del usuario autenticado: username del perfil si está
@@ -215,28 +221,25 @@ export function VentaForm({
   );
   const zonaFinal = zonas.find((z) => z.id === (zonaId || zonaMatch?.id || '')) ?? null;
 
-  const validarClienteNuevo = (): FieldErrors => {
-    const e: FieldErrors = {};
-    if (!nuevoNombre.trim()) e.nuevoNombre = 'Escribe el nombre del cliente nuevo.';
-    if (!nuevoDocumento.trim())
-      e.nuevoDocumento = 'El documento (cédula) del cliente es obligatorio.';
-    if (!nuevoTelefono.trim()) e.nuevoTelefono = 'El teléfono del cliente es obligatorio.';
-    if (
-      !lat.trim() ||
-      !lng.trim() ||
-      !Number.isFinite(Number(lat)) ||
-      !Number.isFinite(Number(lng))
-    ) {
-      e.lat =
-        'Indica la ubicación del cliente (usa «usar mi ubicación» o escribe latitud y longitud).';
-    }
-    if (!zonaFinal) {
-      e.zona = zonas.length
-        ? 'La ubicación no coincide con una zona registrada. Elige o crea la zona del cliente.'
-        : 'No hay zonas registradas. Créala con el icono «+» y úsala de inmediato.';
-    }
-    return e;
-  };
+  const validadoresCliente = {
+    nuevoNombre: () => (nuevoNombre.trim() ? undefined : 'Escribe el nombre del cliente nuevo.'),
+    nuevoDocumento: () =>
+      nuevoDocumento.trim() ? undefined : 'El documento (cédula) del cliente es obligatorio.',
+    nuevoTelefono: () =>
+      nuevoTelefono.trim() ? undefined : 'El teléfono del cliente es obligatorio.',
+    lat: () =>
+      !lat.trim() || !lng.trim() || !Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))
+        ? 'Indica la ubicación del cliente (usa «usar mi ubicación» o escribe latitud y longitud).'
+        : undefined,
+    zona: () =>
+      zonaFinal
+        ? undefined
+        : zonas.length
+          ? 'La ubicación no coincide con una zona registrada. Elige o crea la zona del cliente.'
+          : 'No hay zonas registradas. Créala con el icono «+» y úsala de inmediato.',
+  } satisfies Validadores;
+
+  const validarClienteNuevo = (): FieldErrors => erroresDe(validadoresCliente);
 
   const usarMiUbicacion = async () => {
     setGeoBusy(true);
@@ -321,6 +324,21 @@ export function VentaForm({
       const cant = Number(l.cantidad);
       return Number.isInteger(cant) && cant > 0;
     });
+
+  const validarMora = () =>
+    moraActivo && !moraOk
+      ? 'Revisa el recargo por mora: porcentaje entre 0 y 100, o monto hasta el subtotal.'
+      : undefined;
+  const validarIva = () =>
+    ivaPctOk ? undefined : 'El porcentaje de IVA debe estar entre 0 y 100.';
+  const validarPromotor = () =>
+    !editing && promotor.trim() === ''
+      ? 'Indica quién es el promotor que captó al cliente.'
+      : undefined;
+  const validarSupervisor = () =>
+    !editing && supervisor.trim() === ''
+      ? 'Indica el supervisor a cargo de la entrega.'
+      : undefined;
 
   const updateLinea = (idx: number, patch: Partial<{ itemId: string; cantidad: string }>) => {
     clear('lineas');
@@ -410,26 +428,28 @@ export function VentaForm({
         fail({ lineas: 'Agrega al menos un producto con ítem y cantidad entera.' });
         return;
       }
-      if (moraActivo && !moraOk) {
+      const msgMora = validarMora();
+      if (msgMora) {
         setBusy(false);
-        fail({
-          mora: 'Revisa el recargo por mora: porcentaje entre 0 y 100, o monto hasta el subtotal.',
-        });
+        fail({ mora: msgMora });
         return;
       }
-      if (!ivaPctOk) {
+      const msgIva = validarIva();
+      if (msgIva) {
         setBusy(false);
-        fail({ iva: 'El porcentaje de IVA debe estar entre 0 y 100.' });
+        fail({ iva: msgIva });
         return;
       }
-      if (!editing && promotor.trim() === '') {
+      const msgPromotor = validarPromotor();
+      if (msgPromotor) {
         setBusy(false);
-        fail({ promotor: 'Indica quién es el promotor que captó al cliente.' });
+        fail({ promotor: msgPromotor });
         return;
       }
-      if (!editing && supervisor.trim() === '') {
+      const msgSupervisor = validarSupervisor();
+      if (msgSupervisor) {
         setBusy(false);
-        fail({ supervisor: 'Indica el supervisor a cargo de la entrega.' });
+        fail({ supervisor: msgSupervisor });
         return;
       }
       const prepared = lineasValidas.map((l) => {
@@ -634,6 +654,7 @@ export function VentaForm({
                       setNuevoNombre(e.target.value);
                       clear('nuevoNombre');
                     }}
+                    onBlur={() => validarCampo('nuevoNombre', validadoresCliente.nuevoNombre())}
                     className={inputCls}
                     {...fieldAria('nuevoNombre', errors)}
                   />
@@ -648,6 +669,9 @@ export function VentaForm({
                         setNuevoDocumento(e.target.value);
                         clear('nuevoDocumento');
                       }}
+                      onBlur={() =>
+                        validarCampo('nuevoDocumento', validadoresCliente.nuevoDocumento())
+                      }
                       className={inputCls}
                       {...fieldAria('nuevoDocumento', errors)}
                     />
@@ -660,6 +684,9 @@ export function VentaForm({
                         setNuevoTelefono(e.target.value);
                         clear('nuevoTelefono');
                       }}
+                      onBlur={() =>
+                        validarCampo('nuevoTelefono', validadoresCliente.nuevoTelefono())
+                      }
                       className={inputCls}
                       {...fieldAria('nuevoTelefono', errors)}
                     />
@@ -706,6 +733,7 @@ export function VentaForm({
                           setZonaId('');
                           clear('lat');
                         }}
+                        onBlur={() => validarCampo('lat', validadoresCliente.lat())}
                         className={inputCls}
                         {...fieldAria('lat', errors)}
                       />
@@ -720,6 +748,7 @@ export function VentaForm({
                           setZonaId('');
                           clear('lat');
                         }}
+                        onBlur={() => validarCampo('lat', validadoresCliente.lat())}
                         className={inputCls}
                       />
                     </div>
@@ -735,6 +764,7 @@ export function VentaForm({
                         setZonaId(e.target.value);
                         clear('zona');
                       }}
+                      onBlur={() => validarCampo('zona', validadoresCliente.zona())}
                       className="min-w-0 flex-1 rounded-md border border-ink-700 bg-ink-950 px-3 py-1.5 text-sm text-fog-100 caret-signal outline-none transition-colors focus:border-ink-600"
                       {...fieldAria('zona', errors)}
                     >
@@ -855,6 +885,7 @@ export function VentaForm({
                     setPromotor(v);
                     clear('promotor');
                   }}
+                  onBlur={() => validarCampo('promotor', validarPromotor())}
                   id="promotor"
                   invalid={Boolean(errors.promotor)}
                   describedBy="promotor-error"
@@ -874,6 +905,7 @@ export function VentaForm({
                     setSupervisor(v);
                     clear('supervisor');
                   }}
+                  onBlur={() => validarCampo('supervisor', validarSupervisor())}
                   id="supervisor"
                   invalid={Boolean(errors.supervisor)}
                   describedBy="supervisor-error"
@@ -1007,6 +1039,7 @@ export function VentaForm({
                       setMoraValor(e.target.value);
                       clear('mora');
                     }}
+                    onBlur={() => validarCampo('mora', validarMora())}
                     aria-label={`Recargo por mora en ${moraModo === 'pct' ? 'porcentaje' : 'dólares'}`}
                     className={`${inputCls} w-16 shrink-0 text-right tabular-nums`}
                     {...fieldAria('mora', errors)}
@@ -1030,6 +1063,7 @@ export function VentaForm({
                     setIvaPct(e.target.value);
                     clear('iva');
                   }}
+                  onBlur={() => validarCampo('iva', validarIva())}
                   aria-label="IVA en porcentaje"
                   className={`${inputCls} w-16 shrink-0 text-right tabular-nums`}
                   {...fieldAria('iva', errors)}

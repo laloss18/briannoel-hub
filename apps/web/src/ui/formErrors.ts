@@ -29,7 +29,40 @@ export function useFormErrors() {
       return siguiente;
     });
 
-  return { errors, fail, clear, summaryRef, setErrors };
+  /**
+   * Valida un solo campo al salir de él (`onBlur`): muestra su error inline o lo
+   * limpia si ya es válido, sin depender de un envío previo.
+   */
+  const validarCampo = (name: string, mensaje: string | undefined) =>
+    setErrors((prev) => {
+      if (!mensaje) {
+        if (!(name in prev)) return prev;
+        const siguiente = { ...prev };
+        delete siguiente[name];
+        return siguiente;
+      }
+      return prev[name] === mensaje ? prev : { ...prev, [name]: mensaje };
+    });
+
+  return { errors, fail, clear, validarCampo, summaryRef, setErrors };
+}
+
+/** Valida un campo y devuelve su mensaje (o `undefined` si es válido). */
+export type Validador = () => string | undefined;
+export type Validadores = Record<string, Validador>;
+
+/**
+ * Reúne los errores de un mapa de validadores por campo (los válidos se omiten).
+ * Es la misma fuente que alimenta el resumen del envío y el `onBlur` de cada
+ * campo, así el mensaje nunca diverge entre ambos caminos.
+ */
+export function erroresDe(validadores: Validadores): FieldErrors {
+  const out: FieldErrors = {};
+  for (const [name, validar] of Object.entries(validadores)) {
+    const mensaje = validar();
+    if (mensaje) out[name] = mensaje;
+  }
+  return out;
 }
 
 /**

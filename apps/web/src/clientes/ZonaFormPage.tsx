@@ -8,7 +8,7 @@ import { EstadoNoEncontrado } from '../app/EstadoNoEncontrado';
 import { usePrecargaUnaVez, useRegistroPorId } from '../lib/hooks';
 import { useState } from 'react';
 import { FieldError, FormErrorSummary, inputCls } from '../ui/form';
-import { fieldAria, useFormErrors } from '../ui/formErrors';
+import { erroresDe, fieldAria, useFormErrors, type Validadores } from '../ui/formErrors';
 
 export default function ZonaFormPage() {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function ZonaFormPage() {
   const [estado, setEstado] = useState('');
   const [municipio, setMunicipio] = useState('');
   const [busy, setBusy] = useState(false);
-  const { errors, fail, clear, summaryRef } = useFormErrors();
+  const { errors, fail, clear, validarCampo, summaryRef } = useFormErrors();
 
   usePrecargaUnaVez(zona, (z) => {
     setNombre(z.nombre);
@@ -29,13 +29,14 @@ export default function ZonaFormPage() {
 
   const municipios = estado ? municipiosDeEstado(estado) : [];
 
+  const validadores = {
+    nombre: () => (nombre.trim() ? undefined : 'Escribe el nombre de la zona.'),
+    estado: () => (estado ? undefined : 'Selecciona el estado al que pertenece la zona.'),
+    municipio: () => (municipio ? undefined : 'Selecciona el municipio de la zona.'),
+  } satisfies Validadores;
+
   const onGuardar = async () => {
-    const nuevos = {
-      ...(nombre.trim() ? {} : { nombre: 'Escribe el nombre de la zona.' }),
-      ...(estado ? {} : { estado: 'Selecciona el estado al que pertenece la zona.' }),
-      ...(municipio ? {} : { municipio: 'Selecciona el municipio de la zona.' }),
-    };
-    if (!fail(nuevos)) return;
+    if (!fail(erroresDe(validadores))) return;
     setBusy(true);
     try {
       if (editando && zona) {
@@ -68,6 +69,7 @@ export default function ZonaFormPage() {
               setNombre(e.target.value);
               clear('nombre');
             }}
+            onBlur={() => validarCampo('nombre', validadores.nombre())}
             className={inputCls}
             {...fieldAria('nombre', errors)}
           />
@@ -83,6 +85,7 @@ export default function ZonaFormPage() {
               clear('estado');
               clear('municipio');
             }}
+            onBlur={() => validarCampo('estado', validadores.estado())}
             className={inputCls}
             {...fieldAria('estado', errors)}
           >
@@ -103,6 +106,7 @@ export default function ZonaFormPage() {
               setMunicipio(e.target.value);
               clear('municipio');
             }}
+            onBlur={() => validarCampo('municipio', validadores.municipio())}
             disabled={!estado}
             className={`${inputCls} disabled:opacity-50`}
             {...fieldAria('municipio', errors)}

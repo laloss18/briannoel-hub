@@ -3,7 +3,7 @@ import { ROLES, type Role } from '@brian/shared';
 import type { NuevaPersonalRepoInput } from './personalRepo';
 import { FieldError, FormErrorSummary, inputCls, labelCls } from '../ui/form';
 import { PrimaryButton } from '../ui/actions';
-import { fieldAria, useFormErrors } from '../ui/formErrors';
+import { erroresDe, fieldAria, useFormErrors, type Validadores } from '../ui/formErrors';
 
 interface PersonalFormProps {
   /** Persona a editar; null = crear una nueva. */
@@ -28,7 +28,7 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const precargadoId = useRef<string | null>(null);
-  const { errors, fail, clear, summaryRef, setErrors } = useFormErrors();
+  const { errors, fail, clear, validarCampo, summaryRef, setErrors } = useFormErrors();
 
   useEffect(() => {
     const key = persona?.id ?? 'nuevo';
@@ -45,14 +45,16 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persona]);
 
+  const validadores = {
+    nombre: () => (nombre.trim() ? undefined : 'El nombre es obligatorio.'),
+    email: () =>
+      email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+        ? 'Escribe un correo válido o déjalo vacío.'
+        : undefined,
+  } satisfies Validadores;
+
   const onClickGuardar = async () => {
-    const nuevos = {
-      ...(nombre.trim() ? {} : { nombre: 'El nombre es obligatorio.' }),
-      ...(email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-        ? { email: 'Escribe un correo válido o déjalo vacío.' }
-        : {}),
-    };
-    if (!fail(nuevos)) return;
+    if (!fail(erroresDe(validadores))) return;
     setBusy(true);
     setMessage(null);
     try {
@@ -85,6 +87,7 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
             setNombre(e.target.value);
             clear('nombre');
           }}
+          onBlur={() => validarCampo('nombre', validadores.nombre())}
           className={inputCls}
           {...fieldAria('nombre', errors)}
         />
@@ -108,6 +111,7 @@ export function PersonalForm({ persona, onSubmit, onSuccess }: PersonalFormProps
             setEmail(e.target.value);
             clear('email');
           }}
+          onBlur={() => validarCampo('email', validadores.email())}
           className={inputCls}
           {...fieldAria('email', errors)}
         />
