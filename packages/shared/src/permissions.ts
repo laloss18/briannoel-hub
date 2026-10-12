@@ -12,7 +12,3 @@ export function approvalSteps(permission: Permission, roles: readonly Role[]): n
     .filter((s): s is number => s !== undefined);
   return steps.length ? Math.min(...steps) : null;
 }
-
-export function rolesHave(roles: readonly Role[], permission: Permission): boolean {
-  return roles.some((role) => ROLE_PERMISSIONS[role].includes(permission));
-}

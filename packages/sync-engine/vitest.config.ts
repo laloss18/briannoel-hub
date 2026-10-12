@@ -1,20 +1,4 @@
 import { defineConfig } from 'vitest/config';
+import { packageVitestConfig } from '../../vitest.shared';
 
-export default defineConfig({
-  test: {
-    environment: 'node',
-    include: ['tests/**/*.test.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html'],
-      include: ['src/**/*.ts'],
-      exclude: ['src/index.ts', 'src/ports.ts', 'src/types.ts', 'src/**/*.test.ts'],
-      thresholds: {
-        statements: 90,
-        branches: 80,
-        functions: 85,
-        lines: 90,
-      },
-    },
-  },
-});
+export default defineConfig(packageVitestConfig('sync-engine'));

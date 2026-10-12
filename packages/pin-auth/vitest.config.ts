@@ -1,20 +1,4 @@
 import { defineConfig } from 'vitest/config';
+import { packageVitestConfig } from '../../vitest.shared';
 
-export default defineConfig({
-  test: {
-    environment: 'node',
-    include: ['tests/**/*.test.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html'],
-      include: ['src/**/*.ts'],
-      exclude: ['src/index.ts', 'src/ports.ts', 'src/types.ts', 'src/**/*.test.ts'],
-      thresholds: {
-        statements: 85,
-        branches: 80,
-        functions: 80,
-        lines: 85,
-      },
-    },
-  },
-});
+export default defineConfig(packageVitestConfig('pin-auth'));
