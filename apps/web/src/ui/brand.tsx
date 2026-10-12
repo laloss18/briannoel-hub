@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-/** Monograma candado del hub (acción naranja única). */
+/** Monograma candado del hub (acción ámbar única). */
 export function Monogram() {
   return (
     <div className="flex size-10 items-center justify-center rounded-md bg-ink-800 text-signal shadow-[inset_0_0_0_1px_var(--color-ink-700)]">
@@ -33,7 +33,7 @@ export function Brand() {
   );
 }
 
-/** Reloj en vivo: solo los segundos en naranja (fuente de verdad del sync). */
+/** Reloj en vivo: solo los segundos en ámbar (fuente de verdad del sync). */
 export function Clock() {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {

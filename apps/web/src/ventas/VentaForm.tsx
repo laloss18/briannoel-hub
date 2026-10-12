@@ -13,7 +13,7 @@ import { obtenerCoords } from '../lib/geo';
 import { normaliza } from '../lib/texto';
 import { usd } from '../lib/moneda';
 import { FieldError, FormErrorSummary } from '../ui/form';
-import { PrimaryButton } from '../ui/actions';
+import { PrimaryButton, SecondaryButton } from '../ui/actions';
 import {
   erroresDe,
   fieldAria,
@@ -47,20 +47,20 @@ interface VentaFormProps {
   onSuccess: () => void;
 }
 
-const STEPS = ['cliente', 'condición', 'personal', 'productos', 'revisión'] as const;
+const STEPS = ['cliente', 'personal', 'productos', 'revisión'] as const;
 type Step = (typeof STEPS)[number];
 
 /**
  * Registro de venta / despacho (PRD §2.2, flujo promotor→supervisor) como
- * onboarding guiado: 1. cliente, 2. condición (crédito/contado), 3. personal
- * (promotor que captó + supervisor a cargo), 4. productos despachados del
- * catálogo + descuento aprobado, 5. revisión y confirmación. En clientes a
- * crédito se puede añadir un recargo por mora (porcentaje o monto fijo) e IVA,
- * ambos incluidos en el total. Si el usuario autenticado es supervisor, el
- * campo supervisor se completa automáticamente con su identidad (roster o
- * email); si es promotor, se autocompleta el promotor. La tasa BCV NO participa
- * del cierre (PRD §2.6). Con `editing` el formulario precarga y entrega a
- * `onEdit`.
+ * onboarding guiado en 4 pasos: 1. cliente, 2. personal (promotor que captó +
+ * supervisor a cargo), 3. productos del catálogo con la **condición
+ * (crédito/contado) elegida inline** + descuento aprobado, 4. revisión y
+ * confirmación. En clientes a crédito se puede añadir un recargo por mora
+ * (porcentaje o monto fijo) e IVA, ambos incluidos en el total. Si el usuario
+ * autenticado es supervisor, el campo supervisor se completa automáticamente
+ * con su identidad (roster o email); si es promotor, se autocompleta el
+ * promotor. La tasa BCV NO participa del cierre (PRD §2.6). Con `editing` el
+ * formulario precarga y entrega a `onEdit`.
  */
 export function VentaForm({
   roles,
@@ -830,36 +830,6 @@ export function VentaForm({
           </>
         )}
 
-        {step === 'condición' && (
-          <>
-            <div className="flex flex-col gap-1">
-              <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">condición</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCondicion('contado')}
-                  className={optionCls(condicion === 'contado')}
-                >
-                  <span className="text-xs font-medium">Contado</span>
-                  <span className="text-2xs text-fog-500">se cobra en el momento</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCondicion('credito')}
-                  className={optionCls(condicion === 'credito')}
-                >
-                  <span className="text-xs font-medium">Crédito</span>
-                  <span className="text-2xs text-fog-500">consume el límite del cliente</span>
-                </button>
-              </div>
-            </div>
-            <div className="rounded-md border border-ink-700/60 p-2.5 text-2xs text-fog-500">
-              La condición define el precio unitario de cada ítem (el catálogo tiene precio contado
-              y precio crédito).
-            </div>
-          </>
-        )}
-
         {step === 'personal' && (
           <>
             <div className="flex flex-col gap-2.5">
@@ -922,11 +892,38 @@ export function VentaForm({
 
         {step === 'productos' && (
           <>
+            <div className="flex flex-col gap-1">
+              <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">condición</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCondicion('contado')}
+                  className={optionCls(condicion === 'contado')}
+                  aria-pressed={condicion === 'contado'}
+                >
+                  <span className="text-xs font-medium">Contado</span>
+                  <span className="text-2xs text-fog-500">se cobra en el momento</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCondicion('credito')}
+                  className={optionCls(condicion === 'credito')}
+                  aria-pressed={condicion === 'credito'}
+                >
+                  <span className="text-xs font-medium">Crédito</span>
+                  <span className="text-2xs text-fog-500">consume el límite del cliente</span>
+                </button>
+              </div>
+              <p className="text-2xs text-fog-500">
+                {condicion === 'credito'
+                  ? `El precio unitario es el de crédito${
+                      cliente?.score_grado ? ` · score ${cliente.score_grado}` : ''
+                    }.`
+                  : 'El precio unitario es el de contado.'}
+              </p>
+            </div>
             <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
               productos despachados
-            </p>
-            <p className="text-2xs text-fog-500">
-              El precio unitario depende de la condición de la venta: {condicion}.
             </p>
             {lineas.map((l, idx) => (
               <FilaProducto
@@ -1165,30 +1162,34 @@ export function VentaForm({
         </p>
       )}
 
-      <div className="mt-3 flex items-center justify-between gap-3">
-        {stepIndex > 0 ? (
-          <button
-            type="button"
-            onClick={() => {
-              setMessage(null);
-              setStep(STEPS[Math.max(0, stepIndex - 1)]!);
-            }}
-            className="rounded-md border border-ink-700 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:border-ink-600"
-          >
-            anterior
-          </button>
-        ) : (
-          <span />
-        )}
-        {step === 'revisión' ? (
-          <PrimaryButton onClick={onClickGuardar} disabled={busy} size="sm">
-            {busy ? 'Guardando…' : editing ? 'Guardar cambios' : 'Registrar venta'}
-          </PrimaryButton>
-        ) : (
-          <PrimaryButton onClick={stepNext} size="sm">
-            siguiente
-          </PrimaryButton>
-        )}
+      <div className="sticky bottom-3 z-10 mt-3 flex items-center gap-3 rounded-xl border border-ink-700 bg-ink-900/95 px-3 py-2.5 shadow-popover backdrop-blur">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">total</span>
+          <span className="truncate font-mono text-base tabular-nums text-signal">
+            {usd(totalFinal)}
+          </span>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {stepIndex > 0 && (
+            <SecondaryButton
+              onClick={() => {
+                setMessage(null);
+                setStep(STEPS[Math.max(0, stepIndex - 1)]!);
+              }}
+            >
+              Atrás
+            </SecondaryButton>
+          )}
+          {step === 'revisión' ? (
+            <PrimaryButton onClick={onClickGuardar} disabled={busy} size="sm">
+              {busy ? 'Guardando…' : editing ? 'Guardar cambios' : 'Registrar venta'}
+            </PrimaryButton>
+          ) : (
+            <PrimaryButton onClick={stepNext} size="sm">
+              Continuar
+            </PrimaryButton>
+          )}
+        </div>
       </div>
 
       <NuevaZonaDialog

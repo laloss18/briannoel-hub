@@ -2,9 +2,9 @@
   <!-- Full-bleed a propósito: sirve como icono "any" y como maskable
        (el SO recorta el borde; el candado queda dentro de la zona segura). -->
   <rect width="512" height="512" fill="#101a2e" />
-  <g fill="none" stroke="#fb923c" stroke-width="26" stroke-linecap="round">
+  <g fill="none" stroke="#fbbf24" stroke-width="26" stroke-linecap="round">
     <rect x="146" y="250" width="220" height="140" rx="24" />
     <path d="M190 250v-40a66 66 0 0 1 132 0v40" />
   </g>
-  <circle cx="256" cy="320" r="26" fill="#fb923c" />
+  <circle cx="256" cy="320" r="26" fill="#fbbf24" />
 </svg>

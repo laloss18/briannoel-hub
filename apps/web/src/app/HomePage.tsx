@@ -7,30 +7,17 @@ import { DexieOutbox } from '../sync/db';
 import { Link } from 'react-router-dom';
 import { Icon, type IconName } from '../ui/icons';
 import { useSesion } from './sesion';
-import { dosDecimales } from '../lib/moneda';
+import { usd, dosDecimales } from '../lib/moneda';
+import { diaLocal } from '../lib/fechas';
 
 const GRADOS = ['A', 'B', 'C', 'D', 'E'] as const;
 
-/** Acciones compactas: icono + rótulo corto, grid estable (sin tarjetas gigantes). */
-interface Accion {
-  label: string;
-  to: string;
-  icon: IconName;
-  soloSi?: boolean;
-}
-
-const ACCIONES: readonly Accion[] = [
-  { label: 'Registrar venta', to: '/ventas/nueva', icon: 'cart' },
-  { label: 'Nuevo cliente', to: '/clientes/nuevo', icon: 'userPlus', soloSi: true },
-  { label: 'Catálogo', to: '/catalogo', icon: 'package' },
-  { label: 'Zonas', to: '/zonas', icon: 'map' },
-];
-
 /**
- * Inicio del hub: acciones compactas arriba (icono + rótulo), luego los
- * indicadores. Es rol-aware: con `view_kpis` (admin/supervisor §3.2) se ve el
- * resumen con distribución de score; sin él, el histórico de operaciones del
- * dispositivo. Sin "módulo" en el copy (DESIGN §9: la UI habla de secciones).
+ * Inicio «Mi día» (DESIGN §5.11): pantalla de TAREAS, no de datos. Orden fijo:
+ * estado de sync → CTA primario «Registrar venta» → acciones del día → métricas
+ * **del día**. Rol-aware: con `view_kpis` (admin/supervisor §3.2) se ve la
+ * distribución de score; sin él, un resumen del día. Catálogo y Zonas viven en
+ * el nav del shell, no compiten con la tarea del día.
  */
 export default function HomePage() {
   const { roles, username, email } = useSesion();
@@ -42,6 +29,11 @@ export default function HomePage() {
 
   const puedeKpis = hasPermission('view_kpis', roles);
   const puedeClientes = canEditClientes(roles);
+  const puedeVender = hasPermission('record_sale', roles);
+
+  // Mientras Dexie entrega los datos, no mostramos ceros (parecería "vacío");
+  // mostramos el estado de carga (§6.3 full-state-cycle).
+  const cargando = clientes === undefined || despachos === undefined || config === undefined;
 
   const totalClientes = clientes?.length ?? 0;
   const conZona = clientes?.filter((c) => c.zona_id !== null).length ?? 0;
@@ -49,14 +41,18 @@ export default function HomePage() {
   const porGrado = (g: (typeof GRADOS)[number]) =>
     conScore.filter((c) => c.score_grado === g).length;
 
+  const hoy = diaLocal();
+  const ventasHoy = (despachos ?? []).filter(
+    (d) => d.estado !== 'anulado' && diaLocal(d.created_at) === hoy,
+  );
+  const totalHoy = ventasHoy.length;
+  const usdHoy = ventasHoy.reduce((a, d) => a + d.total, 0);
   const totalDespachos = despachos?.length ?? 0;
   const porEntregar = despachos?.filter((d) => d.estado === 'pedido').length ?? 0;
   const entregados = despachos?.filter((d) => d.estado === 'entregado').length ?? 0;
-  const porSincronizar = (pendientes?.length ?? 0) + (fallidos?.length ?? 0);
 
-  // Mientras Dexie entrega los datos, no mostramos ceros (parecería "vacío");
-  // mostramos el estado de carga (§6.3 full-state-cycle).
-  const cargando = clientes === undefined || despachos === undefined || config === undefined;
+  const nPend = pendientes?.length ?? 0;
+  const nFail = fallidos?.length ?? 0;
 
   const tasa = config?.bcv_rate;
   const origen =
@@ -72,8 +68,6 @@ export default function HomePage() {
     month: 'long',
   });
 
-  const acciones = ACCIONES.filter((a) => (a.soloSi ? puedeClientes : true));
-
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-0.5">
@@ -85,46 +79,52 @@ export default function HomePage() {
         </p>
       </div>
 
-      <nav aria-label="Acciones rápidas" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {acciones.map((a) => (
-          <Link
-            key={a.to}
-            to={a.to}
-            className="card-lift flex min-h-11 items-center gap-2 rounded-md border border-ink-700 bg-ink-900 px-3 py-2.5 text-xs text-fog-100 transition-colors hover:border-ink-600 active:scale-[0.98]"
-          >
-            <Icon name={a.icon} className="size-4 shrink-0 text-signal" />
-            <span className="truncate">{a.label}</span>
-          </Link>
-        ))}
-      </nav>
+      <EstadoSync pendientes={nPend} fallidos={nFail} />
 
-      <section aria-label="Indicadores" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Kpi
-          label="clientes"
-          value={totalClientes}
-          hint={conZona ? `${conZona} con zona` : 'sin zona'}
-          cargando={cargando}
-        />
-        <Kpi
-          label="despachos"
-          value={totalDespachos}
-          hint={
-            totalDespachos ? `${porEntregar} por entregar · ${entregados} entregados` : 'sin ventas'
-          }
-          cargando={cargando}
-        />
-        <Kpi
-          label="tasa BCV"
-          value={tasa != null ? dosDecimales(tasa) : '—'}
-          hint={origen ? `Bs/USD · ${origen}` : 'sin configurar'}
-          cargando={cargando}
-        />
-        <Kpi
-          label="por sincronizar"
-          value={porSincronizar}
-          hint={fallidos?.length ? `${fallidos.length} fallidos` : 'todo al día'}
-          cargando={cargando}
-        />
+      <div className="flex flex-col gap-2">
+        {puedeVender && (
+          <Link
+            to="/ventas/nueva"
+            className="btn-lift cta-glow flex min-h-12 items-center justify-center gap-2 rounded-xl bg-signal px-4 py-3 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.99]"
+          >
+            <Icon name="cart" className="size-5" />
+            Registrar venta
+          </Link>
+        )}
+        <nav aria-label="Acciones del día" className="grid grid-cols-2 gap-2">
+          {puedeClientes && (
+            <AccionDia to="/clientes/nuevo" icon="userPlus" label="Cliente nuevo" />
+          )}
+          <AccionDia to="/ventas?estado=pedido" icon="truck" label="Entregas por hacer" />
+        </nav>
+      </div>
+
+      <section aria-label="Mi día" className="flex flex-col gap-2">
+        <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">mi día · {fecha}</p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Kpi
+            label="ventas hoy"
+            value={totalHoy}
+            hint={`${totalDespachos} en total`}
+            cargando={cargando}
+          />
+          <Kpi label="USD hoy" value={usd(usdHoy)} hint="facturado hoy" cargando={cargando} />
+          <Kpi
+            label="por entregar"
+            value={porEntregar}
+            hint={totalDespachos ? `${entregados} entregados` : 'sin ventas'}
+            cargando={cargando}
+          />
+          <Kpi
+            label="tasa BCV"
+            value={tasa != null ? dosDecimales(tasa) : '—'}
+            hint={origen ? `Bs/USD · ${origen}` : 'sin configurar'}
+            cargando={cargando}
+          />
+        </div>
+        <p className="text-2xs text-fog-500">
+          {cargando ? '…' : `${totalClientes} clientes · ${conZona} con zona`}
+        </p>
       </section>
 
       {puedeKpis ? (
@@ -183,6 +183,40 @@ export default function HomePage() {
         </section>
       )}
     </div>
+  );
+}
+
+/** Franja de estado de sync (offline-first como valor visual, DESIGN §5.11):
+ *  punto + texto. La ACCIÓN de sincronizar vive en el header del shell (fuente
+ *  única) — aquí solo se refleja el estado del outbox. */
+function EstadoSync({ pendientes, fallidos }: { pendientes: number; fallidos: number }) {
+  const { dot, texto } =
+    fallidos > 0
+      ? { dot: 'bg-danger', texto: `${fallidos} con error` }
+      : pendientes > 0
+        ? { dot: 'bg-signal', texto: `${pendientes} por enviar` }
+        : { dot: 'bg-ok', texto: 'Todo sincronizado' };
+  return (
+    <div
+      role="status"
+      className="flex items-center gap-2.5 rounded-xl border border-ink-700 bg-ink-900 px-3 py-2.5"
+    >
+      <span className={`size-1.5 shrink-0 rounded-full ${dot}`} aria-hidden="true" />
+      <span className="truncate text-xs text-fog-100">{texto}</span>
+    </div>
+  );
+}
+
+/** Acción del día: acceso secundario compacto, icono neutro (no acento). */
+function AccionDia({ to, icon, label }: { to: string; icon: IconName; label: string }) {
+  return (
+    <Link
+      to={to}
+      className="card-lift flex min-h-11 items-center gap-2 rounded-xl border border-ink-700 bg-ink-900 px-3 py-2.5 text-xs text-fog-100 transition-colors hover:border-ink-600 active:scale-[0.98]"
+    >
+      <Icon name={icon} className="size-4 shrink-0 text-fog-300" />
+      <span className="truncate">{label}</span>
+    </Link>
   );
 }
 

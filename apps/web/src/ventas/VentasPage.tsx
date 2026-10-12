@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   listDespachos,
   entregarDespachoLocal,
@@ -41,7 +41,10 @@ export default function VentasPage() {
   const identidad = useMiIdentidad();
 
   const [busqueda, setBusqueda] = useState('');
-  const [estado, setEstado] = useState('');
+  // El estado inicial puede venir por deep-link (`#/ventas?estado=pedido`): así
+  // el acceso «Entregas por hacer» de la Home abre la lista ya filtrada.
+  const [params] = useSearchParams();
+  const [estado, setEstado] = useState(params.get('estado') ?? '');
   const [condicion, setCondicion] = useState('');
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
