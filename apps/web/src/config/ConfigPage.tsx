@@ -23,7 +23,80 @@ export default function ConfigPage() {
       <Apariencia />
       <BimonedaCard roles={roles} />
       <MiPerfil />
+      {import.meta.env.DEV && <DatosDemo />}
     </div>
+  );
+}
+
+/** Datos de prueba (solo dev, `import.meta.env.DEV`): siembra o vacía el espejo
+ *  Dexie. Import dinámico para que el chunk de producción no cargue los datos. */
+function DatosDemo() {
+  const [msg, setMsg] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const cargar = async () => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const m = await import('../dev/demoData');
+      const n = await m.seedDemoData();
+      setMsg({ kind: 'ok', text: `${n} registros de prueba cargados en el espejo local.` });
+    } catch (e) {
+      setMsg({ kind: 'error', text: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const vaciar = async () => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const m = await import('../dev/demoData');
+      const n = await m.limpiarDemoData();
+      setMsg({ kind: 'ok', text: `Datos de prueba vaciados (${n} registros).` });
+    } catch (e) {
+      setMsg({ kind: 'error', text: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="rounded-xl border border-dashed border-ink-600 bg-ink-950 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-fog-100">Datos de prueba (dev)</p>
+          <p className="mt-0.5 text-xs text-fog-500">
+            Siembra el espejo local con clientes, zonas, catálogo, usuarios y despachos de ejemplo.
+            No se sube nada al servidor.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={cargar}
+            disabled={busy}
+            className="btn-lift rounded-md border border-signal bg-signal/10 px-3 py-1.5 text-sm font-medium text-signal transition-colors hover:bg-signal hover:text-ink-950 disabled:opacity-50"
+          >
+            {busy ? 'Procesando…' : 'Cargar datos de prueba'}
+          </button>
+          <button
+            type="button"
+            onClick={vaciar}
+            disabled={busy}
+            className="btn-lift rounded-md border border-ink-600 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:border-ink-500 disabled:opacity-50"
+          >
+            Vaciar
+          </button>
+        </div>
+      </div>
+      {msg && (
+        <p role="alert" className={`mt-2 text-xs ${msg.kind === 'error' ? 'text-danger' : 'text-ok'}`}>
+          {msg.text}
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -71,10 +144,10 @@ function MiPerfil() {
   }, [sesion.username]);
 
   const onGuardar = async () => {
-    const v = uname.trim().toLowerCase();
+    const v = uname.trim();
     const ok = usernameSchema.safeParse(v);
     if (!ok.success) {
-      setMsg({ kind: 'error', text: 'Username inválido (3–20 letras/números/guión bajo).' });
+      setMsg({ kind: 'error', text: 'Nombre inválido: 3 a 40 caracteres (letras, números y espacios).' });
       return;
     }
     if (!supabase) {
