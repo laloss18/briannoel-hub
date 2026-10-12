@@ -39,5 +39,7 @@ jobs:
         run: pnpm --filter @brian/clientes test:coverage
       - name: Ventas coverage gate (≥80 line / ≥75 branch, PRD §6.3)
         run: pnpm --filter @brian/ventas test:coverage
+      - name: Web coverage gate (utilidades y repos con umbral por archivo)
+        run: pnpm --filter @brian/web test:coverage
       - name: Build (PWA + packages)
         run: pnpm -r build
