@@ -99,4 +99,3 @@ export async function editarPersonalLocal(
 }
 
 /** Baja lógica del roster (deja de aparecer en selecciones). Caller valida `manage_roster`. */
-

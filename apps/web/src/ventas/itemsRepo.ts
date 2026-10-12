@@ -86,4 +86,3 @@ export async function editarItemLocal(
 }
 
 /** Borrado lógico del ítem (sale del catálogo local; LWW lo propaga). Caller valida `manage_items`. */
-

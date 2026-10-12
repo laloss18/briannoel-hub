@@ -58,7 +58,6 @@ export async function crearZonaLocal(input: NuevoZonaInput): Promise<Zona> {
   return zona;
 }
 
-
 export async function editarZonaLocal(zona: Zona, input: NuevoZonaInput): Promise<Zona> {
   const now = new Date().toISOString();
   const actualizado: Zona = {
