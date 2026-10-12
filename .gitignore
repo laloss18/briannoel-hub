@@ -20,6 +20,9 @@ test-results/
 playwright-report/
 blob-report/
 
+# Harness smoke (capturas y reportes generados, no se versionan)
+tools/smoke/shots/
+
 # Coverage
 coverage/
 coverage.*.json
