@@ -84,7 +84,7 @@ export function VentaForm({
   const [fotoError, setFotoError] = useState('');
   const [condicion, setCondicion] = useState<'credito' | 'contado'>('contado');
   const [lineas, setLineas] = useState<{ itemId: string; cantidad: string }[]>(() => {
-    const unico = items.length === 1 ? items[0].id : '';
+    const unico = items.length === 1 ? (items[0]?.id ?? '') : '';
     return [{ itemId: unico, cantidad: '1' }];
   });
   const [descuentoModo, setDescuentoModo] = useState<'pct' | 'monto'>('pct');
@@ -152,7 +152,7 @@ export function VentaForm({
             itemId: items.find((i) => i.id === l.item_id)?.id ?? '',
             cantidad: String(l.cantidad),
           }))
-        : [{ itemId: items.length === 1 ? items[0].id : '', cantidad: '1' }],
+        : [{ itemId: items.length === 1 ? (items[0]?.id ?? '') : '', cantidad: '1' }],
     );
     setMoraModo(editing?.mora_monto_usd ? 'monto' : 'pct');
     setMoraValor(
@@ -328,7 +328,10 @@ export function VentaForm({
   };
 
   const anadirLinea = () =>
-    setLineas((ls) => [...ls, { itemId: items.length === 1 ? items[0].id : '', cantidad: '1' }]);
+    setLineas((ls) => [
+      ...ls,
+      { itemId: items.length === 1 ? (items[0]?.id ?? '') : '', cantidad: '1' },
+    ]);
 
   const sumarCantidad = (idx: number, delta: number) =>
     setLineas((ls) =>
@@ -356,7 +359,7 @@ export function VentaForm({
     }
     setMessage(null);
     fail({});
-    setStep((s) => STEPS[STEPS.indexOf(s) + 1]);
+    setStep((s) => STEPS[STEPS.indexOf(s) + 1] ?? s);
     return true;
   };
 
@@ -1233,7 +1236,7 @@ export function VentaForm({
             type="button"
             onClick={() => {
               setMessage(null);
-              setStep(STEPS[Math.max(0, stepIndex - 1)]);
+              setStep(STEPS[Math.max(0, stepIndex - 1)]!);
             }}
             className="rounded-md border border-ink-700 px-3 py-1.5 text-sm font-medium text-fog-100 transition-colors hover:border-ink-600"
           >
