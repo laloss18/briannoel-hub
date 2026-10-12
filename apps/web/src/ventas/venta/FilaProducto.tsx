@@ -62,7 +62,7 @@ export function FilaProducto({
       </div>
       {item ? (
         <p className="mt-1 font-mono text-2xs uppercase tracking-wider text-fog-500">
-          unitario <span className="tabular-nums text-signal">{usd(precioDe(item))}</span> ·{' '}
+          unitario <span className="tabular-nums text-signal-strong">{usd(precioDe(item))}</span> ·{' '}
           {condicion}
           {otroPrecio && (
             <>

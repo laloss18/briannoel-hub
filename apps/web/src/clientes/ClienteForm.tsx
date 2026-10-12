@@ -289,7 +289,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
       </label>
       <p className="text-xs text-fog-500">
         Se sugiere la zona por cercanía; estado / municipio:{' '}
-        <span className="text-signal">
+        <span className="text-signal-strong">
           {zonaFinal ? `${zonaFinal.estado} · ${zonaFinal.municipio}` : 'por elegir zona'}
         </span>
       </p>

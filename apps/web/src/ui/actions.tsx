@@ -16,7 +16,7 @@ const VARIANTS: Record<NonNullable<ActionButtonProps['variant']>, string> = {
   default: 'border-ink-600 text-fog-100 hover:border-ink-500',
   ok: 'border-ok/50 text-ok hover:border-ok hover:bg-ok/10',
   danger: 'border-danger/50 text-danger hover:border-danger hover:bg-danger/10',
-  primary: 'border-signal bg-signal text-ink-950 hover:bg-signal-soft',
+  primary: 'border-signal bg-signal text-on-signal hover:bg-signal-soft',
 };
 
 /**
@@ -150,7 +150,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`btn-lift cta-glow inline-flex items-center justify-center rounded-md bg-signal font-semibold text-ink-950 transition-colors hover:bg-signal-soft disabled:opacity-50 ${BTN_TAMANO[size]} ${className ?? ''}`}
+      className={`btn-lift cta-glow inline-flex items-center justify-center rounded-md bg-signal font-semibold text-on-signal transition-colors hover:bg-signal-soft disabled:opacity-50 ${BTN_TAMANO[size]} ${className ?? ''}`}
     >
       {children}
     </button>

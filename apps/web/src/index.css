@@ -47,8 +47,10 @@
   --color-ink-700: #d0d5dd; /* filete hairline */
   --color-ink-600: #838a98; /* borde de control (3.18:1 sobre página) */
 
-  --color-signal: #b45309; /* ámbar de marca: acento único (4.7:1 sobre página) */
-  --color-signal-soft: #92400e; /* hover del CTA (se oscurece) */
+  --color-signal: #ea580c; /* naranja de marca: RELLENO del acento (CTA, barras) */
+  --color-signal-soft: #c2410c; /* hover del CTA (se oscurece) */
+  --color-signal-strong: #b45309; /* acento como TEXTO/borde sobre página (4.7:1 AA) */
+  --color-on-signal: #141a24; /* texto sobre el relleno `signal` (AA sobre naranja) */
 
   --color-fog-100: #141a24; /* texto primario (16:1 sobre página) */
   --color-fog-300: #3d4553; /* texto secundario */
@@ -64,7 +66,7 @@
      una tarjeta al reposo es hairline pura; la sombra nace al hover. */
   --shadow-card: none;
   --shadow-card-hover: 0 12px 28px -14px rgb(20 26 36 / 0.4);
-  --shadow-cta-hover: 0 4px 14px -4px rgb(180 83 9 / 0.5);
+  --shadow-cta-hover: 0 4px 14px -4px rgb(234 88 12 / 0.5);
   --shadow-popover: 0 24px 60px -12px rgb(16 26 46 / 0.55);
 }
 
@@ -85,8 +87,10 @@
   --color-ink-700: #223351;
   --color-ink-600: #6b789a; /* 4.26:1 sobre página — ahora sí identifica controles */
 
-  --color-signal: #fbbf24;
-  --color-signal-soft: #f59e0b;
+  --color-signal: #fb923c; /* naranja claro: relleno del acento (AA con `on-signal`) */
+  --color-signal-soft: #f97316; /* hover del CTA (se oscurece) */
+  --color-signal-strong: #fb923c; /* acento como texto: ya cumple AA sobre la página */
+  --color-on-signal: #0b1220; /* texto oscuro sobre el relleno naranja */
 
   --color-fog-100: #e7eaf0;
   --color-fog-300: #c2cad8;
@@ -99,7 +103,7 @@
 
   --shadow-card: none;
   --shadow-card-hover: 0 16px 32px -16px rgb(0 0 0 / 0.7);
-  --shadow-cta-hover: 0 4px 14px -4px rgb(251 191 36 / 0.5);
+  --shadow-cta-hover: 0 4px 14px -4px rgb(251 146 60 / 0.5);
   --shadow-popover: 0 24px 60px -12px rgb(0 0 0 / 0.6);
 }
 
@@ -182,7 +186,7 @@
 
 /* Elevación de estado (DESIGN §5.10 y §6.2, de genesis-DESIGN.md):
    botones suben 1px (`btn-lift`), superficies clickeables 2px (`card-lift`),
-   y SOLO el CTA primario gana glow ámbar (`cta-glow`). Solo con hover real
+   y SOLO el CTA primario gana glow naranja (`cta-glow`). Solo con hover real
    (puntero fino), nunca en táctil. Fuera de capa: útil para componentes que
    usan `transition-colors` de Tailwind, esta transición explícita la gana. */
 @media (hover: hover) and (pointer: fine) {

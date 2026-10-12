@@ -55,7 +55,7 @@ export function FilterBar({
           {activos > 0 && (
             <span
               aria-hidden="true"
-              className="flex min-w-4 items-center justify-center rounded-full bg-signal px-1 font-mono text-2xs tabular-nums text-ink-950"
+              className="flex min-w-4 items-center justify-center rounded-full bg-signal px-1 font-mono text-2xs tabular-nums text-on-signal"
             >
               {activos}
             </span>
@@ -101,7 +101,7 @@ export function FilterChip({
       onClick={onClick}
       className={`rounded-full border px-2.5 text-xs font-medium transition-colors ${
         active
-          ? 'border-signal bg-signal text-ink-950'
+          ? 'border-signal bg-signal text-on-signal'
           : 'border-ink-700 text-fog-300 hover:border-ink-600 hover:bg-ink-800 hover:text-fog-100'
       }`}
     >

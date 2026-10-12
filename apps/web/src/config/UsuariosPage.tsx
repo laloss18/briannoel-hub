@@ -15,7 +15,7 @@ const ETIQUETA_ROL: Record<Rol, string> = {
 
 function RoleChip({ rol }: { rol: Rol }) {
   return (
-    <span className="rounded-md border border-signal/60 bg-signal/10 px-2 py-1 font-mono text-2xs uppercase tracking-wider text-signal">
+    <span className="rounded-md border border-signal/60 bg-signal/10 px-2 py-1 font-mono text-2xs uppercase tracking-wider text-signal-strong">
       {ETIQUETA_ROL[rol]}
     </span>
   );
@@ -177,7 +177,7 @@ export default function UsuariosPage() {
                               onClick={() => setBorrador({ ...borrador, rol: r })}
                               className={`rounded-md border px-2 py-1 font-mono text-2xs uppercase tracking-wider transition-colors ${
                                 activo
-                                  ? 'border-signal/60 bg-signal/10 text-signal'
+                                  ? 'border-signal/60 bg-signal/10 text-signal-strong'
                                   : 'border-ink-700 text-fog-600 hover:border-ink-600'
                               }`}
                             >

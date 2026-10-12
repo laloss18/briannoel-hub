@@ -162,7 +162,7 @@ export default function NuevoUsuarioPage() {
                   onClick={() => setRol(r)}
                   className={`rounded-md border px-2 py-1 font-mono text-2xs uppercase tracking-wider transition-colors ${
                     activo
-                      ? 'border-signal/60 bg-signal/10 text-signal'
+                      ? 'border-signal/60 bg-signal/10 text-signal-strong'
                       : 'border-ink-700 text-fog-600 hover:border-ink-600'
                   }`}
                 >
@@ -184,7 +184,7 @@ export default function NuevoUsuarioPage() {
           type="button"
           onClick={() => void onGuardar()}
           disabled={guardando}
-          className="btn-lift cta-glow flex items-center justify-center rounded-md bg-signal px-3 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-60"
+          className="btn-lift cta-glow flex items-center justify-center rounded-md bg-signal px-3 py-2.5 text-sm font-semibold text-on-signal transition-colors hover:bg-signal-soft active:scale-[0.98] disabled:opacity-60"
         >
           {guardando ? 'Creando…' : 'Crear cuenta'}
         </button>

@@ -85,7 +85,7 @@ export default function HomePage() {
         {puedeVender && (
           <Link
             to="/ventas/nueva"
-            className="btn-lift cta-glow flex min-h-12 items-center justify-center gap-2 rounded-xl bg-signal px-4 py-3 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.99]"
+            className="btn-lift cta-glow flex min-h-11 items-center justify-center gap-2 rounded-xl bg-signal px-4 py-2.5 text-sm font-semibold text-on-signal transition-colors hover:bg-signal-soft active:scale-[0.99]"
           >
             <Icon name="cart" className="size-5" />
             Registrar venta
@@ -152,7 +152,9 @@ export default function HomePage() {
                   const pct = conScore.length ? Math.round((n / conScore.length) * 100) : 0;
                   return (
                     <div key={g} className="flex items-center gap-3">
-                      <span className="w-3 shrink-0 font-mono text-2xs text-signal">{g}</span>
+                      <span className="w-3 shrink-0 font-mono text-2xs text-signal-strong">
+                        {g}
+                      </span>
                       <div className="h-1.5 flex-1 rounded-full bg-ink-800" aria-hidden="true">
                         <div
                           className="h-1.5 rounded-full bg-signal"
@@ -190,11 +192,12 @@ export default function HomePage() {
  *  punto + texto. La ACCIÓN de sincronizar vive en el header del shell (fuente
  *  única) — aquí solo se refleja el estado del outbox. */
 function EstadoSync({ pendientes, fallidos }: { pendientes: number; fallidos: number }) {
+  const cambios = (n: number) => `${n} ${n === 1 ? 'cambio' : 'cambios'}`;
   const { dot, texto } =
     fallidos > 0
-      ? { dot: 'bg-danger', texto: `${fallidos} con error` }
+      ? { dot: 'bg-danger', texto: `${cambios(fallidos)} con error` }
       : pendientes > 0
-        ? { dot: 'bg-signal', texto: `${pendientes} por enviar` }
+        ? { dot: 'bg-signal', texto: `${cambios(pendientes)} por sincronizar` }
         : { dot: 'bg-ok', texto: 'Todo sincronizado' };
   return (
     <div

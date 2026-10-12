@@ -224,7 +224,7 @@ export default function VentaDetallePage() {
           <dl className="mt-3 flex flex-col gap-1 border-t border-ink-800 pt-3">
             <div className="flex justify-between gap-3">
               <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">total</dt>
-              <dd className="font-mono text-3xl tabular-nums text-signal">
+              <dd className="font-mono text-3xl tabular-nums text-signal-strong">
                 {usdConEspacio(despacho.total)}
               </dd>
             </div>
@@ -340,7 +340,7 @@ export default function VentaDetallePage() {
               <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">
                 total
               </span>
-              <span className="font-mono text-lg tabular-nums text-signal">
+              <span className="font-mono text-lg tabular-nums text-signal-strong">
                 {usd(despacho.total)}
               </span>
             </div>
@@ -366,7 +366,7 @@ export default function VentaDetallePage() {
               {cliente?.telefono ? (
                 <a
                   href={`tel:${cliente.telefono}`}
-                  className="underline decoration-ink-600 underline-offset-2 hover:text-signal"
+                  className="underline decoration-ink-600 underline-offset-2 hover:text-signal-strong"
                 >
                   {cliente.telefono}
                 </a>
@@ -390,7 +390,7 @@ export default function VentaDetallePage() {
                   href={`https://www.openstreetmap.org/?mlat=${cliente.lat}&mlon=${cliente.lng}#map=17/${cliente.lat}/${cliente.lng}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-signal underline decoration-ink-600 underline-offset-2"
+                  className="text-signal-strong underline decoration-ink-600 underline-offset-2"
                 >
                   {cliente.lat.toFixed(5)}, {cliente.lng.toFixed(5)}
                 </a>

@@ -32,7 +32,7 @@
 **Lectura:** _Producto móvil-primero (PWA), herramienta de operación en campo
 para una distribuidora venezolana — bimoneda USD/BS, cobranza, rutas, sin
 conexión. Estrato visual: «instrumento de operación nocturno» — tinta profunda +
-ámbar de señal + mono para datos de instrumento, NO estética de landing ni
+naranja de señal + mono para datos de instrumento, NO estética de landing ni
 `SaaS-card-kit`._
 
 En consecuencia:
@@ -59,9 +59,9 @@ En consecuencia:
 > jerarquía, retroalimentación o cambio de estado. Si no responde a esa
 > pregunta, se elimina.
 
-## 3. Tokens de color (tinta + ámbar de señal, paleta DUAL)
+## 3. Tokens de color (tinta + naranja de señal, paleta DUAL)
 
-Paleta AUDITORA: un solo acento (ámbar), neutros azul-tinta, un verde de éxito
+Paleta AUDITORA: un solo acento (naranja), neutros azul-tinta, un verde de éxito
 y un rojo de error — ambos desaturados y ceñidos a su semántica. **Nunca** se
 añade otro acento de color; el acento se usa en TODA la página de forma
 coherente (regla `color-consistency-lock`).
@@ -84,8 +84,10 @@ coherente (regla `color-consistency-lock`).
 | `ink-800`      | `#16233b`                    | `#eceef2`       | Superficie elevada / hover de inputs (elevación 2).                           |
 | `ink-700`      | `#223351`                    | `#d0d5dd`       | Bordes (hairline estándar).                                                   |
 | `ink-600`      | `#6b789a`                    | `#838a98`       | Borde de control — identifica controles (4.26:1 oscuro / 3.18:1 claro sobre página). |
-| `signal`       | `#fbbf24`                    | `#b45309`       | **ÚNICO acento**: CTA primario, foco, hit del reloj. Ámbar de marca del sector (distribución/energía); 4.7:1 sobre página claro. |
-| `signal-soft`  | `#f59e0b`                    | `#92400e`       | Hover de CTA primario.                                                        |
+| `signal`       | `#fb923c`                    | `#ea580c`       | **ÚNICO acento**: RELLENO del CTA primario, foco, hit del reloj. Naranja de marca (distribución/energía); AA con `on-signal` encima. |
+| `signal-soft`  | `#f97316`                    | `#c2410c`       | Hover del CTA primario (se oscurece).                                         |
+| `signal-strong`| `#fb923c`                    | `#b45309`       | Acento como TEXTO/borde sobre la página (claro 4.7:1 AA).                     |
+| `on-signal`    | `#0b1220`                    | `#141a24`       | Texto sobre el relleno `signal` (AA en ambos temas).                          |
 | `fog-100`      | `#e7eaf0`                    | `#141a24`       | Texto primario (16:1 en ambos temas).                                         |
 | `fog-300`      | `#c2cad8`                    | `#3d4553`       | Texto secundario.                                                             |
 | `fog-500`      | `#8b94a8`                    | `#575f6d`       | Texto terciario/labels (≥5.7:1).                                              |
@@ -97,8 +99,9 @@ coherente (regla `color-consistency-lock`).
 Reglas:
 
 1. **Contraste WCAG AA** en todo texto interactivo (≥4.5:1 cuerpo, ≥3:1 para
-   ≥18px), **en ambos temas**. `signal` solo con texto `ink-950` encima; los
-   fondos de tarjetas (`ink-900`) siempre llevan texto `fog-100`.
+   ≥18px), **en ambos temas**. El relleno `signal` siempre lleva texto
+   `on-signal` encima; el acento como TEXTO/borde sobre la página usa
+   `signal-strong`; los fondos de tarjetas (`ink-900`) llevan texto `fog-100`.
 2. **Sin `#000000` ni `#ffffff` puros** (regla `no-pure-black`).
 3. **Un solo familia de acento.** Destructive=rojo, éxito=verde: NO se usa
    rojo para "urgencia decorativa" ni verde fuera de estado confirmado.
@@ -106,9 +109,9 @@ Reglas:
    `ink-700` antes que sombras (regla `hairlines-over-shadows`).
 5. **El acento solo marca lo interactivo o el nodo de estado** (CTA, foco,
    hit del reloj, chip activo). Nunca texto estático decorativo rellenado de
-   ámbar, ni bordes ámbar sin significado (regla `accent-interactive-only`,
+   naranja, ni bordes naranja sin significado (regla `accent-interactive-only`,
    de `genesis-DESIGN.md`).
-6. **Un solo CTA primario por sección** (botón sólido ámbar). El resto de
+6. **Un solo CTA primario por sección** (botón sólido naranja). El resto de
    acciones en esa sección son `default`/`ghost`/`danger` — dos primarios
    compitiendo diluyen la jerarquía (regla `one-primary-per-section`).
 7. **Dual obligatorio**: un color nuevo se añade a `@theme` con sus dos
@@ -210,7 +213,7 @@ Reglas (combinan `ui-ux-pro-max` + directrices Vercel):
     - Hover de superficie interactiva: `card-lift` (sube 2px + sombra sutil
       `--shadow-card-hover`) en tarjetas que enlazan o abre acción.
     - Botones: `btn-lift` (suben **1px** al hacer hover) + `cta-glow`
-      (glow teñido de ámbar `--shadow-cta-hover`) SOLO en el CTA primario.
+      (glow teñido de naranja `--shadow-cta-hover`) SOLO en el CTA primario.
     - Overlays/diálogos: `shadow-popover` (`--shadow-popover`) — la sombra
       fuerte se reserva a lo que flota sobre la página.
     - Elevación de chrome (header, barras sticky): **blur + hairline**, no
@@ -229,7 +232,9 @@ Reglas (combinan `ui-ux-pro-max` + directrices Vercel):
 12. **Resumen persistente en wizards (2026-10-12)**: en una captura larga (el
     wizard de venta) el **total** se fija (sticky) al pie del viewport como pill
     flotante (blur + hairline) junto a los botones de avance, porque el monto es
-    el dato primario y debe estar siempre a la vista. El wizard es de **4 pasos**
+    el dato primario y debe estar siempre a la vista. El pill aparece **solo
+    desde el paso de productos** (los pasos 1–2 muestran únicamente la navegación:
+    todavía no hay monto que resumir). El wizard es de **4 pasos**
     (cliente → personal → productos → revisión) con la **condición (crédito/
     contado) elegida inline** en el paso de productos, junto a los precios. Esto
     **no** contradice §5.9: lo prohibido en barras pegajosas son las **acciones de
@@ -245,14 +250,14 @@ equivalente; variantes y estados se deciden aquí, no dentro de los componentes.
 
 | Componente | Ubicación | Anatomía y reglas                                                                     |
 | ---------- | --------- | ------------------------------------------------------------------------------------- |
-| `ActionButton` | `ui/actions.tsx` | Texto + icono opcional; en móvil queda solo el icono (`hidden sm:inline`). Bordeado, `rounded-md`, `btn-lift` (sube 1px al hover). Variantes: `default` (borde `ink-600`), `ok`, `danger`, `primary` (sólido ámbar, texto `ink-950`, `+cta-glow`). Estados: reposo / hover / focus (outline ámbar) / `disabled` (`opacity-50`). |
-| `PrimaryButton` | `ui/actions.tsx` | CTA sólido ámbar (`bg-signal`, texto `ink-950`, `+cta-glow`), `rounded-md`, `btn-lift`; tamaños `md`/`sm`. CTA estándar de los formularios-página («Guardar», «Continuar»). |
+| `ActionButton` | `ui/actions.tsx` | Texto + icono opcional; en móvil queda solo el icono (`hidden sm:inline`). Bordeado, `rounded-md`, `btn-lift` (sube 1px al hover). Variantes: `default` (borde `ink-600`), `ok`, `danger`, `primary` (sólido naranja, texto `on-signal`, `+cta-glow`). Estados: reposo / hover / focus (outline naranja) / `disabled` (`opacity-50`). |
+| `PrimaryButton` | `ui/actions.tsx` | CTA sólido naranja (`bg-signal`, texto `on-signal`, `+cta-glow`), `rounded-md`, `btn-lift`; tamaños `md`/`sm`. CTA estándar de los formularios-página («Guardar», «Continuar»). |
 | `SecondaryButton` | `ui/actions.tsx` | Contorno neutro (`border-ink-600`), `rounded-md`, `btn-lift`; «Cancelar»/«Volver». |
 | `Chip` | `ui/chips.tsx` | Chip genérico por `tono` (neutral/ok/danger/signal); base mono 11 `uppercase`. `ChipEstado` lo especializa para la condición de despacho. |
 | `IconAction` | `ui/actions.tsx` | Icon-only 44px circular (`rounded-full`) **sin borde** — el glifo vive libre; fondo suave solo en hover/active. Variantes `default`/`ok`/`danger`; acepta `to` (Link) para navegación. Uso: acciones de fila y CRUD del detalle junto al id (§5.9). **Todo** icon-only del proyecto es así: **nunca bordearlo**. `aria-label`+`title` siempre (§10 "Bots icon-only"). |
 | `CloseButton` | `ui/actions.tsx` | X 44px, borde transparente que se revela al hover (cierre de diálogos/overlays). |
-| `ChipEstado` | `ui/chips.tsx` | Chip de condición de despacho (pendiente/crédito/pagado/entregado/…); mono 11 `uppercase`, tinte por semántica, ámbar cuando es filtro activo. |
-| `PageShell` | `app/PageShell.tsx` | Página con título + volver (44px) + `acciones` (icon-group SIN borde, `role="group"` junto al id) y opción `accion.soloIcono` ("+" circular ámbar). **Es el largo de toda alta/edición/detalle** (§5.8). Grupo de acciones del detalle: ≤4 iconos. **Convención de alta:** todos los CTA de creación de sección (venta, cliente, catálogo, zona, personal, usuarios) usan `accion.soloIcono` con el mismo "+" circular; el nombre va en `aria-label`/`title`. |
+| `ChipEstado` | `ui/chips.tsx` | Chip de condición de despacho (pendiente/crédito/pagado/entregado/…); mono 11 `uppercase`, tinte por semántica, naranja cuando es filtro activo. |
+| `PageShell` | `app/PageShell.tsx` | Página con título + volver (44px) + `acciones` (icon-group SIN borde, `role="group"` junto al id) y opción `accion.soloIcono` ("+" circular naranja). **Es el largo de toda alta/edición/detalle** (§5.8). Grupo de acciones del detalle: ≤4 iconos. **Convención de alta:** todos los CTA de creación de sección (venta, cliente, catálogo, zona, personal, usuarios) usan `accion.soloIcono` con el mismo "+" circular; el nombre va en `aria-label`/`title`. |
 | `NuevaZonaDialog` | `clientes/NuevaZonaDialog.tsx` | **Único diálogo permitido** (creación rápida anidada, §5.8). Overlay con `shadow-popover`; `aria-labelledby`. |
 | `MiniFoto` | `ui/fotos.tsx` | Captura de foto (cámara/galería) con preview 40px + compresión en el device (`lib/photo.ts`). Label-envolvente = target (el `input[type=file]` va `sr-only`). Compartido por alta de cliente y wizard de venta; el texto de error de compresión es `text-danger`. |
 | Inputs / labels | común `inputCls` | Campo Archivo 14, borde `ink-600`, `rounded-md`, `min-block-size:44px` (regla global); label visible con `htmlFor`, nunca placeholder-como-label (§10 Formularios). Estados: reposo / focus (`caret-signal` + outline) / error (`role="alert"` inline bajo el campo) / `disabled`. |
@@ -265,7 +270,7 @@ Reglas de inventario:
 3. **Ciclo de estados completo por vista** («full-state-cycle», §5.7): vacío
    (con instrucción de cómo llenarlo), carga (skeleton del shape del contenido),
    error (inline con siguiente paso, §9.3) — comprobado en ambos temas.
-4. **Contraste por componente**: CTA ámbar siempre texto `ink-950`; `ok`/
+4. **Contraste por componente**: CTA naranja siempre texto `on-signal`; `ok`/
    `danger` legibles sobre sus fondos y sobre `ink-800` (hover) en los dos temas.
 
 ## 7. Interacción, motion y feedback
@@ -279,13 +284,13 @@ Reglas de inventario:
    (listar propiedades). Elección de hover «silenciosa y plana» (de
    `genesis-DESIGN.md`): botones suben **1px** (`btn-lift`), superficies
    clickeables **2px** (`card-lift`), y el CTA primario gana un glow teñido
-   ámbar (`cta-glow`) — este es el único glow permitido. Las utilidades
+   naranja (`cta-glow`) — este es el único glow permitido. Las utilidades
    viven FUERA de `@layer` en `index.css` y solo aplican bajo
    `@media (hover: hover) and (pointer: fine)` (nada de hover fantasma en
    táctil) con neutralización total en `prefers-reduced-motion: reduce`.
 3. **Reduced motion**: TODO se desactiva bajo `prefers-reduced-motion: reduce`
    — definido por defecto en `index.css`, no lo repitas mal.
-4. **Focus visible**: `:focus-visible` global en `index.css` (outline ámbar)
+4. **Focus visible**: `:focus-visible` global en `index.css` (outline naranja)
    -2px offset. **La regla vive FUERA de `@layer`** a propósito: `.outline-none`
    es una utilidad de Tailwind v4 (`@layer utilities`) y ganaría si estuviera en
    `@layer base`. Nunca volver a meterla en una capa. En campos de formulario
@@ -303,14 +308,14 @@ Reglas de inventario:
 Flujo actual ya construido en `apps/web/src/auth/AuthFlow.tsx` — es el **canon**
 para todas las pantallas de auth:
 
-- `loading`: Brand (monograma ámbar) + "leyendo dispositivo…" + `StatusStrip`.
-- `login`: título "Entrar a tu operación", correo + contraseña, CTA ámbar
+- `loading`: Brand (monograma naranja) + "leyendo dispositivo…" + `StatusStrip`.
+- `login`: título "Entrar a tu operación", correo + contraseña, CTA naranja
   "Entrar". Error inline `role="alert"`.
 - `setup-pin`: "Crea tu PIN" (4-8 dígitos), dos campos, CTA "Guardar PIN".
 - `unlock`: "Desbloquear hub", un solo campo, contador de intentos, botón
   "salir y borrar datos locales".
 - `StatusStrip` (base de todas): punto verde + "reloj del dispositivo" +
-  reloj mono en vivo (solo segundos en ámbar). Refuerza clockSync: el reloj es
+  reloj mono en vivo (solo segundos en naranja). Refuerza clockSync: el reloj es
   fuente de verdad.
 
 Los PIN inputs: `type="password"`, `inputMode="numeric"`, filtro `\D`,
@@ -362,7 +367,7 @@ directrices de Vercel, a español venezolano sobrio:
 De los skills de diseño (retirados 2026-10-07), prohibido por defecto:
 
 1. **Inter + slate-900** como stack por defecto (ya no: Archivo + JetBrains Mono + tinta).
-2. **Gradientes púrpura/AI** y "buttons con glow". CTA = ámbar sólido, sin brillo.
+2. **Gradientes púrpura/AI** y "buttons con glow". CTA = naranja sólido, sin brillo.
 3. **Cream/beige + terracota/serif display** (paleta premium-banned).
 4. **SaaS-card-kit**: mismas tarjetas redondeadas con la misma sombra gris en
    todo. Preferir estructura con líneas.
@@ -378,8 +383,8 @@ De los skills de diseño (retirados 2026-10-07), prohibido por defecto:
 11. **Sombra en superficies estáticas** o «elevación por caja» en reposo:
     tarjetas planas + hairline; la sombra es de estado (hover/foco) o de
     overlay (diálogo). Regla `shadow-only-on-hover`.
-12. **Más de un CTA primario (sólido ámbar) por sección** — jerarquía dividida.
-13. **Acento en texto estático decorativo**: el ámbar marca lo interactivo o el
+12. **Más de un CTA primario (sólido naranja) por sección** — jerarquía dividida.
+13. **Acento en texto estático decorativo**: el naranja marca lo interactivo o el
     nodo de estado (reloj, BCV, chip activo), nunca rellena leyendas.
 
 **Anti-patrón específico del proyecto**: añadir NUEVAS fuentes o un segundo
@@ -392,7 +397,7 @@ esto:
 
 ```text
 [ ] TYPE  — Archivo (sans) y JetBrains Mono (datos) únicamente; sin <link> a fuentes remotas.
-[ ] COLOR — Símbolos present en @theme de index.css; sin hexes literales para tinta/ámbar; light check AA en el acento primario.
+[ ] COLOR — Símbolos present en @theme de index.css; sin hexes literales para tinta/naranja; light check AA en el acento primario.
 [ ] THEME — Recorrido del diff en CLARO (defecto) y OSCURO (`data-theme='dark'`); sin valores descuelgados del `@theme`; contraste AA en ambos (regla §3.7).
 [ ] MOTION— Solo rise-in (entrada) y :active/:hover; sin transition: all; prefers-reduced-motion cubierto.
 [ ] ELEV  — Reposo plano (sin shadow-card al estar); sombra solo hover/foco/overlay; blur+hairline en chrome; un CTA primario por sección; acento solo interactivo.
@@ -405,7 +410,7 @@ esto:
 [ ] COPY  — voz activa, 2ª persona, "…" correcto, sin emojis, error con siguiente paso.
 [ ] DIALS — variance ≤4, motion ≤3, densidad 6-7; sin parallax/marquee/scroll-reveal.
 [ ] HEUR  — Pasada de las 10 heurísticas de Nielsen (visibilidad de estado; match con el mundo real; control/undo; consistencia; error-prevention; reconocer ante recordar; error claro con salida).
-[ ] CONTRAST — CTA ámbar con texto ink-950; texto secundario ≥4.5:1 (ambos temas).
+[ ] CONTRAST — CTA naranja con texto on-signal; texto secundario ≥4.5:1 (ambos temas).
 [ ] VERIFY — build + lint + tests en verde; revisar con el skill ui-ux-pro-max incluida esta checklist.
 ```
 

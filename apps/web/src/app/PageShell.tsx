@@ -47,7 +47,7 @@ export interface PageShellAccion {
 }
 
 const ACCION_DEFAULT = 'border-ink-600 text-fog-100 hover:bg-ink-800';
-const ACCION_PRIMARY = 'border-signal bg-signal text-ink-950 hover:bg-signal-soft cta-glow';
+const ACCION_PRIMARY = 'border-signal bg-signal text-on-signal hover:bg-signal-soft cta-glow';
 
 export default function PageShell({
   titulo,
@@ -67,7 +67,7 @@ export default function PageShell({
   }`;
   const accionIconoCls =
     accion?.variant === 'primary'
-      ? 'btn-lift flex size-11 shrink-0 items-center justify-center rounded-full bg-signal text-ink-950 active:brightness-90 cta-glow'
+      ? 'btn-lift flex size-11 shrink-0 items-center justify-center rounded-full bg-signal text-on-signal active:brightness-90 cta-glow'
       : 'btn-lift flex size-11 shrink-0 items-center justify-center rounded-full text-fog-100 active:brightness-90 hover:bg-ink-800';
 
   const ACCION_ICONO: Record<NonNullable<PageShellAccion['variant']>, string> = {

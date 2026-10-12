@@ -125,7 +125,7 @@ function LoginScreen({ auth }: { auth: UseAuthResult }) {
         <button
           type="submit"
           disabled={busy}
-          className="mt-1 rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-ink-950 transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
+          className="mt-1 rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-on-signal transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
         >
           {busy ? 'Verificando…' : 'Entrar'}
         </button>
@@ -215,7 +215,7 @@ function SetupPinScreen({ auth }: { auth: UseAuthResult }) {
         <button
           type="submit"
           disabled={busy || pin.length < 4 || confirm.length < 4}
-          className="rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-ink-950 transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
+          className="rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-on-signal transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
         >
           {busy ? 'Guardando…' : 'Guardar PIN'}
         </button>
@@ -283,14 +283,14 @@ function UnlockScreen({ auth }: { auth: UseAuthResult }) {
           </p>
         )}
         {auth.state.locked && (
-          <p className="text-xs text-signal">
+          <p className="text-xs text-signal-strong">
             Dispositivo bloqueado hasta que el admin lo desbloquee.
           </p>
         )}
         <button
           type="submit"
           disabled={busy || auth.state.locked || pin.length < 4}
-          className="rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-ink-950 transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
+          className="rounded-md bg-signal px-3.5 py-2.5 text-sm font-semibold text-on-signal transition-[filter,background-color] hover:bg-signal-soft active:brightness-90 disabled:opacity-50 btn-lift cta-glow"
         >
           {busy ? 'Verificando…' : 'Entrar'}
         </button>

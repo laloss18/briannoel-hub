@@ -84,7 +84,7 @@ export default function ClienteDetallePage() {
           {cliente.telefono ? (
             <a
               href={`tel:${cliente.telefono}`}
-              className="btn-lift inline-flex min-w-[9rem] flex-1 items-center justify-center gap-2 rounded-md border border-ok/60 bg-ok/10 px-4 py-3 text-sm font-semibold text-ok transition-colors hover:bg-ok/20"
+              className="btn-lift inline-flex min-w-[9rem] flex-1 items-center justify-center gap-2 rounded-md border border-ok/60 bg-ok/10 px-4 py-2.5 text-sm font-semibold text-ok transition-colors hover:bg-ok/20"
             >
               <Icon name="phone" className="size-4 shrink-0" />
               Llamar
@@ -95,7 +95,7 @@ export default function ClienteDetallePage() {
           {puedeEditar && (
             <Link
               to={`/clientes/${cliente.id}/editar`}
-              className="btn-lift inline-flex items-center justify-center gap-2 rounded-md border border-ink-600 px-4 py-3 text-sm font-semibold text-fog-100 transition-colors hover:bg-ink-800"
+              className="btn-lift inline-flex items-center justify-center gap-2 rounded-md border border-ink-600 px-4 py-2.5 text-sm font-semibold text-fog-100 transition-colors hover:bg-ink-800"
             >
               <Icon name="pencil" className="size-4 shrink-0" />
               Editar
@@ -112,7 +112,7 @@ export default function ClienteDetallePage() {
               {cliente.telefono ? (
                 <a
                   href={`tel:${cliente.telefono}`}
-                  className="underline decoration-ink-600 underline-offset-2 hover:text-signal"
+                  className="underline decoration-ink-600 underline-offset-2 hover:text-signal-strong"
                 >
                   {cliente.telefono}
                 </a>
@@ -136,7 +136,7 @@ export default function ClienteDetallePage() {
                   href={`https://www.openstreetmap.org/?mlat=${cliente.lat}&mlon=${cliente.lng}#map=17/${cliente.lat}/${cliente.lng}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-signal underline decoration-ink-600 underline-offset-2"
+                  className="text-signal-strong underline decoration-ink-600 underline-offset-2"
                 >
                   {cliente.lat.toFixed(5)}, {cliente.lng.toFixed(5)}
                 </a>

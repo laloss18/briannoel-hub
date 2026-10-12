@@ -77,7 +77,7 @@ function DatosDemo() {
             type="button"
             onClick={cargar}
             disabled={busy}
-            className="btn-lift rounded-md border border-signal bg-signal/10 px-3 py-1.5 text-sm font-medium text-signal transition-colors hover:bg-signal hover:text-ink-950 disabled:opacity-50"
+            className="btn-lift rounded-md border border-signal bg-signal/10 px-3 py-1.5 text-sm font-medium text-signal-strong transition-colors hover:bg-signal hover:text-on-signal disabled:opacity-50"
           >
             {busy ? 'Procesando…' : 'Cargar datos de prueba'}
           </button>
@@ -125,7 +125,7 @@ function Apariencia() {
               onClick={() => cambiarTema(t)}
               className={`btn-lift flex size-11 shrink-0 items-center justify-center rounded-md border transition-colors ${
                 tema === t
-                  ? 'border-signal bg-signal text-ink-950'
+                  ? 'border-signal bg-signal text-on-signal'
                   : 'border-ink-600 text-fog-300 hover:bg-ink-800 hover:text-fog-100'
               }`}
             >

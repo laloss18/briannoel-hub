@@ -28,7 +28,7 @@ export function ResumenTotales({ totales }: { totales: Totales }) {
       {descuento.activo && descuento.ok && (
         <div className="flex justify-between">
           <span>descuento · {descuento.etiqueta}</span>
-          <span className="tabular-nums text-signal">−{usd(descuento.monto)}</span>
+          <span className="tabular-nums text-signal-strong">−{usd(descuento.monto)}</span>
         </div>
       )}
       {mora.activo && !mora.ok && (
@@ -40,18 +40,18 @@ export function ResumenTotales({ totales }: { totales: Totales }) {
       {mora.ok && (
         <div className="flex justify-between">
           <span>recargo por mora · {mora.etiqueta}</span>
-          <span className="tabular-nums text-signal">+{usd(mora.monto)}</span>
+          <span className="tabular-nums text-signal-strong">+{usd(mora.monto)}</span>
         </div>
       )}
       {iva.usado > 0 && (
         <div className="flex justify-between">
           <span>IVA {iva.usado}%</span>
-          <span className="tabular-nums text-signal">+{usd(iva.monto)}</span>
+          <span className="tabular-nums text-signal-strong">+{usd(iva.monto)}</span>
         </div>
       )}
       <div className="mt-0.5 flex justify-between border-t border-ink-800 pt-1 text-xs">
         <span className="uppercase tracking-wider">total</span>
-        <span className="tabular-nums text-signal">{usd(total)}</span>
+        <span className="tabular-nums text-signal-strong">{usd(total)}</span>
       </div>
     </div>
   );

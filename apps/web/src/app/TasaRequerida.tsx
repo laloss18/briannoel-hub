@@ -83,7 +83,7 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
               onClick={() => void onRefrescar()}
               disabled={refrescando}
               aria-busy={refrescando}
-              className="btn-lift cta-glow inline-flex w-full items-center justify-center gap-2 rounded-md bg-signal px-4 py-3 text-sm font-semibold text-ink-950 transition-colors hover:bg-signal-soft active:scale-[0.99] disabled:opacity-60"
+              className="btn-lift cta-glow inline-flex w-full items-center justify-center gap-2 rounded-md bg-signal px-4 py-2.5 text-sm font-semibold text-on-signal transition-colors hover:bg-signal-soft active:scale-[0.99] disabled:opacity-60"
             >
               <Icon name="refresh" className={`size-4 ${refrescando ? 'animate-spin' : ''}`} />
               {refrescando ? 'Consultando la BCV…' : 'Obtener la tasa oficial'}

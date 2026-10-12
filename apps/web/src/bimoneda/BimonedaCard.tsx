@@ -58,7 +58,7 @@ export default function BimonedaCard({ roles }: BimonedaCardProps) {
               aria-label="Actualizar tasa desde la API oficial"
               title="Actualizar desde la API oficial"
               aria-busy={refrescando}
-              className="btn-lift flex size-11 items-center justify-center rounded-full text-fog-300 transition-colors hover:bg-signal/10 hover:text-signal disabled:opacity-60"
+              className="btn-lift flex size-11 items-center justify-center rounded-full text-fog-300 transition-colors hover:bg-signal/10 hover:text-signal-strong disabled:opacity-60"
             >
               <Icon name="refresh" className={refrescando ? 'animate-spin' : undefined} />
             </button>
@@ -67,7 +67,7 @@ export default function BimonedaCard({ roles }: BimonedaCardProps) {
             to="/config/tasa"
             aria-label="Configurar tasa BCV"
             title="Configurar tasa"
-            className="btn-lift flex size-11 items-center justify-center rounded-full text-fog-300 transition-colors hover:bg-signal/10 hover:text-signal"
+            className="btn-lift flex size-11 items-center justify-center rounded-full text-fog-300 transition-colors hover:bg-signal/10 hover:text-signal-strong"
           >
             <Icon name="pencil" />
           </Link>

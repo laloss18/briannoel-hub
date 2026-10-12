@@ -63,7 +63,7 @@ function validar(input: NuevaPersonalRepoInput, editor: string): Personal {
   return parsed.data;
 }
 
-/** Alta de una persona del roster (admin). Caller valida `manage_roster`. */
+/** Alta de una persona del roster (admin). Caller valida `manage_personal`. */
 export async function crearPersonalLocal(
   input: NuevaPersonalRepoInput,
   editor: string,
@@ -73,7 +73,7 @@ export async function crearPersonalLocal(
   return persona;
 }
 
-/** Actualiza los datos de una persona del roster (LWW). Caller valida `manage_roster`. */
+/** Actualiza los datos de una persona del roster (LWW). Caller valida `manage_personal`. */
 export async function editarPersonalLocal(
   prev: Personal,
   patch: Partial<NuevaPersonalRepoInput>,
@@ -98,4 +98,4 @@ export async function editarPersonalLocal(
   return updated;
 }
 
-/** Baja lógica del roster (deja de aparecer en selecciones). Caller valida `manage_roster`. */
+/** Baja lógica del roster (deja de aparecer en selecciones). Caller valida `manage_personal`. */

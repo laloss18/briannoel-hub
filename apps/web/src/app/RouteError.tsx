@@ -31,7 +31,7 @@ export default function RouteError() {
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="btn-lift rounded-md border border-signal bg-signal px-3 py-2 text-sm font-medium text-ink-950 hover:bg-signal-soft cta-glow active:brightness-90"
+          className="btn-lift rounded-md border border-signal bg-signal px-3 py-2 text-sm font-medium text-on-signal hover:bg-signal-soft cta-glow active:brightness-90"
         >
           Reintentar
         </button>

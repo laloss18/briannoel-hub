@@ -29,6 +29,13 @@ const SECCIONES: readonly Seccion[] = [
     permiso: 'manage_personal',
   },
   {
+    id: 'personal',
+    nombre: 'Personal',
+    to: '/personal',
+    icono: 'user',
+    permiso: 'manage_personal',
+  },
+  {
     id: 'config',
     nombre: 'Configuración',
     to: '/config',

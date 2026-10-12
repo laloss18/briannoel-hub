@@ -4,6 +4,7 @@ import { hasPermission } from '@brian/shared';
 import type { EditarVentaRepoInput, NuevaVentaRepoInput } from './ventasRepo';
 import { crearClienteLocal, matchZona } from '../clientes/clientesRepo';
 import { NuevaZonaDialog } from '../clientes/NuevaZonaDialog';
+import { NuevaPersonaDialog } from '../personal/NuevaPersonaDialog';
 import { AbrirMapa, GeoBoton } from '../ui/geo';
 import { CrearZonaBoton } from '../ui/zonas';
 import { PersonaSelect, type PersonaOpcion } from '../ui/personal';
@@ -106,11 +107,13 @@ export function VentaForm({
   const [promotor, setPromotor] = useState('');
   const [supervisor, setSupervisor] = useState('');
   const [busy, setBusy] = useState(false);
+  const [personaDialog, setPersonaDialog] = useState<Role | null>(null);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const firstRef = useRef<HTMLInputElement>(null);
   const { errors, fail, clear, validarCampo, summaryRef, setErrors } = useFormErrors();
 
   const canDiscount = hasPermission('discount', roles);
+  const canManagePersonal = hasPermission('manage_personal', roles);
   /** Identidad operativa del usuario autenticado: username del perfil si está
    *  registrado, si no `name`/email, si no el roster, si no el email (para
    *  autocompletar supervisor/promotor según el rol). */
@@ -524,6 +527,7 @@ export function VentaForm({
     }`;
 
   const stepIndex = STEPS.indexOf(step);
+  const mostrarTotal = stepIndex >= STEPS.indexOf('productos');
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-3 text-fog-100">
@@ -780,7 +784,7 @@ export function VentaForm({
                   <FieldError name="zona" error={errors.zona} />
                   <p className="text-2xs text-fog-500">
                     Se sugiere la zona por cercanía; estado / municipio:{' '}
-                    <span className="text-signal">
+                    <span className="text-signal-strong">
                       {zonaFinal
                         ? `${zonaFinal.estado} · ${zonaFinal.municipio}`
                         : 'por elegir zona'}
@@ -850,7 +854,11 @@ export function VentaForm({
                   value={promotor}
                   opciones={candidatos(['promotor', 'admin'])}
                   placeholder={userEsPromotor ? identidad : 'Elegir promotor de la lista…'}
-                  emptyMessage="Registra promotores en Configuración → Usuarios"
+                  emptyMessage={
+                    canManagePersonal
+                      ? 'No hay promotores registrados'
+                      : 'Pide a un administrador que registre un promotor'
+                  }
                   onChange={(v) => {
                     setPromotor(v);
                     clear('promotor');
@@ -861,6 +869,15 @@ export function VentaForm({
                   describedBy="promotor-error"
                 />
                 <FieldError name="promotor" error={errors.promotor} />
+                {canManagePersonal && (
+                  <button
+                    type="button"
+                    onClick={() => setPersonaDialog('promotor')}
+                    className="self-start rounded-md border border-dashed border-ink-600 px-2.5 py-1.5 text-2xs text-fog-300 transition-colors hover:border-ink-500 hover:text-fog-100"
+                  >
+                    + Crear promotor
+                  </button>
+                )}
               </label>
               <label className="flex flex-col gap-1">
                 <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">
@@ -870,7 +887,11 @@ export function VentaForm({
                   value={supervisor}
                   opciones={candidatos(['supervisor', 'admin'])}
                   placeholder={userEsSupervisor ? identidad : 'Elegir supervisor de la lista…'}
-                  emptyMessage="Registra supervisores en Configuración → Usuarios"
+                  emptyMessage={
+                    canManagePersonal
+                      ? 'No hay supervisores registrados'
+                      : 'Pide a un administrador que registre un supervisor'
+                  }
                   onChange={(v) => {
                     setSupervisor(v);
                     clear('supervisor');
@@ -881,11 +902,23 @@ export function VentaForm({
                   describedBy="supervisor-error"
                 />
                 <FieldError name="supervisor" error={errors.supervisor} />
+                {canManagePersonal && (
+                  <button
+                    type="button"
+                    onClick={() => setPersonaDialog('supervisor')}
+                    className="self-start rounded-md border border-dashed border-ink-600 px-2.5 py-1.5 text-2xs text-fog-300 transition-colors hover:border-ink-500 hover:text-fog-100"
+                  >
+                    + Crear supervisor
+                  </button>
+                )}
               </label>
             </div>
             <div className="rounded-md border border-ink-700/60 p-2.5 text-xs text-fog-500">
               El promotor que toma el pedido y el supervisor responsable se eligen del personal
               registrado: solo ellos (o el admin) podrán gestionar este registro (§3.3).
+              {canManagePersonal
+                ? ' Crea promotores y supervisores desde Personal o con «+ Crear» aquí mismo.'
+                : ' Pide a un administrador que los registre.'}
             </div>
           </>
         )}
@@ -964,7 +997,7 @@ export function VentaForm({
                         aria-pressed={descuentoModo === m}
                         className={`px-2.5 py-0.5 font-mono text-2xs tabular-nums transition-colors ${
                           descuentoModo === m
-                            ? 'bg-signal text-ink-950'
+                            ? 'bg-signal text-on-signal'
                             : 'text-fog-500 hover:text-fog-300'
                         }`}
                       >
@@ -1011,7 +1044,7 @@ export function VentaForm({
                         aria-pressed={moraModo === m}
                         className={`px-2.5 py-0.5 font-mono text-2xs tabular-nums transition-colors ${
                           moraModo === m
-                            ? 'bg-signal text-ink-950'
+                            ? 'bg-signal text-on-signal'
                             : 'text-fog-500 hover:text-fog-300'
                         }`}
                       >
@@ -1150,7 +1183,7 @@ export function VentaForm({
             </div>
             <div className="flex items-center justify-between rounded-md border border-signal/40 p-2.5 font-mono text-2xs">
               <span className="text-fog-500">total</span>
-              <span className="tabular-nums text-signal">{usd(totalFinal)}</span>
+              <span className="tabular-nums text-signal-strong">{usd(totalFinal)}</span>
             </div>
           </div>
         )}
@@ -1163,13 +1196,15 @@ export function VentaForm({
       )}
 
       <div className="sticky bottom-3 z-10 mt-3 flex items-center gap-3 rounded-xl border border-ink-700 bg-ink-900/95 px-3 py-2.5 shadow-popover backdrop-blur">
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">total</span>
-          <span className="truncate font-mono text-base tabular-nums text-signal">
-            {usd(totalFinal)}
-          </span>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
+        {mostrarTotal && (
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">total</span>
+            <span className="truncate font-mono text-base tabular-nums text-signal-strong">
+              {usd(totalFinal)}
+            </span>
+          </div>
+        )}
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           {stepIndex > 0 && (
             <SecondaryButton
               onClick={() => {
@@ -1198,6 +1233,24 @@ export function VentaForm({
         onCreated={(z) => {
           setZonaId(z.id);
           setZonaDialogOpen(false);
+        }}
+      />
+
+      <NuevaPersonaDialog
+        open={personaDialog !== null}
+        onClose={() => setPersonaDialog(null)}
+        editor={email}
+        rolesDisponibles={[personaDialog === 'supervisor' ? 'supervisor' : 'promotor']}
+        rolInicial={personaDialog === 'supervisor' ? 'supervisor' : 'promotor'}
+        onCreated={(p) => {
+          if (personaDialog === 'supervisor') {
+            setSupervisor(p.nombre);
+            clear('supervisor');
+          } else {
+            setPromotor(p.nombre);
+            clear('promotor');
+          }
+          setPersonaDialog(null);
         }}
       />
     </div>

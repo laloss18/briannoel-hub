@@ -11,7 +11,7 @@ type ChipTono = 'neutral' | 'ok' | 'signal' | 'danger';
 const TONOS: Record<ChipTono, string> = {
   neutral: 'border-ink-600 text-fog-500',
   ok: 'border-ok/50 text-ok',
-  signal: 'border-signal/50 text-signal',
+  signal: 'border-signal/50 text-signal-strong',
   danger: 'border-danger/50 text-danger',
 };
 

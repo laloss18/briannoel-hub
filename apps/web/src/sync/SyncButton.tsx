@@ -10,7 +10,7 @@ export default function SyncButton({ busy, onSync }: SyncButtonProps) {
   const pendientes = useLiveQuery(() => new DexieOutbox().list('pending'), []);
   const fallidos = useLiveQuery(() => new DexieOutbox().list('failed'), []);
   const hayCambios = (pendientes?.length ?? 0) + (fallidos?.length ?? 0) > 0;
-  const cls = hayCambios ? 'border-signal bg-signal text-ink-950' : 'border-ink-700 text-fog-100';
+  const cls = hayCambios ? 'border-signal bg-signal text-on-signal' : 'border-ink-700 text-fog-100';
   return (
     <button
       onClick={onSync}
