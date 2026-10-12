@@ -1,7 +1,7 @@
 # Supabase (1 proyecto, MVP — ver AGENTS.md)
 
 Sin proyectos test/dev: la CI corre contra el transporte in-memory + MSW, nunca una
-DB viva. Toda la infra de sync vive en un solo proyecto Cloud (`sa-east-1`).
+DB viva. Toda la infra de sync vive en un solo proyecto Cloud (`us-east-1`).
 
 ## Pasos manuales en el proyecto
 
