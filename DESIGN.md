@@ -225,8 +225,10 @@ equivalente; variantes y estados se deciden aquí, no dentro de los componentes.
 | Componente | Ubicación | Anatomía y reglas                                                                     |
 | ---------- | --------- | ------------------------------------------------------------------------------------- |
 | `ActionButton` | `ui/actions.tsx` | Texto + icono opcional; en móvil queda solo el icono (`hidden sm:inline`). Bordeado, `rounded-md`, `btn-lift` (sube 1px al hover). Variantes: `default` (borde `ink-600`), `ok`, `danger`, `primary` (sólido naranja, texto `ink-950`, `+cta-glow`). Estados: reposo / hover / focus (outline naranja) / `disabled` (`opacity-50`). |
-| `IconButton` | `ui/actions.tsx` | Icon-only 44px cuadrado (`size-11`), `rounded-md`, CON borde. Mismas variantes que `ActionButton`. Uso: acción de fila con contenedor (llamar/editar en `ClientesPage`). `aria-label`+`title` siempre (§10 "Bots icon-only"). |
-| `IconAction` | `ui/actions.tsx` | Icon-only 44px circular (`rounded-full`) **sin borde** — el glifo vive libre; fondo suave solo en hover/active. Variantes `default`/`ok`/`danger`; acepta `to` (Link) para navegación. Uso: acciones de fila y CRUD del detalle junto al id (§5.9). **Nunca bordearlo**: para contenedor usar `IconButton`. |
+| `PrimaryButton` | `ui/actions.tsx` | CTA sólido naranja (`bg-signal`, texto `ink-950`, `+cta-glow`), `rounded-md`, `btn-lift`; tamaños `md`/`sm`. CTA estándar de los formularios-página («Guardar», «Continuar»). |
+| `SecondaryButton` | `ui/actions.tsx` | Contorno neutro (`border-ink-600`), `rounded-md`, `btn-lift`; «Cancelar»/«Volver». |
+| `Chip` | `ui/chips.tsx` | Chip genérico por `tono` (neutral/ok/danger/signal); base mono 11 `uppercase`. `ChipEstado` lo especializa para la condición de despacho. |
+| `IconAction` | `ui/actions.tsx` | Icon-only 44px circular (`rounded-full`) **sin borde** — el glifo vive libre; fondo suave solo en hover/active. Variantes `default`/`ok`/`danger`; acepta `to` (Link) para navegación. Uso: acciones de fila y CRUD del detalle junto al id (§5.9). **Todo** icon-only del proyecto es así: **nunca bordearlo**. `aria-label`+`title` siempre (§10 "Bots icon-only"). |
 | `CloseButton` | `ui/actions.tsx` | X 44px, borde transparente que se revela al hover (cierre de diálogos/overlays). |
 | `ChipEstado` | `ui/chips.tsx` | Chip de condición de despacho (pendiente/crédito/pagado/entregado/…); mono 11 `uppercase`, tinte por semántica, naranja cuando es filtro activo. |
 | `PageShell` | `app/PageShell.tsx` | Página con título + volver (44px) + `acciones` (icon-group SIN borde, `role="group"` junto al id) y opción `accion.soloIcono` ("+" circular naranja). **Es el largo de toda alta/edición/detalle** (§5.8). Grupo de acciones del detalle: ≤4 iconos. **Convención de alta:** todos los CTA de creación de sección (venta, cliente, catálogo, zona, personal, usuarios) usan `accion.soloIcono` con el mismo "+" circular; el nombre va en `aria-label`/`title`. |
@@ -237,8 +239,8 @@ equivalente; variantes y estados se deciden aquí, no dentro de los componentes.
 Reglas de inventario:
 
 1. **Un primario por sección** (§3.6): el resto en `default`/`ok`/`danger`.
-2. **Iconos libres del contenedor**: no bordear `IconAction`; si la fila pide
-   borde visible, usar `IconButton`.
+2. **Iconos libres del contenedor**: no bordear los icon-only; si la fila pide
+   contenedor, usar `ActionButton`.
 3. **Ciclo de estados completo por vista** («full-state-cycle», §5.7): vacío
    (con instrucción de cómo llenarlo), carga (skeleton del shape del contenido),
    error (inline con siguiente paso, §9.3) — comprobado en ambos temas.
@@ -332,7 +334,7 @@ directrices de Vercel, a español venezolano sobrio:
 | Imágenes           | `width`+`height` explícitos (CLS=0), `loading="lazy"` bajo el fold                                                                                        |
 | Zoom               | NUNCA `maximum-scale=1` ni `user-scalable=no`                                                                                                             |
 | Paste              | nunca bloquear `onPaste` en inputs (regla UX del PIN: se permite pegar)                                                                                   |
-| Targets táctiles   | ≥44px en `button`/`select`/`input` (regla global de `index.css`); icon-only cuadrado `size-11`; gap ≥8px entre targets adyacentes                         |
+| Targets táctiles   | ≥44px en `button`/`select`/`input` (regla global de `index.css`); icon-only circular `rounded-full` `size-11` (sin borde); gap ≥8px entre targets adyacentes |
 
 ## 11. Anti-patrones (AI tells a evitar)
 

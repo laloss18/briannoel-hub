@@ -104,7 +104,7 @@ No se manejan aún → **fuera del MVP**.
 - Alertas y notificaciones: canales definidos → **en-app + deep link WhatsApp** (manual, sin servicios push de pago).
 - Backups semanales automáticos (DR).
 - Política de storage para fotos (compresión + solo subir al conectar).
-- Entornos separados dev/test/prod.
+- 1 solo proyecto Supabase en el MVP; el sync se prueba contra el transporte en memoria (un proyecto *test* solo si más adelante se añade una suite contra DB real).
 - Migración de datos históricos.
 - Envío PDF / WhatsApp.
 
@@ -127,7 +127,7 @@ No se manejan aún → **fuera del MVP**.
 | Promotor | Todas | **No** | ✖ | ✖ | ✖ |
 | Cobrador / Auxiliar | Todas | Sí | ✖ | ✖ | ✔ |
 
-- Un usuario puede tener **múltiples roles**.
+- **Una cuenta = un rol** (la UI usa selección única; el campo `roles` guarda un solo elemento).
 - No existe rol "Cajero".
 - **UX (registrada):** Promotor sin acceso a montos de saldo pero con indicador **"crédito bloqueado"** al tomar pedidos a crédito (ver §2.2).
 
@@ -142,7 +142,7 @@ No se manejan aún → **fuera del MVP**.
 - **Gestionar usuarios (alta y edición de cuentas):** Admin (`manage_personal`).
 
 ### 3.4. Autenticación
-- Login: usuario + contraseña.
+- Login: correo + contraseña.
 - **Alta de usuarios: solo por el Administrador** (no hay signup público). El admin da de alta
   cada cuenta con correo, contraseña inicial, **nombre de usuario** y roles; el usuario luego
   entra con correo + contraseña.
@@ -178,8 +178,8 @@ No se manejan aún → **fuera del MVP**.
 | Capa | Tecnología |
 |---|---|
 | Frontend | PWA React + Vite + TypeScript |
-| UI | TailwindCSS + shadcn/ui |
-| Estado local | TanStack Query + Dexie (IndexedDB) |
+| UI | TailwindCSS v4 (componentes propios en `apps/web/src/ui/*`) |
+| Estado local | Dexie (IndexedDB) + hooks propios (`dexie-react-hooks`) |
 | Sync engine | **Motor propio** (ref: `stellar-drive`) |
 | Backend / DB | Supabase Cloud (PostgreSQL + Auth + Storage + Realtime) |
 | Auth offline | PIN local + credenciales hasheadas (ref: `pin-auth`) |
@@ -191,20 +191,20 @@ No se manejan aún → **fuera del MVP**.
 | Plus Code | `open-location-code` (Google) |
 | Mapas | Leaflet + OpenStreetMap |
 | CI/CD | GitHub Actions |
-| Testing | Vitest + Playwright + MSW |
+| Testing | Vitest + Playwright |
 | IA desarrollo | OpenCode + modelos free (escalable a pago) |
 
 **Decisiones de plataforma (mejoras integradas):**
 
 | Área | Decisión |
 |---|---|
-| Región Supabase | `sa-east-1` (São Paulo) si está disponible; fallback `us-east-1` (menor latencia Venezuela) |
-| Entornos | **dev / test / prod** separados; los datos nunca se mezclan; integración y E2E usan el proyecto *test* con seeds propias |
+| Región Supabase | `us-east-1` (proyecto real `lrqohmawirjksgtwsfdz`) |
+| Entornos | **1 proyecto Supabase** en el MVP: el motor de sync se prueba contra el transporte en memoria; sin proyecto *test* salvo que se añada una suite contra DB real |
 | Backups / DR | `pg_dump` **semanal** vía GitHub Actions → almacenamiento externo (cubre riesgo #4) |
 | Storage fotos | Compresión en cliente: máx. ~800px, JPEG q70 (~100–150 KB); solo se sube al conectar (§5.10); PDFs NO se guardan en Storage; presupuesto: ~150 KB × 2–3 fotos × 8 k clientes ≈ 2.4–3.6 GB solo si se llena → decidir 1 foto/cliente o pasar a Pro |
 | Relojes (LWW) | El motor normaliza el reloj del dispositivo contra el tiempo del servidor en cada sync (`clockSync`) para evitar desviaciones de reloj BYOD |
 | Notificaciones | En-app + deep link WhatsApp (manual); **sin push de terceros** (sin coste) |
-| Docker | **Descartado en MVP**: integración vía proyecto Cloud *test* + MSW; Docker queda como reserva si el sync de pagos se vuelve inestable (Fase 4) |
+| Docker | **Descartado en MVP**: integración vía transporte en memoria del motor de sync; Docker queda como reserva si el sync de pagos se vuelve inestable (Fase 4) |
 
 **Volumen estimado:** 1–200 operaciones/usuario/día · 800–1.000 ops pico diarias.
 
@@ -229,7 +229,7 @@ No se manejan aún → **fuera del MVP**.
 
 ### 5.4. Idempotencia
 - IDs únicos generados en cliente (UUID/ULID).
-- Operaciones duplicadas se detectan y no se aplican dos veces (server `ON CONFLICT DO NOTHING`).
+- Operaciones duplicadas se detectan y no se aplican dos veces: el server usa una **guarda LWW** (`ON CONFLICT … DO UPDATE … WHERE excluded.client_updated_at > client_updated_at`) — el duplicado exacto se descarta, un `updated_at` más nuevo sí aplica.
 
 ### 5.5. Sync inicial
 - **Bajo demanda** (se descarga lo que se consulta o necesita).
@@ -279,9 +279,9 @@ No se manejan aún → **fuera del MVP**.
 
 ### 6.2. Tipos de test
 - **Unitarios** (Vitest): cada commit.
-- **Integración** (Vitest + **proyecto Supabase Cloud test dedicado** con seeds aplicadas vía `supabase db push`; sin Docker en MVP): cada PR.
+- **Integración** (Vitest contra el **transporte en memoria** del motor de sync; sin Docker en MVP): cada PR.
 - **E2E** (Playwright Chromium + WebKit): antes de merge a `main`.
-- **Sync** (Vitest + Playwright + mock de red/MSW): antes de merge.
+- **Sync** (Vitest + Playwright + transporte en memoria del motor de sync): antes de merge.
 - **Manual en dispositivo real** (Android gama media + iPhone): antes de cada release de fase.
 
 ### 6.3. Cobertura mínima por módulo
@@ -321,10 +321,10 @@ No se manejan aún → **fuera del MVP**.
 |---|---|
 | Unit + integración | Vitest |
 | E2E | Playwright |
-| Datos de integración | Supabase Cloud (proyecto *test* + seeds) · Docker opcional como reserva |
+| Datos de integración | Transporte en memoria del motor de sync · Docker opcional como reserva |
 | CI | GitHub Actions |
 | Cobertura | Vitest coverage (v8) |
-| Mock de red | MSW |
+| Mock de red | n/a — lo cubre el transporte en memoria del motor de sync |
 | Generación de tests con IA | OpenCode |
 
 ### 6.7. Datos de prueba
@@ -465,7 +465,7 @@ Caja/Tesorería · RRHH/Asistencia · Nómina · Contabilidad · Compras/Proveed
 | **Clock sync / offset** | Normalización del reloj del dispositivo contra el tiempo del servidor. |
 | **Idempotencia** | Operación duplicada no se aplica dos veces. |
 | **Realtime** | Push de cambios vía WebSocket (Supabase). |
-| **Entornos** | Dev / test / prod: proyectos Supabase aislados que nunca mezclan datos. |
+| **Entornos** | 1 proyecto Supabase en el MVP: dev local + prod, con el sync probado contra el transporte en memoria. |
 | **BCV** | Banco Central de Venezuela (tasa oficial). |
 | **BsD** | Bolívares digitales. |
 | **IVA** | Impuesto al Valor Agregado. |
@@ -511,7 +511,7 @@ Caja/Tesorería · RRHH/Asistencia · Nómina · Contabilidad · Compras/Proveed
 
 **Stack:**
 - PWA React + Vite + TS, Dexie, Tailwind.
-- Supabase Cloud (3 entornos: dev/test/prod) + motor de sync propio.
+- Supabase Cloud (1 proyecto en el MVP) + motor de sync propio.
 - PDF en cliente, WhatsApp manual, Plus Code, Leaflet.
 - GitHub Actions (CI + nightly + backup semanal) + Vitest + Playwright + OpenCode (IA).
 

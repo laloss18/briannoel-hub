@@ -1,7 +1,7 @@
 ---
 # Weekly schema+migrations backup of the Single Supabase project.
 # MVP has ONE project (PRD env collapse, 2026-09-18): tests run against the
-# in-memory transport + MSW, so no separate test/staging project exists yet.
+# in-memory transport, so no separate test/staging project exists yet.
 name: Weekly Supabase Backup
 on:
   schedule:
