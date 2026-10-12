@@ -20,8 +20,6 @@ export async function listAppUsers(): Promise<AppUser[]> {
     .sort((a, b) => (a.username ?? a.email).localeCompare(b.username ?? b.email));
 }
 
-
-
 /** Suscripción para la UI (índice de identidades, panel de usuarios). */
 export function useAppUsers(): AppUser[] {
   return useLiveQuery(() => listAppUsers(), []) ?? [];
