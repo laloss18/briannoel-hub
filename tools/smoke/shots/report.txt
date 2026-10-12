@@ -1,0 +1,4 @@
+mirror: {"total":29,"porEntidad":{"zonas":3,"items":5,"clientes":6,"personal":4,"despachos":4,"app_users":6,"app_config":1}}
+
+CONSOLE ERRORS:
+(ninguno)
