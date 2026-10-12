@@ -4,7 +4,9 @@ import { listZonas, crearZonaLocal, editarZonaLocal } from './zonasRepo';
 import PageShell from '../app/PageShell';
 import { PrimaryButton, SecondaryButton } from '../ui/actions';
 import { VE_ESTADOS, municipiosDeEstado } from '@brian/shared';
-import { useEffect, useRef, useState } from 'react';
+import { EstadoNoEncontrado } from '../app/EstadoNoEncontrado';
+import { usePrecargaUnaVez, useRegistroPorId } from '../lib/hooks';
+import { useState } from 'react';
 import { FieldError, FormErrorSummary, inputCls } from '../ui/form';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 
@@ -12,24 +14,18 @@ export default function ZonaFormPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const zonas = useLiveQuery(() => listZonas(), []);
-  const zona = id ? ((zonas ?? []).find((z) => z.id === id) ?? null) : null;
-  const editando = Boolean(id && zona);
+  const { registro: zona, editando, noEncontrado } = useRegistroPorId(id, zonas);
   const [nombre, setNombre] = useState('');
   const [estado, setEstado] = useState('');
   const [municipio, setMunicipio] = useState('');
   const [busy, setBusy] = useState(false);
   const { errors, fail, clear, summaryRef } = useFormErrors();
 
-  // Precarga una sola vez cuando la zona llega (Dexie async); no se repite en
-  // cada sync para no pisar lo que el usuario va escribiendo.
-  const precargado = useRef(false);
-  useEffect(() => {
-    if (!zona || precargado.current) return;
-    precargado.current = true;
-    setNombre(zona.nombre);
-    setEstado(zona.estado);
-    setMunicipio(zona.municipio);
-  }, [zona]);
+  usePrecargaUnaVez(zona, (z) => {
+    setNombre(z.nombre);
+    setEstado(z.estado);
+    setMunicipio(z.municipio);
+  });
 
   const municipios = estado ? municipiosDeEstado(estado) : [];
 
@@ -55,12 +51,8 @@ export default function ZonaFormPage() {
     }
   };
 
-  if (id && zonas !== undefined && !zona) {
-    return (
-      <PageShell titulo="Editar zona" icono="map">
-        <p className="text-xs text-fog-600">Zona no encontrada.</p>
-      </PageShell>
-    );
+  if (noEncontrado) {
+    return <EstadoNoEncontrado titulo="Editar zona" icono="map" mensaje="Zona no encontrada." />;
   }
 
   return (

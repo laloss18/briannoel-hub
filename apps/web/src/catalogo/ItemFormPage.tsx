@@ -3,7 +3,9 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { listItems, crearItemLocal, editarItemLocal } from '../ventas/itemsRepo';
 import PageShell from '../app/PageShell';
 import { PrimaryButton, SecondaryButton } from '../ui/actions';
-import { useEffect, useRef, useState } from 'react';
+import { EstadoNoEncontrado } from '../app/EstadoNoEncontrado';
+import { usePrecargaUnaVez, useRegistroPorId } from '../lib/hooks';
+import { useState } from 'react';
 import { FieldError, FormErrorSummary, inputCls } from '../ui/form';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 
@@ -11,24 +13,18 @@ export default function ItemFormPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const items = useLiveQuery(() => listItems(), []);
-  const item = id ? ((items ?? []).find((i) => i.id === id) ?? null) : null;
-  const editando = Boolean(id && item);
+  const { registro: item, editando, noEncontrado } = useRegistroPorId(id, items);
   const [nombre, setNombre] = useState('');
   const [precioCredito, setPrecioCredito] = useState('0');
   const [precioContado, setPrecioContado] = useState('0');
   const [busy, setBusy] = useState(false);
   const { errors, fail, clear, summaryRef } = useFormErrors();
 
-  // Precarga una sola vez cuando el ítem llega (Dexie async); no se repite en
-  // cada sync para no pisar lo que el usuario va escribiendo.
-  const precargado = useRef(false);
-  useEffect(() => {
-    if (!item || precargado.current) return;
-    precargado.current = true;
-    setNombre(item.nombre);
-    setPrecioCredito(item.precio_credito.toString());
-    setPrecioContado(item.precio_contado.toString());
-  }, [item]);
+  usePrecargaUnaVez(item, (i) => {
+    setNombre(i.nombre);
+    setPrecioCredito(i.precio_credito.toString());
+    setPrecioContado(i.precio_contado.toString());
+  });
 
   const onGuardar = async () => {
     const pc = Number(precioCredito);
@@ -58,11 +54,9 @@ export default function ItemFormPage() {
     }
   };
 
-  if (id && items !== undefined && !item) {
+  if (noEncontrado) {
     return (
-      <PageShell titulo="Editar ítem" icono="package">
-        <p className="text-xs text-fog-600">Ítem no encontrado.</p>
-      </PageShell>
+      <EstadoNoEncontrado titulo="Editar ítem" icono="package" mensaje="Ítem no encontrado." />
     );
   }
 

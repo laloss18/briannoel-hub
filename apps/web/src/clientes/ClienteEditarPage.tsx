@@ -4,8 +4,10 @@ import { editarClienteLocal, listClientes } from './clientesRepo';
 import { listZonas } from './zonasRepo';
 import PageShell from '../app/PageShell';
 import { PrimaryButton, SecondaryButton } from '../ui/actions';
+import { EstadoNoEncontrado } from '../app/EstadoNoEncontrado';
+import { usePrecargaUnaVez, useRegistroPorId } from '../lib/hooks';
 import { useSesion } from '../app/sesion';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { FieldError, FormErrorSummary, inputCls, labelCls } from '../ui/form';
 import { fieldAria, useFormErrors } from '../ui/formErrors';
 import { GeoBoton } from '../ui/geo';
@@ -23,7 +25,7 @@ export default function ClienteEditarPage() {
   const { email } = useSesion();
   const clientes = useLiveQuery(() => listClientes(), []);
   const zonas = useLiveQuery(() => listZonas(), []);
-  const cliente = id ? ((clientes ?? []).find((c) => c.id === id) ?? null) : null;
+  const { registro: cliente, noEncontrado } = useRegistroPorId(id, clientes);
 
   const [nombre, setNombre] = useState('');
   const [documento, setDocumento] = useState('');
@@ -37,19 +39,16 @@ export default function ClienteEditarPage() {
   const [busy, setBusy] = useState(false);
   const { errors, fail, clear, summaryRef } = useFormErrors();
 
-  const precargado = useRef(false);
-  useEffect(() => {
-    if (!cliente || precargado.current) return;
-    precargado.current = true;
-    setNombre(cliente.nombre);
-    setDocumento(cliente.documento ?? '');
-    setTelefono(cliente.telefono ?? '');
-    setTelefono2(cliente.telefono2 ?? '');
-    setDireccion(cliente.direccion ?? '');
-    setNotas(cliente.notas_referencia ?? '');
-    setLat(cliente.lat != null ? String(cliente.lat) : '');
-    setLng(cliente.lng != null ? String(cliente.lng) : '');
-  }, [cliente]);
+  usePrecargaUnaVez(cliente, (c) => {
+    setNombre(c.nombre);
+    setDocumento(c.documento ?? '');
+    setTelefono(c.telefono ?? '');
+    setTelefono2(c.telefono2 ?? '');
+    setDireccion(c.direccion ?? '');
+    setNotas(c.notas_referencia ?? '');
+    setLat(c.lat != null ? String(c.lat) : '');
+    setLng(c.lng != null ? String(c.lng) : '');
+  });
 
   const usarMiUbicacion = async () => {
     setGeoBusy(true);
@@ -85,11 +84,13 @@ export default function ClienteEditarPage() {
     }
   };
 
-  if (id && clientes !== undefined && !cliente) {
+  if (noEncontrado) {
     return (
-      <PageShell titulo="Editar cliente" icono="userPlus">
-        <p className="text-xs text-fog-600">Cliente no encontrado.</p>
-      </PageShell>
+      <EstadoNoEncontrado
+        titulo="Editar cliente"
+        icono="userPlus"
+        mensaje="Cliente no encontrado."
+      />
     );
   }
 
