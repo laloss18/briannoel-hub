@@ -8,6 +8,7 @@ import { Icon } from '../ui/icons';
 import { FilterBar, FilterChip, FilterGroup, FilterSelect, ToolbarFooter } from '../ui/filtros';
 import { useSesion } from '../app/sesion';
 import { normaliza } from '../lib/texto';
+import { usd } from '../lib/moneda';
 
 /**
  * Sección Clientes (PRD §2.5): listado con filtros compactos (búsqueda, zona,
@@ -149,7 +150,7 @@ export default function ClientesPage() {
                   <span className="flex shrink-0 items-center gap-2">
                     <ScoreBadge score={c.score} grado={c.score_grado ?? null} />
                     <span className="font-mono text-xs tabular-nums text-fog-500">
-                      US${c.credito_limite.toFixed(2)}
+                      {usd(c.credito_limite)}
                     </span>
                   </span>
                 </Link>

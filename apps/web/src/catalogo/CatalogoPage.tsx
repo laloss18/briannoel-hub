@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { listItems } from '../ventas/itemsRepo';
 import { useSesion } from '../app/sesion';
 import { hasPermission } from '@brian/shared';
+import { dosDecimales } from '../lib/moneda';
 
 export default function CatalogoPage() {
   const { roles } = useSesion();
@@ -37,16 +38,16 @@ export default function CatalogoPage() {
               >
                 <span className="text-sm font-medium text-fog-100">{i.nombre}</span>
                 <span className="font-mono text-xs tabular-nums text-fog-500">
-                  Crédito · {i.precio_credito.toFixed(2)} · Contado · {i.precio_contado.toFixed(2)}{' '}
-                  USD
+                  Crédito · {dosDecimales(i.precio_credito)} · Contado ·{' '}
+                  {dosDecimales(i.precio_contado)} USD
                 </span>
               </Link>
             ) : (
               <div className="flex flex-col gap-1 py-2.5">
                 <span className="text-sm font-medium text-fog-100">{i.nombre}</span>
                 <span className="font-mono text-xs tabular-nums text-fog-500">
-                  Crédito · {i.precio_credito.toFixed(2)} · Contado · {i.precio_contado.toFixed(2)}{' '}
-                  USD
+                  Crédito · {dosDecimales(i.precio_credito)} · Contado ·{' '}
+                  {dosDecimales(i.precio_contado)} USD
                 </span>
               </div>
             )}

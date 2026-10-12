@@ -11,6 +11,7 @@ import { compressImage } from '../lib/photo';
 import { MiniFoto } from '../ui/fotos';
 import { obtenerCoords } from '../lib/geo';
 import { normaliza } from '../lib/texto';
+import { usd } from '../lib/moneda';
 import { FieldError, FormErrorSummary } from '../ui/form';
 import { fieldAria, useFormErrors, type FieldErrors } from '../ui/formErrors';
 
@@ -292,7 +293,7 @@ export function VentaForm({
   );
   const descuentoMonto = round2(subtotal - total);
   const descuentoEtiqueta =
-    descuentoModo === 'pct' ? `${descuentoValorNum}%` : `US$${descuentoValorNum.toFixed(2)}`;
+    descuentoModo === 'pct' ? `${descuentoValorNum}%` : usd(descuentoValorNum);
 
   const moraValorNum = Number(moraValor);
   const moraActivo = condicion === 'credito' && Number.isFinite(moraValorNum) && moraValorNum > 0;
@@ -301,7 +302,7 @@ export function VentaForm({
   const moraMonto = round2(
     moraOk ? (moraModo === 'pct' ? (subtotal * moraValorNum) / 100 : moraValorNum) : 0,
   );
-  const moraEtiqueta = moraModo === 'pct' ? `${moraValorNum}%` : `US$${moraValorNum.toFixed(2)}`;
+  const moraEtiqueta = moraModo === 'pct' ? `${moraValorNum}%` : usd(moraValorNum);
 
   const ivaNum = Number(ivaPct);
   const ivaPctOk =
@@ -933,16 +934,14 @@ export function VentaForm({
                   {item ? (
                     <p className="mt-1 font-mono text-2xs uppercase tracking-wider text-fog-500">
                       unitario{' '}
-                      <span className="tabular-nums text-signal">
-                        US${precioDe(item).toFixed(2)}
-                      </span>{' '}
-                      · {condicion}
+                      <span className="tabular-nums text-signal">{usd(precioDe(item))}</span> ·{' '}
+                      {condicion}
                       {otroPrecio && (
                         <>
                           {' '}
                           ·{' '}
                           <span className="text-fog-600">
-                            {otroPrecio.tipo} US${otroPrecio.valor.toFixed(2)}
+                            {otroPrecio.tipo} {usd(otroPrecio.valor)}
                           </span>
                         </>
                       )}
@@ -1022,7 +1021,7 @@ export function VentaForm({
                   <span className="min-w-0 flex-1 text-2xs leading-relaxed text-fog-500">
                     {descuentoModo === 'pct'
                       ? `% sobre subtotal (0–100%)`
-                      : `US$ fijos · máx US$${subtotal.toFixed(2)}`}
+                      : `US$ fijos · máx ${usd(subtotal)}`}
                   </span>
                   <input
                     type="number"
@@ -1069,7 +1068,7 @@ export function VentaForm({
                   <span className="min-w-0 flex-1 text-2xs leading-relaxed text-fog-500">
                     {moraModo === 'pct'
                       ? 'Porcentaje sobre el subtotal (0–100%).'
-                      : `Monto fijo · máx US$${subtotal.toFixed(2)}.`}
+                      : `Monto fijo · máx ${usd(subtotal)}.`}
                   </span>
                   <input
                     type="number"
@@ -1114,43 +1113,41 @@ export function VentaForm({
             <div className="rounded-md border border-ink-700/60 p-2.5 font-mono text-2xs text-fog-500">
               <div className="flex justify-between">
                 <span>subtotal</span>
-                <span className="tabular-nums text-fog-100">US${subtotal.toFixed(2)}</span>
+                <span className="tabular-nums text-fog-100">{usd(subtotal)}</span>
               </div>
               {descuentoActivo && !descuentoOk && (
                 <div className="flex justify-between text-danger">
                   <span>descuento</span>
-                  <span>
-                    {descuentoModo === 'pct' ? 'máx 100%' : `máx US$${subtotal.toFixed(2)}`}
-                  </span>
+                  <span>{descuentoModo === 'pct' ? 'máx 100%' : `máx ${usd(subtotal)}`}</span>
                 </div>
               )}
               {descuentoActivo && descuentoOk && (
                 <div className="flex justify-between">
                   <span>descuento · {descuentoEtiqueta}</span>
-                  <span className="tabular-nums text-signal">−US${descuentoMonto.toFixed(2)}</span>
+                  <span className="tabular-nums text-signal">−{usd(descuentoMonto)}</span>
                 </div>
               )}
               {moraActivo && !moraOk && (
                 <div className="flex justify-between text-danger">
                   <span>recargo por mora</span>
-                  <span>{moraModo === 'pct' ? 'máx 100%' : `máx US$${subtotal.toFixed(2)}`}</span>
+                  <span>{moraModo === 'pct' ? 'máx 100%' : `máx ${usd(subtotal)}`}</span>
                 </div>
               )}
               {moraOk && (
                 <div className="flex justify-between">
                   <span>recargo por mora · {moraEtiqueta}</span>
-                  <span className="tabular-nums text-signal">+US${moraMonto.toFixed(2)}</span>
+                  <span className="tabular-nums text-signal">+{usd(moraMonto)}</span>
                 </div>
               )}
               {ivaUsado > 0 && (
                 <div className="flex justify-between">
                   <span>IVA {ivaUsado}%</span>
-                  <span className="tabular-nums text-signal">+US${ivaMonto.toFixed(2)}</span>
+                  <span className="tabular-nums text-signal">+{usd(ivaMonto)}</span>
                 </div>
               )}
               <div className="mt-0.5 flex justify-between border-t border-ink-800 pt-1 text-xs">
                 <span className="uppercase tracking-wider">total</span>
-                <span className="tabular-nums text-signal">US${totalFinal.toFixed(2)}</span>
+                <span className="tabular-nums text-signal">{usd(totalFinal)}</span>
               </div>
             </div>
             {items.length === 0 && (
@@ -1183,7 +1180,7 @@ export function VentaForm({
                         {item?.nombre ?? 'Ítem'}
                       </span>
                       <span className="shrink-0 font-mono text-2xs text-fog-500">
-                        {l.cantidad} × US${precioDe(item as Item).toFixed(2)}
+                        {l.cantidad} × {usd(precioDe(item as Item))}
                       </span>
                     </div>
                   );
@@ -1193,7 +1190,7 @@ export function VentaForm({
                 <div className="mt-1 flex justify-between gap-3">
                   <span>descuento</span>
                   <span className="text-right text-fog-100">
-                    {descuentoEtiqueta} · −US${descuentoMonto.toFixed(2)}
+                    {descuentoEtiqueta} · −{usd(descuentoMonto)}
                   </span>
                 </div>
               )}
@@ -1201,20 +1198,20 @@ export function VentaForm({
                 <div className="mt-1 flex justify-between gap-3">
                   <span>recargo por mora</span>
                   <span className="text-right text-fog-100">
-                    {moraEtiqueta} · +US${moraMonto.toFixed(2)}
+                    {moraEtiqueta} · +{usd(moraMonto)}
                   </span>
                 </div>
               )}
               {ivaUsado > 0 && (
                 <div className="mt-1 flex justify-between gap-3">
                   <span>IVA {ivaUsado}%</span>
-                  <span className="text-right text-fog-100">+US${ivaMonto.toFixed(2)}</span>
+                  <span className="text-right text-fog-100">+{usd(ivaMonto)}</span>
                 </div>
               )}
             </div>
             <div className="flex items-center justify-between rounded-md border border-signal/40 p-2.5 font-mono text-2xs">
               <span className="text-fog-500">total</span>
-              <span className="tabular-nums text-signal">US${totalFinal.toFixed(2)}</span>
+              <span className="tabular-nums text-signal">{usd(totalFinal)}</span>
             </div>
           </div>
         )}

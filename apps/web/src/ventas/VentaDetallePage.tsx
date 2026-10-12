@@ -13,6 +13,7 @@ import { useSesion, useMiIdentidad, useIdentidad } from '../app/sesion';
 import { hasPermission } from '@brian/shared';
 import { puedeGestionarDespacho } from '@brian/ventas';
 import { useTasaGate } from '../app/RequireBcvRateGate';
+import { bs, dosDecimales, usd, usdConEspacio } from '../lib/moneda';
 import { useMemo, useState } from 'react';
 import { ChipEstado } from '../ui/chips';
 import { fechaCorta, haceRelativo } from '../ui/tiempo';
@@ -224,7 +225,7 @@ export default function VentaDetallePage() {
             <div className="flex justify-between gap-3">
               <dt className="font-mono text-2xs uppercase tracking-wider text-fog-600">total</dt>
               <dd className="font-mono text-3xl tabular-nums text-signal">
-                US$ {despacho.total.toFixed(2)}
+                {usdConEspacio(despacho.total)}
               </dd>
             </div>
             {esCredito ? (
@@ -233,10 +234,10 @@ export default function VentaDetallePage() {
                   saldo a cancelar · crédito
                 </dt>
                 <dd className="text-right font-mono text-sm tabular-nums text-fog-100">
-                  US$ {despacho.total.toFixed(2)}
+                  {usdConEspacio(despacho.total)}
                   {saldoBs !== null && (
                     <span className="block text-2xs text-fog-500">
-                      ≈ Bs {saldoBs.toFixed(2)} · tasa de hoy {tasa!.toFixed(2)}
+                      ≈ {bs(saldoBs)} · tasa de hoy {dosDecimales(tasa!)}
                     </span>
                   )}
                 </dd>
@@ -247,9 +248,9 @@ export default function VentaDetallePage() {
                   equivalente
                 </dt>
                 <dd className="text-right font-mono text-sm tabular-nums text-fog-100">
-                  ≈ Bs {saldoBs.toFixed(2)}
+                  ≈ {bs(saldoBs)}
                   <span className="block text-2xs text-fog-500">
-                    a la tasa de hoy {tasa!.toFixed(2)}
+                    a la tasa de hoy {dosDecimales(tasa!)}
                   </span>
                 </dd>
               </div>
@@ -273,9 +274,9 @@ export default function VentaDetallePage() {
                   {l.nombre}
                 </span>
                 <span className="shrink-0 text-right font-mono text-xs tabular-nums text-fog-500">
-                  {l.cantidad} × US${l.precio_unitario.toFixed(2)}
+                  {l.cantidad} × {usd(l.precio_unitario)}
                   <span className="ml-2 text-fog-100">
-                    US$ {(l.cantidad * l.precio_unitario).toFixed(2)}
+                    {usdConEspacio(l.cantidad * l.precio_unitario)}
                   </span>
                 </span>
               </div>
@@ -288,7 +289,7 @@ export default function VentaDetallePage() {
                 subtotal
               </span>
               <span className="font-mono text-sm tabular-nums text-fog-100">
-                US${despacho.subtotal.toFixed(2)}
+                {usd(despacho.subtotal)}
               </span>
             </div>
             {(() => {
@@ -304,11 +305,9 @@ export default function VentaDetallePage() {
                         descuento{' '}
                         {despacho.descuento_pct > 0
                           ? `${despacho.descuento_pct}%`
-                          : `US$${despacho.descuento_monto_usd?.toFixed(2)}`}
+                          : usd(despacho.descuento_monto_usd ?? 0)}
                       </span>
-                      <span className="font-mono text-sm tabular-nums">
-                        −US${descuentoMonto.toFixed(2)}
-                      </span>
+                      <span className="font-mono text-sm tabular-nums">−{usd(descuentoMonto)}</span>
                     </div>
                   )}
                   {mora > 0 && (
@@ -317,10 +316,10 @@ export default function VentaDetallePage() {
                         recargo por mora{' '}
                         {despacho.mora_pct > 0
                           ? `${despacho.mora_pct}%`
-                          : `US$${(despacho.mora_monto_usd ?? 0).toFixed(2)}`}
+                          : usd(despacho.mora_monto_usd ?? 0)}
                       </span>
                       <span className="font-mono text-sm tabular-nums text-fog-100">
-                        +US${mora.toFixed(2)}
+                        +{usd(mora)}
                       </span>
                     </div>
                   )}
@@ -330,7 +329,7 @@ export default function VentaDetallePage() {
                         IVA {despacho.iva_pct}%
                       </span>
                       <span className="font-mono text-sm tabular-nums text-fog-100">
-                        +US${iva.toFixed(2)}
+                        +{usd(iva)}
                       </span>
                     </div>
                   )}
@@ -342,7 +341,7 @@ export default function VentaDetallePage() {
                 total
               </span>
               <span className="font-mono text-lg tabular-nums text-signal">
-                US${despacho.total.toFixed(2)}
+                {usd(despacho.total)}
               </span>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { useTasaGate } from '../app/RequireBcvRateGate';
 import { Icon } from '../ui/icons';
 import { useSesion } from '../app/sesion';
 import { haceRelativo } from '../ui/tiempo';
+import { dosDecimales } from '../lib/moneda';
 
 /**
  * Pantalla `#/config/tasa`. La acción principal es UN botón grande de refresco
@@ -30,7 +31,7 @@ export default function BcvRatePage() {
     if (fetched === null) {
       setError('No se pudo consultar la API oficial. Revisa la conexión o usa la captura manual.');
     } else {
-      setAviso(`Tasa oficial aplicada: ${fetched.toFixed(2)} Bs/USD`);
+      setAviso(`Tasa oficial aplicada: ${dosDecimales(fetched)} Bs/USD`);
     }
   };
 
@@ -46,7 +47,7 @@ export default function BcvRatePage() {
     try {
       await guardarManual(valor);
       setManual('');
-      setAviso(`Tasa manual guardada: ${valor.toFixed(2)} Bs/USD`);
+      setAviso(`Tasa manual guardada: ${dosDecimales(valor)} Bs/USD`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -61,7 +62,7 @@ export default function BcvRatePage() {
         <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
           <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">Tasa vigente</p>
           <p className="mt-1 font-mono text-4xl tabular-nums text-fog-100">
-            {hayTasa ? tasa.toFixed(2) : '—'}
+            {hayTasa ? dosDecimales(tasa) : '—'}
             <span className="ml-2 font-sans text-sm font-medium text-fog-500">Bs/USD</span>
           </p>
           <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-fog-500">

@@ -6,6 +6,7 @@ import PageShell from '../app/PageShell';
 import { useSesion } from '../app/sesion';
 import { useMemo, type ReactNode } from 'react';
 import { Icon } from '../ui/icons';
+import { usd } from '../lib/moneda';
 
 /**
  * Ficha del cliente (DESIGN §5.3): indicadores (score/límite/plazo) arriba,
@@ -151,7 +152,7 @@ export default function ClienteDetallePage() {
             condiciones de crédito
           </h2>
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
-            <Campo label="límite">US${cliente.credito_limite.toFixed(2)}</Campo>
+            <Campo label="límite">{usd(cliente.credito_limite)}</Campo>
             <Campo label="plazo">{cliente.credito_dias} días</Campo>
             <Campo label="score" className="sm:col-span-2">
               {cliente.score != null ? (

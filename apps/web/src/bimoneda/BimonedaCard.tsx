@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../ui/icons';
 import { useTasaGate } from '../app/RequireBcvRateGate';
 import { haceRelativo } from '../ui/tiempo';
+import { dosDecimales } from '../lib/moneda';
 
 interface BimonedaCardProps {
   roles: readonly Role[];
@@ -23,7 +24,9 @@ export default function BimonedaCard({ roles }: BimonedaCardProps) {
     setAviso(null);
     const v = await refrescar();
     setAviso(
-      v === null ? 'Sin respuesta de la API oficial' : `Tasa actualizada: ${v.toFixed(2)} Bs/USD`,
+      v === null
+        ? 'Sin respuesta de la API oficial'
+        : `Tasa actualizada: ${dosDecimales(v)} Bs/USD`,
     );
   };
 
@@ -38,7 +41,7 @@ export default function BimonedaCard({ roles }: BimonedaCardProps) {
             Tasa BCV · {origen}
           </p>
           <p className="mt-1 font-mono text-2xl tabular-nums text-fog-100">
-            {tasa !== null ? tasa.toFixed(2) : '—'}
+            {tasa !== null ? dosDecimales(tasa) : '—'}
             <span className="ml-1.5 font-sans text-xs font-medium text-fog-500">Bs/USD</span>
           </p>
           <p className="mt-1 text-2xs text-fog-500">

@@ -14,6 +14,7 @@ import { puedeGestionarDespacho } from '@brian/ventas';
 import { useMemo, useState } from 'react';
 import { ChipEstado } from '../ui/chips';
 import { IconAction } from '../ui/actions';
+import { usdConEspacio } from '../lib/moneda';
 import { DateField, FilterBar, FilterChip, FilterGroup, ToolbarFooter } from '../ui/filtros';
 import { normaliza } from '../lib/texto';
 import { diaLocal, diaLocalHace } from '../lib/fechas';
@@ -269,7 +270,7 @@ export default function VentasPage() {
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-1">
                       <span className="font-mono text-sm tabular-nums text-fog-100">
-                        US$ {d.total.toFixed(2)}
+                        {usdConEspacio(d.total)}
                       </span>
                       <ChipEstado estado={d.estado} />
                     </span>

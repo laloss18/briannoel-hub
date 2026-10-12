@@ -7,6 +7,7 @@ import { DexieOutbox } from '../sync/db';
 import { Link } from 'react-router-dom';
 import { Icon, type IconName } from '../ui/icons';
 import { useSesion } from './sesion';
+import { dosDecimales } from '../lib/moneda';
 
 const GRADOS = ['A', 'B', 'C', 'D', 'E'] as const;
 
@@ -114,7 +115,7 @@ export default function HomePage() {
         />
         <Kpi
           label="tasa BCV"
-          value={tasa != null ? tasa.toFixed(2) : '—'}
+          value={tasa != null ? dosDecimales(tasa) : '—'}
           hint={origen ? `Bs/USD · ${origen}` : 'sin configurar'}
           cargando={cargando}
         />
