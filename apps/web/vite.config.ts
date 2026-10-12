@@ -47,4 +47,23 @@ export default defineConfig({
     host: true,
     allowedHosts: true,
   },
+  build: {
+    // Separa los vendors grandes en chunks propios para que el shell se
+    // reutilice de caché al desplegar (el vendor casi nunca cambia).
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (id.includes('react-router')) return 'vendor-router';
+          if (id.includes('react-dom') || id.includes('scheduler') || id.includes('/react/')) {
+            return 'vendor-react';
+          }
+          if (id.includes('@supabase') || id.includes('supabase-js')) return 'vendor-supabase';
+          if (id.includes('dexie')) return 'vendor-dexie';
+          if (id.includes('zod')) return 'vendor-zod';
+          return 'vendor';
+        },
+      },
+    },
+  },
 });
