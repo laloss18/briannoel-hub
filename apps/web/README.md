@@ -1,32 +1,70 @@
-# React + TypeScript + Vite
+# @brian/web
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+PWA del hub: React 19 + Vite + TypeScript + Tailwind v4, con un espejo local en
+IndexedDB (Dexie) y sincronización vía `@brian/sync-engine`.
 
-Currently, two official plugins are available:
+## Desarrollo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+# desde la raíz del monorepo
+pnpm install
+cp apps/web/.env.example apps/web/.env.local   # VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY
+pnpm dev                                       # http://localhost:5173
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+En `import.meta.env.DEV` la app **auto-siembra datos de demostración** cuando el
+espejo está vacío: `main.tsx` llama a `seedDemoSiVacio()` (`src/dev/demoData.ts`)
+para poder recorrer todas las secciones sin conectarse a Supabase. El seed no
+pasa por el outbox (solo llena el mirror local) y se limpia con
+`limpiarDemoData()` (también desde la sección Config).
+
+## Entorno
+
+- `VITE_SUPABASE_URL` — URL del proyecto (1 solo proyecto, MVP).
+- `VITE_SUPABASE_PUBLISHABLE_KEY` — clave pública (equivale a la antigua _anon key_).
+- La _secret key_ nunca llega al cliente.
+
+Gate de clave: la app **no entra al hub sin la tasa BCV** configurada
+(`RequireBcvRate` → `getAppConfig()`); si falta, muestra la pantalla de tasa.
+
+## Estructura
+
+- `src/app/` — shell, `router.tsx` (`HashRouter`), `PageShell`, sidebar y sesión.
+- `src/<sección>/` — una carpeta por sección: `clientes` (incluye zonas),
+  `ventas`, `catalogo`, `personal`, `config`, `auth`, `sync`, `bimoneda`, `dev`.
+- `src/ui/` — componentes y tokens de presentación (iconos, filtros, fotos…).
+- `src/lib/` — utilidades puras (texto, fechas, geo, fotos).
+
+### Convenciones de UI
+
+- **Todo formulario y detalle es una página** dentro de `PageShell` (título +
+  volver). El único diálogo es `NuevaZonaDialog` (alta rápida anidada).
+- El routing usa **`HashRouter`**: los deep-links (`#/clientes/:id`) y el botón
+  atrás de Android funcionan sin rewrites del servidor.
+- Los formularios de edición **precargan una sola vez** (`useRef` + `useEffect`)
+  para no pisar lo que el usuario escribe durante una re-sincronización.
+
+## Scripts
+
+| Script                               | Qué hace                         |
+| ------------------------------------ | -------------------------------- |
+| `pnpm --filter @brian/web dev`       | Dev server (HTTPS autofirmado)   |
+| `pnpm --filter @brian/web build`     | `tsc -b` + `vite build`          |
+| `pnpm --filter @brian/web typecheck` | `tsc -b --pretty false` (strict) |
+| `pnpm --filter @brian/web lint`      | ESLint (`--max-warnings=0`)      |
+| `pnpm --filter @brian/web test`      | Vitest                           |
+
+Los umbrales de cobertura de los paquetes viven en `vitest.shared.ts` (raíz); el
+web es **warn-only** (sin umbral bloqueante) por ahora.
+
+## Smoke / E2E
+
+```bash
+pnpm dev                                  # en una terminal
+node tools/smoke/smoke.mjs                # desde la raíz
+node tools/smoke/demo-check.mjs           # verifica el seed de demostración
+```
+
+Los scripts usan `playwright-core` con Chrome instalado (`channel: 'chrome'`),
+simulan un viewport móvil (390×844) y `demo-check.mjs` además ignora el
+certificado autofirmado del dev server (`ignoreHTTPSErrors`).
