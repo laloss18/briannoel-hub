@@ -23,36 +23,72 @@ function iso(offsetMs: number): string {
 const H = 3600_000;
 const D = 24 * H;
 
+/**
+ * Ids fijos de la demo. Todos los que alimentan entidades con `baseRecordSchema`
+ * (zonas, items, clientes, personal, despachos) son **ULIDs válidos** (26 chars
+ * `[0-9A-HJKMNP-TV-Z]`): los repos parsean con `schema.safeParse` y descartan
+ * cualquier fila cuyo id no lo sea. `app_users` y `app_config` no piden ULID.
+ */
+const ZONA_NORTE = '01M4PZ0MV9H0NXER8J8743XBM5';
+const ZONA_CENTRO = '01M4PZ0MVFNESZ1GKQV7EVPFWQ';
+const ZONA_HATILLO = '01M4PZ0MVGYJJSQZSYNZ3QRTQK';
+const ITEM_1 = '01M4PZ0MVGGEK7Z0SMQVTP9B0X';
+const ITEM_2 = '01M4PZ0MVGN68DBFNV9KJ3ZSC9';
+const ITEM_3 = '01M4PZ0MVGS6SQZGTMYYDPF0Q0';
+const ITEM_4 = '01M4PZ0MVGS1DKGF4VS2366636';
+const ITEM_5 = '01M4PZ0MVGVQA8HX8YF513N080';
+const CLIENTE_1 = '01M4PZ0MVGSWJ2N0KM9DKJCYX1';
+const CLIENTE_2 = '01M4PZ0MVGR2CWFNK4WQVPFYJP';
+const CLIENTE_3 = '01M4PZ0MVHYFBXN289SSBXBY0X';
+const CLIENTE_4 = '01M4PZ0MVHN8NA72TWXAMHXEPB';
+const CLIENTE_5 = '01M4PZ0MVHSWJAD7NAF7CYNHW6';
+const CLIENTE_6 = '01M4PZ0MVH7RBEQ3V5WEPHMEMV';
+const PERSONAL_1 = '01M4PZ0MVHNKZKHAJ0RCKQYCHJ';
+const PERSONAL_2 = '01M4PZ0MVH2DM8QGXVFWTZYK42';
+const PERSONAL_3 = '01M4PZ0MVHY4BE8JNF33J7Z6JC';
+const PERSONAL_4 = '01M4PZ0MVHPYP5ZBJ1KBQKNWD3';
+const DESPACHO_1 = '01M4PZ0MVHV76CSXY3RZVST410';
+const DESPACHO_2 = '01M4PZ0MVJVX0BG81VR0NN2PAJ';
+const DESPACHO_3 = '01M4PZ0MVJGET4X28A3XXTSEAG';
+const DESPACHO_4 = '01M4PZ0MVJQY9VQV02KYENFDCZ';
+
+const APP_USER_1 = '10000000-0000-4000-8000-000000000001';
+const APP_USER_2 = '10000000-0000-4000-8000-000000000002';
+const APP_USER_3 = '10000000-0000-4000-8000-000000000003';
+const APP_USER_4 = '10000000-0000-4000-8000-000000000004';
+const APP_USER_5 = '10000000-0000-4000-8000-000000000005';
+const APP_USER_6 = '10000000-0000-4000-8000-000000000006';
+
 export const DEMO_IDS: readonly string[] = [
   'global',
-  'demo-zon-norte',
-  'demo-zon-centro',
-  'demo-zon-hatillo',
-  'demo-ite-1',
-  'demo-ite-2',
-  'demo-ite-3',
-  'demo-ite-4',
-  'demo-ite-5',
-  'demo-cli-1',
-  'demo-cli-2',
-  'demo-cli-3',
-  'demo-cli-4',
-  'demo-cli-5',
-  'demo-cli-6',
-  'demo-per-1',
-  'demo-per-2',
-  'demo-per-3',
-  'demo-per-4',
-  '10000000-0000-4000-8000-000000000001',
-  '10000000-0000-4000-8000-000000000002',
-  '10000000-0000-4000-8000-000000000003',
-  '10000000-0000-4000-8000-000000000004',
-  '10000000-0000-4000-8000-000000000005',
-  '10000000-0000-4000-8000-000000000006',
-  'demo-desp-1',
-  'demo-desp-2',
-  'demo-desp-3',
-  'demo-desp-4',
+  ZONA_NORTE,
+  ZONA_CENTRO,
+  ZONA_HATILLO,
+  ITEM_1,
+  ITEM_2,
+  ITEM_3,
+  ITEM_4,
+  ITEM_5,
+  CLIENTE_1,
+  CLIENTE_2,
+  CLIENTE_3,
+  CLIENTE_4,
+  CLIENTE_5,
+  CLIENTE_6,
+  PERSONAL_1,
+  PERSONAL_2,
+  PERSONAL_3,
+  PERSONAL_4,
+  APP_USER_1,
+  APP_USER_2,
+  APP_USER_3,
+  APP_USER_4,
+  APP_USER_5,
+  APP_USER_6,
+  DESPACHO_1,
+  DESPACHO_2,
+  DESPACHO_3,
+  DESPACHO_4,
 ];
 
 function buildRows(): DemoRow[] {
@@ -72,7 +108,7 @@ function buildRows(): DemoRow[] {
 
   rows.push(
     {
-      id: 'demo-zon-norte',
+      id: ZONA_NORTE,
       entity: 'zonas',
       created_at: iso(30 * D),
       updated_at: iso(27 * D),
@@ -86,7 +122,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-zon-centro',
+      id: ZONA_CENTRO,
       entity: 'zonas',
       created_at: iso(29 * D),
       updated_at: iso(25 * D),
@@ -100,7 +136,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-zon-hatillo',
+      id: ZONA_HATILLO,
       entity: 'zonas',
       created_at: iso(28 * D),
       updated_at: iso(24 * D),
@@ -117,7 +153,7 @@ function buildRows(): DemoRow[] {
 
   rows.push(
     {
-      id: 'demo-ite-1',
+      id: ITEM_1,
       entity: 'items',
       created_at: iso(20 * D),
       updated_at: iso(20 * D),
@@ -127,7 +163,7 @@ function buildRows(): DemoRow[] {
       precio_credito: 4.85,
     },
     {
-      id: 'demo-ite-2',
+      id: ITEM_2,
       entity: 'items',
       created_at: iso(19 * D),
       updated_at: iso(19 * D),
@@ -137,7 +173,7 @@ function buildRows(): DemoRow[] {
       precio_credito: 7.9,
     },
     {
-      id: 'demo-ite-3',
+      id: ITEM_3,
       entity: 'items',
       created_at: iso(18 * D),
       updated_at: iso(18 * D),
@@ -147,7 +183,7 @@ function buildRows(): DemoRow[] {
       precio_credito: 1.45,
     },
     {
-      id: 'demo-ite-4',
+      id: ITEM_4,
       entity: 'items',
       created_at: iso(17 * D),
       updated_at: iso(17 * D),
@@ -157,7 +193,7 @@ function buildRows(): DemoRow[] {
       precio_credito: 1.35,
     },
     {
-      id: 'demo-ite-5',
+      id: ITEM_5,
       entity: 'items',
       created_at: iso(16 * D),
       updated_at: iso(16 * D),
@@ -170,7 +206,7 @@ function buildRows(): DemoRow[] {
 
   rows.push(
     {
-      id: 'demo-cli-1',
+      id: CLIENTE_1,
       entity: 'clientes',
       created_at: iso(25 * D),
       updated_at: iso(12 * D),
@@ -182,7 +218,7 @@ function buildRows(): DemoRow[] {
       direccion: 'Av. Principal, casa 12, Urb. El Rosal',
       lat: 10.4806,
       lng: -66.9036,
-      zona_id: 'demo-zon-centro',
+      zona_id: ZONA_CENTRO,
       consentimiento: { fecha: iso(25 * D), foto_casa: false, foto_documento: false, aviso_documento: false },
       credito_limite: 300,
       credito_dias: 30,
@@ -193,7 +229,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-cli-2',
+      id: CLIENTE_2,
       entity: 'clientes',
       created_at: iso(22 * D),
       updated_at: iso(10 * D),
@@ -205,7 +241,7 @@ function buildRows(): DemoRow[] {
       direccion: 'Calle 2 de Mayo, entre Sucre y Bolívar',
       lat: 10.498,
       lng: -66.868,
-      zona_id: 'demo-zon-norte',
+      zona_id: ZONA_NORTE,
       consentimiento: { fecha: iso(22 * D), foto_casa: true, foto_documento: false, aviso_documento: false },
       credito_limite: 500,
       credito_dias: 30,
@@ -215,7 +251,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-cli-3',
+      id: CLIENTE_3,
       entity: 'clientes',
       created_at: iso(14 * D),
       updated_at: iso(8 * D),
@@ -224,7 +260,7 @@ function buildRows(): DemoRow[] {
       documento: 'V-90457812',
       telefono: '0424-5566778',
       direccion: 'Av. San Rafael, local 5, Centro Comercial Montalbán',
-      zona_id: 'demo-zon-norte',
+      zona_id: ZONA_NORTE,
       consentimiento: { fecha: iso(14 * D), foto_casa: false, foto_documento: true, aviso_documento: true },
       credito_limite: 200,
       credito_dias: 15,
@@ -235,7 +271,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-cli-4',
+      id: CLIENTE_4,
       entity: 'clientes',
       created_at: iso(6 * D),
       updated_at: iso(2 * D),
@@ -246,7 +282,7 @@ function buildRows(): DemoRow[] {
       direccion: 'Res. Los Trinitarios, edif. 3, apto 12-B',
       lat: 10.432,
       lng: -66.813,
-      zona_id: 'demo-zon-hatillo',
+      zona_id: ZONA_HATILLO,
       consentimiento: { fecha: iso(6 * D), foto_casa: false, foto_documento: false, aviso_documento: false },
       credito_limite: 1,
       credito_dias: 15,
@@ -257,7 +293,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-cli-5',
+      id: CLIENTE_5,
       entity: 'clientes',
       created_at: iso(11 * D),
       updated_at: iso(5 * D),
@@ -266,7 +302,7 @@ function buildRows(): DemoRow[] {
       documento: 'J-30555001-8',
       telefono: '0412-4455667',
       direccion: 'Av. Boyacá, frente a la Plaza Bolívar',
-      zona_id: 'demo-zon-centro',
+      zona_id: ZONA_CENTRO,
       consentimiento: { fecha: iso(11 * D), foto_casa: false, foto_documento: false, aviso_documento: false },
       credito_limite: 150,
       credito_dias: 30,
@@ -276,7 +312,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-cli-6',
+      id: CLIENTE_6,
       entity: 'clientes',
       created_at: iso(9 * D),
       updated_at: iso(3 * D),
@@ -284,7 +320,7 @@ function buildRows(): DemoRow[] {
       nombre: 'Panadería Doña Rosalía',
       documento: 'V-81234567',
       telefono: '0212-3344556',
-      zona_id: 'demo-zon-hatillo',
+      zona_id: ZONA_HATILLO,
       consentimiento: { fecha: iso(9 * D), foto_casa: false, foto_documento: false, aviso_documento: false },
       credito_limite: 250,
       credito_dias: 30,
@@ -297,7 +333,7 @@ function buildRows(): DemoRow[] {
 
   rows.push(
     {
-      id: 'demo-per-1',
+      id: PERSONAL_1,
       entity: 'personal',
       created_at: iso(10 * D),
       updated_at: iso(10 * D),
@@ -310,7 +346,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-per-2',
+      id: PERSONAL_2,
       entity: 'personal',
       created_at: iso(9 * D),
       updated_at: iso(9 * D),
@@ -322,7 +358,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-per-3',
+      id: PERSONAL_3,
       entity: 'personal',
       created_at: iso(8 * D),
       updated_at: iso(8 * D),
@@ -334,7 +370,7 @@ function buildRows(): DemoRow[] {
       updated_by: ADMIN_EMAIL,
     },
     {
-      id: 'demo-per-4',
+      id: PERSONAL_4,
       entity: 'personal',
       created_at: iso(7 * D),
       updated_at: iso(7 * D),
@@ -430,18 +466,18 @@ function buildRows(): DemoRow[] {
   const d2 = iso(5 * H);
   rows.push(
     {
-      id: 'demo-desp-1',
+      id: DESPACHO_1,
       entity: 'despachos',
       created_at: d1,
       updated_at: d1,
       deleted_at: null,
       nro_control: 'VTA-0001',
-      cliente_id: 'demo-cli-1',
+      cliente_id: CLIENTE_1,
       cliente_nombre: 'Mercado La Esquina',
       condicion: 'credito',
       lineas: [
-        { item_id: 'demo-ite-1', nombre: 'Aceite vegetal 1 L', cantidad: 6, precio_unitario: 4.5 },
-        { item_id: 'demo-ite-2', nombre: 'Arroz 5 kg', cantidad: 4, precio_unitario: 7.25 },
+        { item_id: ITEM_1, nombre: 'Aceite vegetal 1 L', cantidad: 6, precio_unitario: 4.5 },
+        { item_id: ITEM_2, nombre: 'Arroz 5 kg', cantidad: 4, precio_unitario: 7.25 },
       ],
       subtotal: 56,
       total: 56,
@@ -465,18 +501,18 @@ function buildRows(): DemoRow[] {
       entregado_por: null,
     },
     {
-      id: 'demo-desp-2',
+      id: DESPACHO_2,
       entity: 'despachos',
       created_at: d2,
       updated_at: d2,
       deleted_at: null,
       nro_control: 'VTA-0002',
-      cliente_id: 'demo-cli-3',
+      cliente_id: CLIENTE_3,
       cliente_nombre: 'Licorería San Rafael',
       condicion: 'contado',
       lineas: [
-        { item_id: 'demo-ite-3', nombre: 'Azúcar 1 kg', cantidad: 10, precio_unitario: 1.3 },
-        { item_id: 'demo-ite-4', nombre: 'Harina de maíz 1 kg', cantidad: 5, precio_unitario: 1.2 },
+        { item_id: ITEM_3, nombre: 'Azúcar 1 kg', cantidad: 10, precio_unitario: 1.3 },
+        { item_id: ITEM_4, nombre: 'Harina de maíz 1 kg', cantidad: 5, precio_unitario: 1.2 },
       ],
       subtotal: 19,
       total: 19,
@@ -500,16 +536,16 @@ function buildRows(): DemoRow[] {
       entregado_por: null,
     },
     {
-      id: 'demo-desp-3',
+      id: DESPACHO_3,
       entity: 'despachos',
       created_at: iso(3 * D),
       updated_at: iso(3 * D),
       deleted_at: null,
       nro_control: 'VTA-0003',
-      cliente_id: 'demo-cli-2',
+      cliente_id: CLIENTE_2,
       cliente_nombre: 'Abasto Los Álamos',
       condicion: 'credito',
-      lineas: [{ item_id: 'demo-ite-5', nombre: 'Café molido 500 g', cantidad: 12, precio_unitario: 4 }],
+      lineas: [{ item_id: ITEM_5, nombre: 'Café molido 500 g', cantidad: 12, precio_unitario: 4 }],
       subtotal: 48,
       total: 48,
       tasa_bcv: 88,
@@ -532,18 +568,18 @@ function buildRows(): DemoRow[] {
       entregado_por: 'Brián Noel Prieto',
     },
     {
-      id: 'demo-desp-4',
+      id: DESPACHO_4,
       entity: 'despachos',
       created_at: iso(6 * D),
       updated_at: iso(6 * D),
       deleted_at: null,
       nro_control: 'VTA-0004',
-      cliente_id: 'demo-cli-5',
+      cliente_id: CLIENTE_5,
       cliente_nombre: 'Bodegón El Progreso',
       condicion: 'credito',
       lineas: [
-        { item_id: 'demo-ite-5', nombre: 'Café molido 500 g', cantidad: 10, precio_unitario: 4 },
-        { item_id: 'demo-ite-4', nombre: 'Harina de maíz 1 kg', cantidad: 10, precio_unitario: 1.2 },
+        { item_id: ITEM_5, nombre: 'Café molido 500 g', cantidad: 10, precio_unitario: 4 },
+        { item_id: ITEM_4, nombre: 'Harina de maíz 1 kg', cantidad: 10, precio_unitario: 1.2 },
       ],
       subtotal: 52,
       total: 49.4,
