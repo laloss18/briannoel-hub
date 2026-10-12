@@ -3,12 +3,12 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildPinState, mobileContext, nav, seedMirror, sessionFor, unlock } from './lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(process.cwd(), 'tools', 'smoke', 'shots');
 const BASE = 'https://localhost:5173';
 const ROOT = 'C:/Users/Luis/Desktop/nprojects/briannoel hub';
-const PIN = '1234';
 
 const log = (...a) => console.error('[demo-check]', ...a);
 
@@ -57,13 +57,7 @@ try {
     }
   }
   if (!browser) throw new Error('no se pudo lanzar chromium');
-  const context = await browser.newContext({
-    viewport: { width: 390, height: 844 },
-    deviceScaleFactor: 2,
-    isMobile: true,
-    hasTouch: true,
-    ignoreHTTPSErrors: true,
-  });
+  const context = await mobileContext(browser);
   const page = await context.newPage();
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(`[console] ${m.text()}`);
@@ -82,70 +76,10 @@ try {
   if (!cargado) throw new Error('dev server no respondió al browser');
   await page.waitForTimeout(1600);
 
-  const seed = async () => {
-    const now = new Date().toISOString();
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    const key = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode('1234'),
-      'PBKDF2',
-      false,
-      ['deriveBits'],
-    );
-    const bits = await crypto.subtle.deriveBits(
-      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-      key,
-      256,
-    );
-    const b64 = (buf) => {
-      const b = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
-      let s = '';
-      for (const x of b) s += String.fromCharCode(x);
-      return btoa(s);
-    };
-    const state = {
-      hash: b64(bits),
-      salt: b64(salt),
-      iterations: 100000,
-      attempts: 0,
-      lockout_until: null,
-      session: {
-        email: 'ed.alv1098@gmail.com',
-        username: 'Brián Noel Prieto',
-        roles: ['admin'],
-        refresh_token: 'demo-check',
-        last_active_at: now,
-      },
-    };
-    const db = await new Promise((res, rej) => {
-      const r = indexedDB.open('briannoel-hub');
-      r.onsuccess = () => res(r.result);
-      r.onerror = () => rej(r.error);
-    });
-    await new Promise((res, rej) => {
-      const tx = db.transaction('pin', 'readwrite');
-      tx.objectStore('pin').put({ key: 'state', state });
-      tx.oncomplete = () => res();
-      tx.onerror = () => rej(tx.error);
-    });
-    db.close();
-    return 'pin ok';
-  };
-
-  const unlock = async (p) => {
-    const input = p.locator('#pin-unlock');
-    if ((await input.count()) === 0) return;
-    await input.fill(PIN);
-    await p.locator('form button[type="submit"]').click();
-    await input.waitFor({ state: 'detached', timeout: 10000 });
-  };
-
   const grab = async (ruta, archivo) => {
     // Navegación SPA por hash (NO `page.goto`, que recargaría la app y su boot
     // de auth volvería a mostrar el bloqueo de PIN).
-    await page.evaluate((h) => {
-      location.hash = h;
-    }, `#/${ruta}`);
+    await nav(page, ruta);
     await page.waitForTimeout(1300);
     await page.screenshot({ path: join(OUT, archivo), fullPage: true });
   };
@@ -174,7 +108,14 @@ try {
   });
   log('mirror tras auto-seed:', JSON.stringify({ total: recs.total, porEntidad: recs.porEntidad }));
 
-  await page.evaluate(seed);
+  const state = await buildPinState(
+    sessionFor({
+      email: 'ed.alv1098@gmail.com',
+      username: 'Brián Noel Prieto',
+      token: 'demo-check',
+    }),
+  );
+  await seedMirror(page, { state });
   await page.reload({ waitUntil: 'load' });
   await page.waitForTimeout(1000);
   const estadoPreUnlock = await page.evaluate(async () => ({
@@ -207,9 +148,7 @@ try {
   await grab('zonas', '09-zonas.png');
   await grab('catalogo', '10-catalogo.png');
 
-  await page.evaluate(() => {
-    location.hash = '#/config/usuarios';
-  });
+  await nav(page, 'config/usuarios');
   await page.waitForTimeout(1300);
   const txtUsuarios = await page.locator('body').innerText();
   log('hash:', await page.evaluate(() => location.hash));
