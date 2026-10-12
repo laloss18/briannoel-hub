@@ -141,8 +141,12 @@ try {
   };
 
   const grab = async (ruta, archivo) => {
-    await page.goto(`${BASE}/#/${ruta}`, { waitUntil: 'load' });
-    await page.waitForTimeout(1100);
+    // Navegación SPA por hash (NO `page.goto`, que recargaría la app y su boot
+    // de auth volvería a mostrar el bloqueo de PIN).
+    await page.evaluate((h) => {
+      location.hash = h;
+    }, `#/${ruta}`);
+    await page.waitForTimeout(1300);
     await page.screenshot({ path: join(OUT, archivo), fullPage: true });
   };
 
@@ -203,8 +207,10 @@ try {
   await grab('zonas', '09-zonas.png');
   await grab('catalogo', '10-catalogo.png');
 
-  await page.goto(`${BASE}/#/config/usuarios`, { waitUntil: 'load' });
-  await page.waitForTimeout(1100);
+  await page.evaluate(() => {
+    location.hash = '#/config/usuarios';
+  });
+  await page.waitForTimeout(1300);
   const txtUsuarios = await page.locator('body').innerText();
   log('hash:', await page.evaluate(() => location.hash));
   log('texto usuarios (primeros 900):\n' + txtUsuarios.slice(0, 900));
