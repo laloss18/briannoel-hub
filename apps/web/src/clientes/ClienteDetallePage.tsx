@@ -45,7 +45,7 @@ export default function ClienteDetallePage() {
 
   return (
     <PageShell eyebrow="ficha de cliente" titulo={cliente.nombre} icono="users">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         {/* Indicadores: el dato de instrumento, en cifra grande */}
         <Section>
           <div className="grid grid-cols-3 gap-3">

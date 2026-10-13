@@ -53,7 +53,7 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
 
   return (
     <PageShell titulo="Configurar tasa BCV" icono="coins">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <div className="rounded-2xl border border-ink-700 bg-ink-900 p-4 shadow-card">
           <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
             Para operar necesitas la tasa BCV

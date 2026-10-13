@@ -1,4 +1,4 @@
-﻿import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
   listDespachos,
@@ -201,7 +201,7 @@ export default function VentaDetallePage() {
       icono="cart"
       acciones={acciones}
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         {!hayAcciones && <p className="text-2xs text-fog-600">{notaAcciones}</p>}
 
         {/* 1 · Resumen de ventas: pedido, cliente, total, saldo y estado — lo
@@ -397,7 +397,7 @@ export default function VentaDetallePage() {
 
           <div className="mt-3 border-t border-ink-800 pt-3">
             <h3 className={eyebrow}>seguimiento · {hitos.length}</h3>
-            <ol className="mt-3 flex flex-col gap-4 border-l border-ink-700 pl-4">
+            <ol className="mt-3 flex flex-col gap-5 border-l border-ink-700 pl-4">
               {hitos.map((h, i) => (
                 <li key={i} className="relative">
                   <span

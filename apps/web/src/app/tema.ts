@@ -30,7 +30,7 @@ function aplicarTema(tema: Tema): void {
   }
 
   const meta = document.querySelector('meta[name="theme-color"]');
-  meta?.setAttribute('content', tema === 'oscuro' ? '#0b1220' : '#f4f5f7');
+  meta?.setAttribute('content', tema === 'oscuro' ? '#09090b' : '#fafafa');
 }
 
 /** Estado del tema para React: lee el aplicado y lo cambia en vivo. */

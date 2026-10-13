@@ -71,7 +71,7 @@ export default function ClientesPage() {
           : undefined
       }
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <FilterBar
           searchValue={busqueda}
           onSearchChange={setBusqueda}

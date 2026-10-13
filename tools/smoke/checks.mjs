@@ -218,7 +218,7 @@ ok(
   `data-theme=${claro.theme}`,
 );
 ok('color-scheme light en claro', claro.colorScheme === 'light', claro.colorScheme);
-ok('fondo claro en claro', claro.bg === 'rgb(244, 245, 247)', claro.bg);
+ok('fondo claro en claro', claro.bg === 'rgb(250, 250, 250)', claro.bg);
 
 await ir('ventas');
 ok(
@@ -441,7 +441,7 @@ await page.waitForTimeout(400);
 const oscuro = await estilos();
 ok('tema oscuro activo', oscuro.theme === 'dark', `data-theme=${oscuro.theme}`);
 ok('color-scheme dark en oscuro', oscuro.colorScheme === 'dark', oscuro.colorScheme);
-ok('fondo oscuro en oscuro', oscuro.bg === 'rgb(11, 18, 32)', oscuro.bg);
+ok('fondo oscuro en oscuro', oscuro.bg === 'rgb(9, 9, 11)', oscuro.bg);
 
 await ir('config/tasa');
 await page.waitForTimeout(700);

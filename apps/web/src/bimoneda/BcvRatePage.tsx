@@ -57,7 +57,7 @@ export default function BcvRatePage() {
 
   return (
     <PageShell titulo="Tasa BCV" icono="coins" volverA="/config">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         {/* Cifra de instrumento */}
         <div className="rounded-2xl border border-ink-700 bg-ink-900 p-4 shadow-card">
           <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">Tasa vigente</p>

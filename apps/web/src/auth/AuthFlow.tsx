@@ -164,7 +164,7 @@ function SetupPinScreen({ auth }: { auth: UseAuthResult }) {
 
   return (
     <Card title="Crea tu PIN" hint="4 a 8 dígitos. Es la llave para abrir el hub sin conexión.">
-      <form onSubmit={submit} className="flex flex-col gap-4">
+      <form onSubmit={submit} className="flex flex-col gap-5">
         <div>
           <label
             className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
@@ -258,7 +258,7 @@ function UnlockScreen({ auth }: { auth: UseAuthResult }) {
         auth.state.locked ? 'Demasiados intentos. Espera 60 s o pide ayuda al admin.' : undefined
       }
     >
-      <form onSubmit={submit} className="flex flex-col gap-4">
+      <form onSubmit={submit} className="flex flex-col gap-5">
         <label
           className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
           htmlFor="pin-unlock"

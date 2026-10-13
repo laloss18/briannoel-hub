@@ -61,10 +61,11 @@ En consecuencia:
 
 ## 3. Tokens de color (tinta + naranja de señal, paleta DUAL)
 
-Paleta AUDITORA: un solo acento (naranja), neutros azul-tinta, un verde de éxito
-y un rojo de error — ambos desaturados y ceñidos a su semántica. **Nunca** se
-añade otro acento de color; el acento se usa en TODA la página de forma
-coherente (regla `color-consistency-lock`).
+Paleta AUDITORA (estilo OpenRouter, 2026-10-13): un solo acento (naranja
+claro), neutros **casi puros** (gris zinc, sin tinte azul), un verde de éxito
+y un rojo de error — ambos ceñidos a su semántica. **Nunca** se añade otro
+acento de color; el acento se usa en TODA la página de forma coherente (regla
+`color-consistency-lock`).
 
 > **Paleta dual (la verdad vive en `index.css`):** la app es **claro por
 > defecto** (`:root`) y **oscuro** vía `[data-theme='dark']` (ver
@@ -79,22 +80,22 @@ coherente (regla `color-consistency-lock`).
 
 | Token          | Oscuro (`data-theme='dark'`) | Claro (defecto) | Uso                                                                           |
 | -------------- | ---------------------------- | --------------- | ----------------------------------------------------------------------------- |
-| `ink-950`      | `#0b1220`                    | `#f4f5f7`       | Fondo de página.                                                              |
-| `ink-900`      | `#101a2e`                    | `#ffffff`       | Superficie de tarjetas/inputs (elevación 1).                                  |
-| `ink-800`      | `#16233b`                    | `#eceef2`       | Superficie elevada / hover de inputs (elevación 2).                           |
-| `ink-700`      | `#223351`                    | `#d0d5dd`       | Bordes (hairline estándar).                                                   |
-| `ink-600`      | `#6b789a`                    | `#838a98`       | Borde de control — identifica controles (4.26:1 oscuro / 3.18:1 claro sobre página). |
-| `signal`       | `#fb923c`                    | `#ea580c`       | **ÚNICO acento**: RELLENO del CTA primario, foco, hit del reloj. Naranja de marca (distribución/energía); AA con `on-signal` encima. |
-| `signal-soft`  | `#f97316`                    | `#c2410c`       | Hover del CTA primario (se oscurece).                                         |
-| `signal-strong`| `#fb923c`                    | `#b45309`       | Acento como TEXTO/borde sobre la página (claro 4.7:1 AA).                     |
-| `on-signal`    | `#0b1220`                    | `#141a24`       | Texto sobre el relleno `signal` (AA en ambos temas).                          |
-| `fog-100`      | `#e7eaf0`                    | `#141a24`       | Texto primario (16:1 en ambos temas).                                         |
-| `fog-300`      | `#c2cad8`                    | `#3d4553`       | Texto secundario.                                                             |
-| `fog-500`      | `#8b94a8`                    | `#575f6d`       | Texto terciario/labels (≥5.7:1).                                              |
-| `fog-600`      | `#7f88a0`                    | `#656d7c`       | Meta-texto/micro-labels (mono): 5.3:1 oscuro / 4.77:1 claro sobre página.     |
-| `fog-700`      | `#5b6479`                    | `#98a0ae`       | **Solo decorativo/bordes**: NO cumple AA → nunca para texto legible.           |
-| `danger`       | `#e26d6d`                    | `#b3261e`       | Errores, destructive.                                                         |
-| `ok`           | `#4cbf8f`                    | `#157347`       | Éxito, conectado.                                                             |
+| `ink-950`      | `#09090b`                    | `#fafafa`       | Fondo de página (casi negro ↔ casi blanco, sin tinte).                        |
+| `ink-900`      | `#18181b`                    | `#ffffff`       | Superficie de tarjetas/inputs (elevación 1).                                  |
+| `ink-800`      | `#27272a`                    | `#f4f4f5`       | Superficie elevada / hover de inputs (elevación 2).                           |
+| `ink-700`      | `#3f3f46`                    | `#e4e4e7`       | Bordes (hairline estándar).                                                   |
+| `ink-600`      | `#71717a`                    | `#71717a`       | Borde de control — identifica controles (4.12:1 oscuro / 4.63:1 claro sobre página). |
+| `signal`       | `#fb923c`                    | `#f97316`       | **ÚNICO acento**: RELLENO del CTA primario, foco, hit del reloj. Naranja claro de marca (distribución/energía); AA con `on-signal` encima. |
+| `signal-soft`  | `#f97316`                    | `#ea580c`       | Hover del CTA primario (se oscurece).                                         |
+| `signal-strong`| `#fdba74`                    | `#c2410c`       | Acento como TEXTO/borde sobre la página (oscuro 11.8:1 / claro 4.96:1 AA).    |
+| `on-signal`    | `#0b0906`                    | `#1c1917`       | Texto casi negro cálido sobre el relleno `signal` (8.79:1 / 6.24:1).          |
+| `fog-100`      | `#fafafa`                    | `#18181b`       | Texto primario (≥17:1 en ambos temas).                                        |
+| `fog-300`      | `#d4d4d8`                    | `#3f3f46`       | Texto secundario.                                                             |
+| `fog-500`      | `#a1a1aa`                    | `#52525b`       | Texto terciario/labels (6.9:1 oscuro / 7.7:1 claro).                          |
+| `fog-600`      | `#8b8b93`                    | `#71717a`       | Meta-texto/micro-labels (mono): 5.89:1 oscuro / 4.83:1 claro sobre página.    |
+| `fog-700`      | `#52525b`                    | `#a1a1aa`       | **Solo decorativo/bordes**: NO cumple AA → nunca para texto legible.           |
+| `danger`       | `#f87171`                    | `#dc2626`       | Errores, destructive.                                                         |
+| `ok`           | `#4ade80`                    | `#15803d`       | Éxito, conectado.                                                             |
 
 Reglas:
 
@@ -296,11 +297,12 @@ Reglas de inventario:
    táctil) con neutralización total en `prefers-reduced-motion: reduce`.
 3. **Reduced motion**: TODO se desactiva bajo `prefers-reduced-motion: reduce`
    — definido por defecto en `index.css`, no lo repitas mal.
-4. **Focus visible**: `:focus-visible` global en `index.css` (outline naranja)
-   -2px offset. **La regla vive FUERA de `@layer`** a propósito: `.outline-none`
-   es una utilidad de Tailwind v4 (`@layer utilities`) y ganaría si estuviera en
-   `@layer base`. Nunca volver a meterla en una capa. En campos de formulario
-   usar además `caret-signal`.
+4. **Focus visible**: `:focus-visible` global en `index.css` (outline
+   `signal-soft` ~2px, offset 2px — el naranja claro no alcanza 3:1 sobre
+   página, `signal-soft` sí). **La regla vive FUERA de `@layer`** a propósito:
+   `.outline-none` es una utilidad de Tailwind v4 (`@layer utilities`) y ganaría
+   si estuviera en `@layer base`. Nunca volver a meterla en una capa. En campos
+   de formulario usar además `caret-signal`.
 5. **touch**: `touch-action: manipulation` en botones; `-webkit-tap-highlight-color`
    explícito; `overscroll-behavior: contain` en sheets/modales/Drawer.
    **Target mínimo 44px** en `button`/`select`/`input` (regla global en

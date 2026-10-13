@@ -28,7 +28,7 @@ export default function ZonasPage() {
           : undefined
       }
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <p className="font-mono text-xs tabular-nums text-fog-500">
           {total} zona{total === 1 ? '' : 's'} · {conGeo} con ubicación
         </p>
