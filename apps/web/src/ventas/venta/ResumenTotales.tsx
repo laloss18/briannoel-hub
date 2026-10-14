@@ -50,7 +50,7 @@ export function ResumenTotales({ totales }: { totales: Totales }) {
         </div>
       )}
       <div className="mt-0.5 flex justify-between border-t border-ink-800 pt-1 text-xs">
-        <span className="uppercase tracking-wider">total</span>
+        <span>Total</span>
         <span className="tabular-nums text-signal-strong">{usd(total)}</span>
       </div>
     </div>

@@ -12,7 +12,7 @@ export default function ConfigPage() {
   const { roles } = useSesion();
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <header>
         <h1 className="flex items-center gap-1.5 text-sm font-semibold tracking-tight text-fog-100">
           <Icon name="settings" className="size-4 text-fog-500" />
@@ -108,7 +108,7 @@ function Apariencia() {
   const [tema, cambiarTema] = useTema();
 
   return (
-    <section className="rounded-2xl border border-ink-700 bg-ink-900 p-4 shadow-card">
+    <section className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-fog-100">Tema</p>
@@ -180,7 +180,7 @@ function MiPerfil() {
   };
 
   return (
-    <div className="rounded-2xl border border-ink-700 bg-ink-900 p-4 text-fog-100">
+    <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium">Mi perfil</p>
@@ -189,7 +189,7 @@ function MiPerfil() {
       </div>
       <div className="mt-3 flex flex-col gap-2">
         <label className="flex flex-col gap-1">
-          <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">email</span>
+          <span className="text-2xs font-medium tracking-wide text-fog-500">Email</span>
           <input
             type="email"
             value={sesion.email}
@@ -198,7 +198,7 @@ function MiPerfil() {
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">username</span>
+          <span className="text-2xs font-medium tracking-wide text-fog-500">Username</span>
           <input
             type="text"
             value={uname}

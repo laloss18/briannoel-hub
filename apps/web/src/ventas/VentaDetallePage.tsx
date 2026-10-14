@@ -109,7 +109,7 @@ export default function VentaDetallePage() {
 
   if (despachos === undefined) {
     return (
-      <PageShell eyebrow="detalle de venta" titulo="Cargando" icono="cart">
+      <PageShell eyebrow="Detalle de venta" titulo="Cargando" icono="cart">
         <p className="text-sm text-fog-500">Cargando pedido…</p>
       </PageShell>
     );
@@ -117,7 +117,7 @@ export default function VentaDetallePage() {
 
   if (!despacho) {
     return (
-      <PageShell eyebrow="detalle de venta" titulo="No encontrado" icono="cart">
+      <PageShell eyebrow="Detalle de venta" titulo="No encontrado" icono="cart">
         <p className="text-sm text-fog-500">Este pedido no existe o fue eliminado.</p>
       </PageShell>
     );
@@ -196,17 +196,17 @@ export default function VentaDetallePage() {
 
   return (
     <PageShell
-      eyebrow="detalle de venta"
+      eyebrow="Detalle de venta"
       titulo={despacho.nro_control}
       icono="cart"
       acciones={acciones}
     >
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         {!hayAcciones && <p className="text-2xs text-fog-600">{notaAcciones}</p>}
 
         {/* 1 · Resumen de ventas: pedido, cliente, total, saldo y estado — lo
             primero que el operador quiere saber de un vistazo. */}
-        <Section titulo="resumen de ventas">
+        <Section titulo="Resumen de ventas">
           <div className="mt-2 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
             <div>
               <p className="text-lg font-semibold tracking-[-0.01em] text-fog-100">
@@ -253,7 +253,7 @@ export default function VentaDetallePage() {
         </Section>
 
         {/* 2 · Detalles de venta: productos, totales, supervisión y entrega */}
-        <Section titulo="detalles de venta">
+        <Section titulo="Detalles de venta">
           <h3 className={`mt-2 ${eyebrow}`}>productos · {despacho.lineas.length}</h3>
           <div className="mt-1 flex flex-col divide-y divide-ink-800">
             {despacho.lineas.map((l) => (
@@ -287,8 +287,8 @@ export default function VentaDetallePage() {
                 <>
                   {descuentoMonto > 0 && (
                     <div className="flex justify-between gap-3 text-danger">
-                      <span className="font-mono text-2xs uppercase tracking-wider">
-                        descuento{' '}
+                      <span className="text-2xs tracking-wide">
+                        Descuento{' '}
                         {despacho.descuento_pct > 0
                           ? `${despacho.descuento_pct}%`
                           : usd(despacho.descuento_monto_usd ?? 0)}
@@ -298,8 +298,8 @@ export default function VentaDetallePage() {
                   )}
                   {mora > 0 && (
                     <div className="flex justify-between gap-3">
-                      <span className="font-mono text-2xs uppercase tracking-wider">
-                        recargo por mora{' '}
+                      <span className="text-2xs tracking-wide">
+                        Recargo por mora{' '}
                         {despacho.mora_pct > 0
                           ? `${despacho.mora_pct}%`
                           : usd(despacho.mora_monto_usd ?? 0)}
@@ -311,9 +311,7 @@ export default function VentaDetallePage() {
                   )}
                   {iva > 0 && (
                     <div className="flex justify-between gap-3">
-                      <span className="font-mono text-2xs uppercase tracking-wider">
-                        IVA {despacho.iva_pct}%
-                      </span>
+                      <span className="text-2xs tracking-wide">IVA {despacho.iva_pct}%</span>
                       <span className="font-mono text-sm tabular-nums text-fog-100">
                         +{usd(iva)}
                       </span>
@@ -339,7 +337,7 @@ export default function VentaDetallePage() {
         </Section>
 
         {/* 3 · Datos de cliente: contacto + ubicación */}
-        <Section titulo="datos de cliente">
+        <Section titulo="Datos del cliente">
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="nombre">{cliente?.nombre ?? despacho.cliente_nombre}</Campo>
             <Campo label="cédula/rif">{cliente?.documento ?? '—'}</Campo>
@@ -384,7 +382,7 @@ export default function VentaDetallePage() {
 
         {/* 4 · Metadata: auditoría + seguimiento (changelog) — lo último, solo
             cuando hace falta auditar. */}
-        <Section titulo="metadata">
+        <Section titulo="Metadata">
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="creado por">{identidadDe(despacho.created_by)}</Campo>
             <Campo label="creado">{fechaCorta(despacho.created_at)}</Campo>

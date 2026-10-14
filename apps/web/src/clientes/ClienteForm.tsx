@@ -224,9 +224,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
         />
       </label>
 
-      <p className="font-mono text-xs uppercase tracking-wider text-fog-500">
-        Ubicación para la zona
-      </p>
+      <p className="text-2xs font-medium tracking-wide text-fog-500">Ubicación para la zona</p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
         <div className="grid grid-cols-2 gap-2 sm:contents">
           <label className={labelCls}>
@@ -294,7 +292,7 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
         </span>
       </p>
 
-      <p className="font-mono text-xs uppercase tracking-wider text-fog-500">fotos del cliente</p>
+      <p className="text-2xs font-medium tracking-wide text-fog-500">Fotos del cliente</p>
       <MiniFoto
         titulo="Fachada de la vivienda"
         foto={fotoFachada}
@@ -323,8 +321,8 @@ export function ClienteForm({ roles, zonas, onSubmit, onSuccess }: ClienteFormPr
         aria-describedby={errors.consentimiento ? 'consentimiento-error' : undefined}
         className="flex flex-col gap-1.5 border-t border-ink-700 pt-3 text-xs text-fog-500"
       >
-        <legend className="pr-2 font-mono text-xs uppercase tracking-wider text-fog-500">
-          consentimiento (obligatorio)
+        <legend className="pr-2 text-2xs font-medium tracking-wide text-fog-500">
+          Consentimiento (obligatorio)
         </legend>
         <label className="flex items-center gap-2">
           <input

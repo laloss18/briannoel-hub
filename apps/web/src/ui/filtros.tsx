@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Icon, type IconName } from './icons';
+import { label as labelCls } from './section';
 
 /** Campo base de los controles de filtro: 44px (regla global), forma suave y
  *  foco al acento. Compartido por selects y campos de fecha. */
@@ -30,9 +31,9 @@ export function FilterBar({
 }) {
   const [abierto, setAbierto] = useState(activos > 0);
   return (
-    <section className="flex flex-col gap-2 rounded-2xl border border-ink-700 bg-ink-900 p-2.5 shadow-card">
+    <section className="flex flex-col gap-2 rounded-xl border border-ink-700 bg-ink-900 p-2.5 shadow-card">
       <div className="flex items-center gap-2">
-        <div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-600 bg-ink-950 px-3 focus-within:border-signal">
+        <div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg border border-ink-600 bg-ink-950 px-3 focus-within:border-signal">
           <Icon name="search" className="size-4 shrink-0 text-fog-500" />
           <input
             type="search"
@@ -77,7 +78,7 @@ export function FilterBar({
 export function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <p className="text-2xs font-medium uppercase tracking-wider text-fog-600">{label}</p>
+      <p className={labelCls}>{label}</p>
       <div className="flex flex-wrap items-center gap-1.5">{children}</div>
     </div>
   );
@@ -127,7 +128,7 @@ export function FilterSelect({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-2xs font-medium uppercase tracking-wider text-fog-600">{label}</span>
+      <span className={labelCls}>{label}</span>
       <select
         aria-label={ariaLabel}
         value={value}
@@ -152,7 +153,7 @@ export function DateField({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-2xs font-medium uppercase tracking-wider text-fog-600">{label}</span>
+      <span className={labelCls}>{label}</span>
       <input
         type="date"
         aria-label={label}

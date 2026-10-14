@@ -71,7 +71,7 @@ export default function ClientesPage() {
           : undefined
       }
     >
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         <FilterBar
           searchValue={busqueda}
           onSearchChange={setBusqueda}
@@ -114,7 +114,7 @@ export default function ClientesPage() {
         )}
 
         {hayFiltros && filtrados.length === 0 && (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-ink-700 p-6 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-ink-700 p-6 text-center">
             <p className="text-sm text-fog-500">Ningún cliente coincide con los filtros.</p>
             <button
               type="button"
@@ -126,17 +126,14 @@ export default function ClientesPage() {
           </div>
         )}
 
-        <ul className="flex flex-col gap-1.5">
+        <ul className="flex flex-col divide-y divide-ink-700/60 border-y border-ink-700/60">
           {filtrados.map((c) => {
             const z = zonas?.find((zz) => zz.id === c.zona_id);
             return (
-              <li
-                key={c.id}
-                className="flex items-center gap-1 rounded-xl bg-ink-900 px-1.5 py-1.5"
-              >
+              <li key={c.id} className="flex items-center gap-1">
                 <Link
                   to={`/clientes/${c.id}`}
-                  className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2.5 transition-colors hover:bg-ink-800/60"
+                  className="flex min-w-0 flex-1 items-center gap-3 py-2.5 transition-colors hover:bg-ink-800/60"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-fog-100">

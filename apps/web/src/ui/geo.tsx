@@ -52,7 +52,7 @@ export function AbrirMapa({ lat, lng }: { lat: number; lng: number }) {
       href={geoMapsUrl(lat, lng)}
       target="_blank"
       rel="noreferrer"
-      className="shrink-0 font-mono text-2xs uppercase tracking-wider text-signal-strong transition-colors hover:text-fog-100"
+      className="shrink-0 text-2xs font-medium tracking-wide text-signal-strong transition-colors hover:text-fog-100"
     >
       mapa ↗
     </a>

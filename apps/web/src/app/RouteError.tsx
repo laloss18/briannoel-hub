@@ -1,4 +1,5 @@
 import { useNavigate, useRouteError, isRouteErrorResponse } from 'react-router-dom';
+import { label } from '../ui/section';
 
 /**
  * Frontera de error de la ruta (DESIGN §9): si un `lazy` falla (dev server
@@ -18,7 +19,7 @@ export default function RouteError() {
 
   return (
     <div role="alert" className="mx-auto flex max-w-sm flex-col gap-3 py-14">
-      <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">error</p>
+      <p className={label}>error</p>
       <h1 className="text-lg font-semibold text-fog-100">No se pudo cargar la vista</h1>
       <p className="text-xs text-fog-500">
         No llegó el módulo de esta sección. Suele ser la conexión o un reinicio del servidor de

@@ -6,6 +6,7 @@ import { getAppConfig } from '../bimoneda/appConfig';
 import { DexieOutbox } from '../sync/db';
 import { Link } from 'react-router-dom';
 import { Icon, type IconName } from '../ui/icons';
+import { label as labelCls } from '../ui/section';
 import { useSesion } from './sesion';
 import { usd, dosDecimales } from '../lib/moneda';
 import { diaLocal } from '../lib/fechas';
@@ -69,14 +70,12 @@ export default function HomePage() {
   });
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-0.5">
         <p className="text-sm text-fog-100">
           Hola, <span className="font-medium">{username ?? email}</span>
         </p>
-        <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-          {roles.length ? roles.join(' · ') : 'sin rol'}
-        </p>
+        <p className={labelCls}>{roles.length ? roles.join(' · ') : 'sin rol'}</p>
       </div>
 
       <EstadoSync pendientes={nPend} fallidos={nFail} />
@@ -85,7 +84,7 @@ export default function HomePage() {
         {puedeVender && (
           <Link
             to="/ventas/nueva"
-            className="btn-lift cta-glow flex min-h-11 items-center justify-center gap-2 rounded-xl bg-signal px-4 py-2.5 text-sm font-semibold text-on-signal transition-colors hover:bg-signal-soft active:scale-[0.99]"
+            className="btn-lift cta-glow flex min-h-11 items-center justify-center gap-2 rounded-lg bg-signal px-4 py-2.5 text-sm font-semibold text-on-signal transition-colors hover:bg-signal-soft active:scale-[0.99]"
           >
             <Icon name="cart" className="size-5" />
             Registrar venta
@@ -100,23 +99,23 @@ export default function HomePage() {
       </div>
 
       <section aria-label="Mi día" className="flex flex-col gap-2">
-        <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">mi día · {fecha}</p>
+        <p className={labelCls}>Mi día · {fecha}</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Kpi
-            label="ventas hoy"
+            label="Ventas hoy"
             value={totalHoy}
             hint={`${totalDespachos} en total`}
             cargando={cargando}
           />
           <Kpi label="USD hoy" value={usd(usdHoy)} hint="facturado hoy" cargando={cargando} />
           <Kpi
-            label="por entregar"
+            label="Por entregar"
             value={porEntregar}
             hint={totalDespachos ? `${entregados} entregados` : 'sin ventas'}
             cargando={cargando}
           />
           <Kpi
-            label="tasa BCV"
+            label="Tasa BCV"
             value={tasa != null ? dosDecimales(tasa) : '—'}
             hint={origen ? `Bs/USD · ${origen}` : 'sin configurar'}
             cargando={cargando}
@@ -130,7 +129,7 @@ export default function HomePage() {
       {puedeKpis ? (
         <section
           aria-label="Distribución de score"
-          className="rounded-2xl border border-ink-700 bg-ink-900 p-4"
+          className="rounded-xl border border-ink-700 bg-ink-900 p-4"
         >
           <div className="flex items-center justify-between gap-4">
             <p className="text-xs font-medium text-fog-100">Distribución de score</p>
@@ -172,7 +171,7 @@ export default function HomePage() {
       ) : (
         <section
           aria-label="Resumen del día"
-          className="flex flex-col gap-1.5 rounded-2xl border border-ink-700 bg-ink-900 p-4"
+          className="flex flex-col gap-1.5 rounded-xl border border-ink-700 bg-ink-900 p-4"
         >
           <p className="text-xs font-medium text-fog-100">{cargando ? 'Cargando…' : fecha}</p>
           <p className="text-xs text-fog-500">
@@ -202,7 +201,7 @@ function EstadoSync({ pendientes, fallidos }: { pendientes: number; fallidos: nu
   return (
     <div
       role="status"
-      className="flex items-center gap-2.5 rounded-2xl border border-ink-700 bg-ink-900 px-3 py-2.5"
+      className="flex items-center gap-2.5 rounded-xl border border-ink-700 bg-ink-900 px-3 py-2.5"
     >
       <span className={`size-1.5 shrink-0 rounded-full ${dot}`} aria-hidden="true" />
       <span className="truncate text-xs text-fog-100">{texto}</span>
@@ -215,7 +214,7 @@ function AccionDia({ to, icon, label }: { to: string; icon: IconName; label: str
   return (
     <Link
       to={to}
-      className="card-lift flex min-h-11 items-center gap-2 rounded-2xl border border-ink-700 bg-ink-900 px-3 py-2.5 text-xs text-fog-100 transition-colors hover:border-ink-600 active:scale-[0.98]"
+      className="card-lift flex min-h-11 items-center gap-2 rounded-xl border border-ink-700 bg-ink-900 px-3 py-2.5 text-xs text-fog-100 transition-colors hover:border-ink-600 active:scale-[0.98]"
     >
       <Icon name={icon} className="size-4 shrink-0 text-fog-300" />
       <span className="truncate">{label}</span>
@@ -235,8 +234,8 @@ function Kpi({
   cargando?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-ink-700 bg-ink-900 p-3">
-      <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">{label}</p>
+    <div className="rounded-xl border border-ink-700 bg-ink-900 p-3">
+      <p className={labelCls}>{label}</p>
       {cargando ? (
         <div className="mt-2 h-5 w-12 animate-pulse rounded bg-ink-800" aria-hidden="true" />
       ) : (

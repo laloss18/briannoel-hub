@@ -4,6 +4,7 @@ import { useSync } from '../sync/useSync';
 import SyncButton from '../sync/SyncButton';
 import { StatusStrip } from '../ui/brand';
 import { Icon } from '../ui/icons';
+import { label } from '../ui/section';
 import NavSidebar from './NavSidebar';
 import { useSesion } from './sesion';
 
@@ -34,9 +35,7 @@ export default function AppShell() {
         <header className="sticky top-0 z-30 border-b border-ink-700/60 bg-ink-950/90 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate font-mono text-2xs uppercase tracking-wider text-fog-600">
-                Brian Noel · hub
-              </p>
+              <p className={`truncate ${label}`}>Brian Noel · hub</p>
               {error ? (
                 <p className="truncate text-2xs text-danger">{error}</p>
               ) : (
@@ -60,7 +59,7 @@ export default function AppShell() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-5 md:max-w-none md:px-6">
+        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 md:max-w-none md:px-6">
           <Outlet />
         </main>
 

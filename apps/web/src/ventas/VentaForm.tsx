@@ -14,6 +14,7 @@ import { obtenerCoords } from '../lib/geo';
 import { normaliza } from '../lib/texto';
 import { usd } from '../lib/moneda';
 import { FieldError, FormErrorSummary } from '../ui/form';
+import { label as labelCls } from '../ui/section';
 import { PrimaryButton, SecondaryButton } from '../ui/actions';
 import {
   erroresDe,
@@ -533,8 +534,8 @@ export function VentaForm({
     <div className="mx-auto flex w-full max-w-xl flex-col gap-3 text-fog-100">
       <div>
         <div className="flex items-center justify-between gap-3">
-          <p className="font-mono text-xs uppercase tracking-wider text-fog-500">
-            paso {stepIndex + 1} de {STEPS.length} · {step}
+          <p className={labelCls}>
+            Paso {stepIndex + 1} de {STEPS.length} · {step}
           </p>
         </div>
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink-800" aria-hidden="true">
@@ -596,9 +597,9 @@ export function VentaForm({
                         setClienteId('');
                         setBusqueda('');
                       }}
-                      className="font-mono text-2xs uppercase tracking-wider text-fog-500 transition-colors hover:text-fog-300"
+                      className="text-2xs font-medium tracking-wide text-fog-500 transition-colors hover:text-fog-300"
                     >
-                      cambiar
+                      Cambiar
                     </button>
                   </div>
                 </div>
@@ -618,9 +619,7 @@ export function VentaForm({
                 />
                 {coincidencias.length > 0 && (
                   <div className="flex flex-col gap-1.5">
-                    <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                      coincidencias
-                    </p>
+                    <p className={labelCls}>Coincidencias</p>
                     {coincidencias.slice(0, 6).map((c) => (
                       <button
                         key={c.id}
@@ -644,7 +643,7 @@ export function VentaForm({
 
                 <div className="my-1 flex items-center gap-2 text-fog-600" aria-hidden="true">
                   <span className="h-px flex-1 bg-ink-700" />
-                  <span className="font-mono text-2xs uppercase tracking-wider">cliente nuevo</span>
+                  <span className="text-2xs font-medium tracking-wide">Cliente nuevo</span>
                   <span className="h-px flex-1 bg-ink-700" />
                 </div>
 
@@ -721,9 +720,7 @@ export function VentaForm({
                     className={inputCls}
                   />
 
-                  <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                    ubicación para la zona
-                  </p>
+                  <p className={labelCls}>Ubicación para la zona</p>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
                     <div className="grid grid-cols-2 gap-2 sm:contents">
                       <input
@@ -791,9 +788,7 @@ export function VentaForm({
                     </span>
                   </p>
 
-                  <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                    fotos del cliente
-                  </p>
+                  <p className={labelCls}>Fotos del cliente</p>
                   <MiniFoto
                     titulo="Fachada de la vivienda"
                     foto={fotoFachada}
@@ -837,9 +832,7 @@ export function VentaForm({
         {step === 'personal' && (
           <>
             <div className="flex flex-col gap-2.5">
-              <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-                personal a cargo
-              </p>
+              <p className={labelCls}>Personal a cargo</p>
               {userEsSupervisor && (
                 <p className="text-xs text-fog-500">
                   Tu identidad de {userEsPromotor ? 'promotor y supervisor' : 'supervisor'} se
@@ -847,9 +840,7 @@ export function VentaForm({
                 </p>
               )}
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">
-                  Promotor que captó al cliente
-                </span>
+                <span className="text-xs text-fog-500">Promotor que captó al cliente</span>
                 <PersonaSelect
                   value={promotor}
                   opciones={candidatos(['promotor', 'admin'])}
@@ -880,9 +871,7 @@ export function VentaForm({
                 )}
               </label>
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">
-                  Supervisor a cargo de la entrega
-                </span>
+                <span className="text-xs text-fog-500">Supervisor a cargo de la entrega</span>
                 <PersonaSelect
                   value={supervisor}
                   opciones={candidatos(['supervisor', 'admin'])}
@@ -926,7 +915,7 @@ export function VentaForm({
         {step === 'productos' && (
           <>
             <div className="flex flex-col gap-1">
-              <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">condición</p>
+              <p className={labelCls}>Condición</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -955,9 +944,7 @@ export function VentaForm({
                   : 'El precio unitario es el de contado.'}
               </p>
             </div>
-            <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-              productos despachados
-            </p>
+            <p className={labelCls}>Productos despachados</p>
             {lineas.map((l, idx) => (
               <FilaProducto
                 key={idx}
@@ -981,7 +968,7 @@ export function VentaForm({
             {canDiscount && (
               <div className="rounded-lg border border-ink-700/60 p-2.5">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-mono text-2xs uppercase tracking-wider text-fog-100">
+                  <p className="text-xs font-medium text-fog-100">
                     Descuento <span className="text-fog-500">(aprobado)</span>
                   </p>
                   <div
@@ -1028,7 +1015,7 @@ export function VentaForm({
             {condicion === 'credito' && (
               <div className="rounded-lg border border-ink-700/60 p-2.5">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-mono text-2xs uppercase tracking-wider text-fog-100">
+                  <p className="text-xs font-medium text-fog-100">
                     Recargo por mora <span className="text-fog-500">(crédito)</span>
                   </p>
                   <div
@@ -1080,7 +1067,7 @@ export function VentaForm({
             )}
             <div className="rounded-lg border border-ink-700/60 p-2.5">
               <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-                <span className="font-mono text-2xs uppercase tracking-wider text-fog-100">
+                <span className="text-xs font-medium text-fog-100">
                   IVA <span className="text-fog-500">(incluido en el total)</span>
                 </span>
                 <input
@@ -1198,7 +1185,7 @@ export function VentaForm({
       <div className="sticky bottom-3 z-10 mt-3 flex items-center gap-3 rounded-xl border border-ink-700 bg-ink-900/95 px-3 py-2.5 shadow-popover backdrop-blur">
         {mostrarTotal && (
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">total</span>
+            <span className={labelCls}>Total</span>
             <span className="truncate font-mono text-base tabular-nums text-signal-strong">
               {usd(totalFinal)}
             </span>

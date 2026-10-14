@@ -124,13 +124,13 @@ Reglas:
 | Rol                  | Familia                                     | Uso                                                                               |
 | -------------------- | ------------------------------------------- | --------------------------------------------------------------------------------- |
 | Display UI           | **Archivo Variable** (`--font-sans`)        | Todo texto de interfaz; display en pesos 600/700 con `tracking-tight`.            |
-| Datos de instrumento | **JetBrains Mono Variable** (`--font-mono`) | Cifras (montos, tasas), reloj, timestamps, labels de campo, códigos, teclado PIN. |
+| Datos de instrumento | **JetBrains Mono Variable** (`--font-mono`) | Cifras (montos, tasas), reloj, timestamps, códigos (nro_control, documentos), badges de estado/origen, teclado PIN. |
 
 Escala numérica (rampa real de `@theme` en `index.css`; `rem` sobre raíz 16px):
 
 | Token    | px  | Rol                                                                               |
 | -------- | --- | --------------------------------------------------------------------------------- |
-| `text-2xs` | 11  | Micro-mono: labels de campo, timestamps, chips, eyebrow (`uppercase tracking-wider`, máx. 1 por cada 3 secciones, §4.4). |
+| `text-2xs` | 11  | Micro: `label` (sans 11 medio, sentence case) para títulos de sección, KPIs, kickers de página y labels de filtro; mono solo para datos (timestamps, chips, códigos) y `eyebrow` (`uppercase tracking-wider`, máx. 1 por cada 3 secciones, §4.4). |
 | `text-xs`   | 13  | Labels funcionales de formulario, meta.                                           |
 | `text-sm`   | 14  | UI estándar: botones, campos, filas de lista (cuerpo de trabajo del cliente).     |
 | `text-base` | 16  | Cuerpo de lectura en detalles/estados de vacío.                                   |
@@ -148,14 +148,17 @@ Reglas (combinan `ui-ux-pro-max` + directrices Vercel):
 2. **Cifras siempre `tabular-nums`** y, si representan dinero/medición, en
    `font-mono` (`tabular-nums` en números de columnas comparables — regla Vercel).
 3. **Headings: `text-balance`** (evita viudas); párrafos `text-pretty`.
-4. **Labels de campo**: mono 11px (`text-2xs`), `uppercase tracking-wider` → **máximo 1
-   eyebrow por cada 3 secciones** (regla `eyebrow-restraint`); los labels de
-   formulario están exentos porque son funcionales, no decorativos.
+4. **Dos registros de microtexto.** `label` (sans 11px peso medio, `tracking-wide`,
+   sentence case, `text-fog-500`) para TODO texto decorativo de interfaz: títulos de
+   sección, KPIs, kickers de página, labels de filtro y títulos de card/diálogo. `eyebrow`
+   (mono 11px, `uppercase tracking-wider`) queda **reservado a datos de instrumento**
+   (IDs/códigos, cifras, timestamps, chips, badges de origen) → **máximo 1 eyebrow por
+   cada 3 secciones** (regla `eyebrow-restraint`). Los labels de formulario son sans 13px
+   (`ui/form.labelCls`), funcionales, no decorativos.
 5. **Emphasis en display**: negrita/cursiva de la MISMA familia; nunca mezclar
    serif en una headline sans (regla `emphasis-rule`).
-6. **Nada de "all-caps accionado"** en botones; botones en sentence case
-   ("Entrar", "Guardar PIN"). Los textos mono en mayúsculas diminutas son
-   solos labels de campo.
+6. **Nada de "all-caps accionado"** ni de mono-mayúsculas decorativas; botones y
+   labels en sentence case ("Entrar", "Guardar PIN", "Resumen de ventas").
 7. Longitud de línea < 80 caracteres (`max-w-[65ch]` en párrafos largos).
 
 ## 5. Layout y composición
@@ -163,8 +166,8 @@ Reglas (combinan `ui-ux-pro-max` + directrices Vercel):
 0. **Grid de espaciado de 4px** (de `genesis-DESIGN.md`): escala 4, 8, 12,
    16, 20, 24, 32, 40, 48, 64, 80, 96. Todo padding/margin/gap se elige de esa
    escala; separación de secciones: 32px móvil, 48px tablet, 64px desktop
-   (aquí, `gap-5`/`py-5` = 20px es la unidad de trabajo en móvil; no bajar de
-   16px entre secciones).
+   (aquí, `gap-6`/`py-6` = 24px es la unidad de trabajo entre secciones en
+   móvil; no bajar de 16px entre secciones).
 
 1. **Contenedor**: `mx-auto max-w-2xl` en móvil/tablet; en desktop `.agent` y
    dashboards pueden usar **CSS Grid** (`grid-cols-1 md:grid-cols-N`), NUNCA
@@ -180,19 +183,20 @@ Reglas (combinan `ui-ux-pro-max` + directrices Vercel):
    `blur-over-shadow`).
 3. **Altura completa**: `min-h-dvh` (NUNCA `h-screen` — regla `viewport-stability`).
 4. **Safe areas**: fondos full-bleed usan `env(safe-area-inset-*)` para notch.
-5. **Radios** (revisado 2026-10-12): una sola escala —
+5. **Radios** (revisado 2026-10-13): una sola escala —
    **controles** (botones, inputs, selects) `rounded-lg` (8px),
-   **tarjetas/secciones** `rounded-2xl` (16px), **filas/ítems de lista**
-   `rounded-xl` (12px), **chips/píldoras** `rounded-full`. **Se mantiene en
+   **tarjetas/secciones** `rounded-xl` (12px), **filas/ítems de lista**
+   `rounded-lg` (8px) o lisas dentro de un contenedor con hairline,
+   **chips/píldoras** `rounded-full`. **Se mantiene en
    TODA la app** (regla `shape-consistency-lock`); ningún componente inventa un
    radio fuera de esta escala. En línea, `rounded` de 4px solo para
    `<code>`/badges mono.
 6. **Tarjetas solo cuando hay jerarquía real** que comunicar; en listas densas
    preferir aire negativo o filas sueltas. La tarjeta estándar
-   (`border-ink-700 bg-ink-900 rounded-2xl p-4 shadow-card`) se usa para
+   (`border-ink-700 bg-ink-900 rounded-xl p-4 shadow-card`) se usa para
    tarjetas de dato/estado y para las **secciones** de los detalles; vive una
-   sola vez en `ui/section.tsx` (`Section` + `surface`/`eyebrow`), no copiada
-   por cada página.
+   sola vez en `ui/section.tsx` (`Section` + `surface`/`label`/`eyebrow`), no
+   copiada por cada página.
 7. **Estados de vacío / carga / error siempre presentes** (regla
    `full-state-cycle`): skeletons del mismo shape del contenido, error inline
    bajo el campo, vacío con instrucción de cómo llenarlo.
@@ -246,7 +250,16 @@ Reglas (combinan `ui-ux-pro-max` + directrices Vercel):
     **no** contradice §5.9: lo prohibido en barras pegajosas son las **acciones de
     estado del documento** (entregar/editar/deshacer/eliminar), no un resumen de
     lectura. El sticky usa **blur + hairline** (regla `blur-over-shadow`), nunca
-    sombra fuerte.
+     sombra fuerte.
+13. **Navegación agrupada (2026-10-13)**: el sidebar agrupa los destinos por
+    dominio con un `label` discreto — **Operación** (Inicio, Ventas, Clientes) ·
+    **Datos** (Zonas, Catálogo) · **Administración** (Personal, Configuración,
+    solo si el rol puede gestionar). El label de grupo se muestra solo cuando el
+    sidebar no está colapsado; los grupos se separan con `gap-4`. Las listas por
+    dominio usan **filas con hairline** (`divide-y divide-ink-700/60` +
+    `border-y`, link `py-2.5 hover:bg-ink-800/60`) en vez de tarjetas por
+    registro: la lista lee como una tabla densa, no como un apilamiento de cajas.
+
 
 ## 6. Componentes y estados (inventario)
 
@@ -259,7 +272,7 @@ equivalente; variantes y estados se deciden aquí, no dentro de los componentes.
 | `ActionButton` | `ui/actions.tsx` | Texto + icono opcional; en móvil queda solo el icono (`hidden sm:inline`). Bordeado, `rounded-lg`, `btn-lift` (sube 1px al hover). Variantes: `default` (borde `ink-600`), `ok`, `danger`, `primary` (sólido naranja, texto `on-signal`, `+cta-glow`). Estados: reposo / hover / focus (outline naranja) / `disabled` (`opacity-50`). |
 | `PrimaryButton` | `ui/actions.tsx` | CTA sólido naranja (`bg-signal`, texto `on-signal`, `+cta-glow`), `rounded-lg`, `btn-lift`; tamaños `md`/`sm`. CTA estándar de los formularios-página («Guardar», «Continuar»). |
 | `SecondaryButton` | `ui/actions.tsx` | Contorno neutro (`border-ink-600`), `rounded-lg`, `btn-lift`; «Cancelar»/«Volver». |
-| `Section` | `ui/section.tsx` | Superficie estándar de **sección/tarjeta**: `rounded-2xl border-ink-700 bg-ink-900 p-4 shadow-card`, con `eyebrow` mono opcional (icono + título) y slot de acción. Reemplaza el `<section>` copiado por página; exporta también `surface`/`eyebrow` para casos sueltos. |
+| `Section` | `ui/section.tsx` | Superficie estándar de **sección/tarjeta**: `rounded-xl border-ink-700 bg-ink-900 p-4 shadow-card`, con `label` (sans 11 medio, sentence case) o `eyebrow` mono opcional (icono + título `<h2>`) y slot de acción. Reemplaza el `<section>` copiado por página; exporta también `surface`/`label`/`eyebrow` para casos sueltos. |
 | `Chip` | `ui/chips.tsx` | Píldora por `tono` (neutral/ok/danger/signal): relleno suave (`bg-<tono>/10`) + texto del mismo tono, `rounded-full`, mono 11 `uppercase`. Ya no usa borde: el relleno tenue lee como badge sin competir con el contenido denso. |
 | `IconAction` | `ui/actions.tsx` | Icon-only 44px circular (`rounded-full`) **sin borde** — el glifo vive libre; fondo suave solo en hover/active. Variantes `default`/`ok`/`danger`; acepta `to` (Link) para navegación. Uso: acciones de fila y CRUD del detalle junto al id (§5.9). **Todo** icon-only del proyecto es así: **nunca bordearlo**. `aria-label`+`title` siempre (§10 "Bots icon-only"). |
 | `CloseButton` | `ui/actions.tsx` | X 44px, borde transparente que se revela al hover (cierre de diálogos/overlays). |

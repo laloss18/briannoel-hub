@@ -174,7 +174,7 @@ export default function ClienteEditarPage() {
           />
         </label>
 
-        <p className="font-mono text-xs uppercase tracking-wider text-fog-500">ubicación</p>
+        <p className="text-2xs font-medium tracking-wide text-fog-500">Ubicación</p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
           <div className="grid grid-cols-2 gap-2 sm:contents">
             <label className={labelCls}>

@@ -3,6 +3,7 @@ import { hasPermission, type Role } from '@brian/shared';
 import PageShell from './PageShell';
 import { useTasaGate } from './RequireBcvRateGate';
 import { Icon } from '../ui/icons';
+import { label as labelCls } from '../ui/section';
 import { haceRelativo } from '../ui/tiempo';
 import { dosDecimales } from '../lib/moneda';
 
@@ -53,11 +54,9 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
 
   return (
     <PageShell titulo="Configurar tasa BCV" icono="coins">
-      <div className="flex flex-col gap-5">
-        <div className="rounded-2xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-            Para operar necesitas la tasa BCV
-          </p>
+      <div className="flex flex-col gap-6">
+        <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
+          <p className={labelCls}>Para operar necesitas la tasa BCV</p>
           <p className="mt-1 font-mono text-4xl tabular-nums text-fog-100">
             {hayTasa ? dosDecimales(tasa) : '—'}
             <span className="ml-2 font-sans text-sm font-medium text-fog-500">Bs/USD</span>
@@ -90,15 +89,12 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
             </button>
 
             <div className="flex items-center gap-3" aria-hidden="true">
-              <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">o</span>
+              <span className={labelCls}>o</span>
               <div className="h-px flex-1 bg-ink-700" />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="bcv-manual"
-                className="font-mono text-2xs uppercase tracking-wider text-fog-600"
-              >
+              <label htmlFor="bcv-manual" className={labelCls}>
                 Captura manual (Bs/USD)
               </label>
               <div className="flex gap-2">
@@ -125,7 +121,7 @@ export default function TasaRequerida({ roles }: { roles: readonly Role[] }) {
             </div>
           </>
         ) : (
-          <p className="rounded-2xl border border-ink-700 bg-ink-900 p-4 text-sm text-fog-500">
+          <p className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-sm text-fog-500">
             Tu rol consulta la tasa pero no la configura. Pide a un administrador o supervisor que
             la actualice para continuar.
           </p>

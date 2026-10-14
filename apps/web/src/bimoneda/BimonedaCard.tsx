@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { hasPermission, type Role } from '@brian/shared';
 import { Link } from 'react-router-dom';
 import { Icon } from '../ui/icons';
+import { label as labelCls } from '../ui/section';
 import { useTasaGate } from '../app/RequireBcvRateGate';
 import { haceRelativo } from '../ui/tiempo';
 import { dosDecimales } from '../lib/moneda';
@@ -34,12 +35,10 @@ export default function BimonedaCard({ roles }: BimonedaCardProps) {
     source === 'BCV_API' ? 'api oficial' : source === 'manual' ? 'captura manual' : 'sin origen';
 
   return (
-    <div className="card-lift rounded-2xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-card">
+    <div className="card-lift rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">
-            Tasa BCV · {origen}
-          </p>
+          <p className={labelCls}>Tasa BCV · {origen}</p>
           <p className="mt-1 font-mono text-2xl tabular-nums text-fog-100">
             {tasa !== null ? dosDecimales(tasa) : '—'}
             <span className="ml-1.5 font-sans text-xs font-medium text-fog-500">Bs/USD</span>

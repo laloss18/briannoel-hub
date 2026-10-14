@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react';
+import { label as labelCls } from './section';
 
 /** Manejador de captura de foto: comprime y entrega el data URL al setter. */
 type FotoChangeHandler = (
@@ -30,7 +31,7 @@ export function MiniFoto({
         </span>
       )}
       <span className="flex-1 text-2xs text-fog-100">{titulo}</span>
-      <span className="font-mono text-2xs uppercase tracking-wider text-fog-500">añadir</span>
+      <span className={labelCls}>Añadir</span>
       <input
         type="file"
         accept="image/*"

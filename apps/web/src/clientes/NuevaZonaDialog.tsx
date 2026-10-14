@@ -3,6 +3,7 @@ import { municipiosDeEstado, VE_ESTADOS, type Zona } from '@brian/shared';
 import { crearZonaLocal } from './zonasRepo';
 import { CloseButton, PrimaryButton } from '../ui/actions';
 import { FieldError, FormErrorSummary } from '../ui/form';
+import { label as labelCls } from '../ui/section';
 import { erroresDe, fieldAria, useFormErrors, type Validadores } from '../ui/formErrors';
 
 interface NuevaZonaDialogProps {
@@ -71,12 +72,9 @@ export function NuevaZonaDialog({ open, onClose, onCreated }: NuevaZonaDialogPro
       aria-modal="true"
       aria-labelledby="zona-dialog-title"
     >
-      <div className="w-full max-w-md overscroll-contain rounded-2xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-popover">
+      <div className="w-full max-w-md overscroll-contain rounded-xl border border-ink-700 bg-ink-900 p-4 text-fog-100 shadow-popover">
         <div className="flex items-center justify-between gap-4">
-          <p
-            id="zona-dialog-title"
-            className="font-mono text-2xs uppercase tracking-wider text-fog-500"
-          >
+          <p id="zona-dialog-title" className={labelCls}>
             Nueva zona
           </p>
           <CloseButton onClick={onClose} label="Cerrar nueva zona" />

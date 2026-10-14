@@ -82,10 +82,10 @@ function LoginScreen({ auth }: { auth: UseAuthResult }) {
       <form onSubmit={submit} className="flex flex-col gap-3.5">
         <div>
           <label
-            className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
+            className="mb-1 block text-2xs font-medium tracking-wide text-fog-500"
             htmlFor="login-email"
           >
-            correo
+            Correo
           </label>
           <input
             id="login-email"
@@ -101,10 +101,10 @@ function LoginScreen({ auth }: { auth: UseAuthResult }) {
         </div>
         <div>
           <label
-            className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
+            className="mb-1 block text-2xs font-medium tracking-wide text-fog-500"
             htmlFor="login-password"
           >
-            contraseña
+            Contraseña
           </label>
           <input
             id="login-password"
@@ -167,10 +167,10 @@ function SetupPinScreen({ auth }: { auth: UseAuthResult }) {
       <form onSubmit={submit} className="flex flex-col gap-5">
         <div>
           <label
-            className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
+            className="mb-1 block text-2xs font-medium tracking-wide text-fog-500"
             htmlFor="pin-1"
           >
-            nuevo PIN
+            Nuevo PIN
           </label>
           <input
             id="pin-1"
@@ -188,10 +188,10 @@ function SetupPinScreen({ auth }: { auth: UseAuthResult }) {
         </div>
         <div>
           <label
-            className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
+            className="mb-1 block text-2xs font-medium tracking-wide text-fog-500"
             htmlFor="pin-2"
           >
-            confirmar
+            Confirmar
           </label>
           <input
             id="pin-2"
@@ -260,10 +260,10 @@ function UnlockScreen({ auth }: { auth: UseAuthResult }) {
     >
       <form onSubmit={submit} className="flex flex-col gap-5">
         <label
-          className="mb-1 block font-mono text-2xs uppercase tracking-wider text-fog-500"
+          className="mb-1 block text-2xs font-medium tracking-wide text-fog-500"
           htmlFor="pin-unlock"
         >
-          tu PIN
+          Tu PIN
         </label>
         <input
           id="pin-unlock"

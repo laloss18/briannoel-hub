@@ -29,7 +29,7 @@ export default function ClienteDetallePage() {
 
   if (clientes === undefined) {
     return (
-      <PageShell eyebrow="ficha de cliente" titulo="Cargando" icono="users">
+      <PageShell eyebrow="Ficha de cliente" titulo="Cargando" icono="users">
         <p className="text-sm text-fog-500">Cargando cliente…</p>
       </PageShell>
     );
@@ -37,15 +37,15 @@ export default function ClienteDetallePage() {
 
   if (!cliente) {
     return (
-      <PageShell eyebrow="ficha de cliente" titulo="No encontrado" icono="users">
+      <PageShell eyebrow="Ficha de cliente" titulo="No encontrado" icono="users">
         <p className="text-sm text-fog-500">Este cliente no existe o fue eliminado.</p>
       </PageShell>
     );
   }
 
   return (
-    <PageShell eyebrow="ficha de cliente" titulo={cliente.nombre} icono="users">
-      <div className="flex flex-col gap-5">
+    <PageShell eyebrow="Ficha de cliente" titulo={cliente.nombre} icono="users">
+      <div className="flex flex-col gap-6">
         {/* Indicadores: el dato de instrumento, en cifra grande */}
         <Section>
           <div className="grid grid-cols-3 gap-3">
@@ -104,7 +104,7 @@ export default function ClienteDetallePage() {
           )}
         </div>
 
-        <Section titulo="datos">
+        <Section titulo="Datos">
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="nombre">{cliente.nombre}</Campo>
             <Campo label="cédula/rif">{cliente.documento ?? '—'}</Campo>
@@ -147,7 +147,7 @@ export default function ClienteDetallePage() {
           </dl>
         </Section>
 
-        <Section titulo="condiciones de crédito">
+        <Section titulo="Condiciones de crédito">
           <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
             <Campo label="límite">{usd(cliente.credito_limite)}</Campo>
             <Campo label="plazo">{cliente.credito_dias} días</Campo>

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from '../ui/icons';
+import { label } from '../ui/section';
 
 /**
  * Contenedor de página (DESIGN §5.1): encabezado con volver + eyebrow mono +
@@ -77,7 +78,7 @@ export default function PageShell({
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <header className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <button
@@ -89,11 +90,7 @@ export default function PageShell({
             <Icon name="arrowLeft" />
           </button>
           <div className="min-w-0">
-            {eyebrow && (
-              <p className="truncate font-mono text-2xs uppercase tracking-wider text-fog-600">
-                {eyebrow}
-              </p>
-            )}
+            {eyebrow && <p className={`truncate ${label}`}>{eyebrow}</p>}
             <h1 className="flex items-center gap-1.5 truncate text-lg font-semibold tracking-[-0.01em] text-fog-100">
               {icono && <Icon name={icono} className="size-4 shrink-0 text-fog-500" />}
               {titulo}

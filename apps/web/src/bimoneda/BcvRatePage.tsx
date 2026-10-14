@@ -4,6 +4,7 @@ import { hasPermission } from '@brian/shared';
 import PageShell from '../app/PageShell';
 import { useTasaGate } from '../app/RequireBcvRateGate';
 import { Icon } from '../ui/icons';
+import { label as labelCls } from '../ui/section';
 import { useSesion } from '../app/sesion';
 import { haceRelativo } from '../ui/tiempo';
 import { dosDecimales } from '../lib/moneda';
@@ -57,10 +58,10 @@ export default function BcvRatePage() {
 
   return (
     <PageShell titulo="Tasa BCV" icono="coins" volverA="/config">
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         {/* Cifra de instrumento */}
-        <div className="rounded-2xl border border-ink-700 bg-ink-900 p-4 shadow-card">
-          <p className="font-mono text-2xs uppercase tracking-wider text-fog-600">Tasa vigente</p>
+        <div className="rounded-xl border border-ink-700 bg-ink-900 p-4 shadow-card">
+          <p className={labelCls}>Tasa vigente</p>
           <p className="mt-1 font-mono text-4xl tabular-nums text-fog-100">
             {hayTasa ? dosDecimales(tasa) : '—'}
             <span className="ml-2 font-sans text-sm font-medium text-fog-500">Bs/USD</span>
@@ -102,15 +103,12 @@ export default function BcvRatePage() {
             </button>
 
             <div className="flex items-center gap-3" aria-hidden="true">
-              <span className="font-mono text-2xs uppercase tracking-wider text-fog-600">o</span>
+              <span className={labelCls}>o</span>
               <div className="h-px flex-1 bg-ink-700" />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="bcv-manual"
-                className="font-mono text-2xs uppercase tracking-wider text-fog-600"
-              >
+              <label htmlFor="bcv-manual" className={labelCls}>
                 Captura manual (Bs/USD)
               </label>
               <div className="flex gap-2">
@@ -137,7 +135,7 @@ export default function BcvRatePage() {
             </div>
           </>
         ) : (
-          <p className="rounded-2xl border border-ink-700 bg-ink-900 p-4 text-sm text-fog-500">
+          <p className="rounded-xl border border-ink-700 bg-ink-900 p-4 text-sm text-fog-500">
             Tu rol consulta la tasa pero no la configura. Pide a un administrador o supervisor que
             la actualice para continuar.
           </p>

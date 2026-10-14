@@ -311,7 +311,7 @@ ok(
   'detalle: 4 secciones',
   await page.evaluate(() => {
     const t = document.body.innerText.toLowerCase();
-    return ['metadata', 'datos de cliente', 'detalles de venta', 'resumen de ventas'].every((s) =>
+    return ['metadata', 'datos del cliente', 'detalles de venta', 'resumen de ventas'].every((s) =>
       t.includes(s),
     );
   }),
@@ -322,7 +322,7 @@ ok(
     const orden = [...document.querySelectorAll('main section h2')].map((h) =>
       h.textContent.trim(),
     );
-    return orden.join('|') === 'resumen de ventas|detalles de venta|datos de cliente|metadata';
+    return orden.join('|') === 'Resumen de ventas|Detalles de venta|Datos del cliente|Metadata';
   }),
 );
 const resumen = await page.locator('section', { hasText: 'resumen de ventas' }).innerText();

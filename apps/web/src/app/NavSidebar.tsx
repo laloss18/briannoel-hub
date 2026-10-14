@@ -3,9 +3,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { hasPermission, type Role } from '@brian/shared';
 import { Icon, type IconName } from '../ui/icons';
 import { Monogram } from '../ui/brand';
+import { label } from '../ui/section';
 import { useSesion } from './sesion';
 
-/** Secciones del MVP (PRD §2). */
+/** Secciones del MVP (PRD §2), agrupadas por área de trabajo. */
 interface Seccion {
   id: string;
   nombre: string;
@@ -15,25 +16,49 @@ interface Seccion {
   permiso?: Parameters<typeof hasPermission>[0];
 }
 
-const SECCIONES: readonly Seccion[] = [
-  { id: 'inicio', nombre: 'Inicio', to: '/', icono: 'home' },
-  { id: 'ventas', nombre: 'Ventas', to: '/ventas', icono: 'cart' },
-  { id: 'clientes', nombre: 'Clientes', to: '/clientes', icono: 'users' },
-  { id: 'zonas', nombre: 'Zonas', to: '/zonas', icono: 'map' },
-  { id: 'catalogo', nombre: 'Catálogo', to: '/catalogo', icono: 'package' },
+interface Grupo {
+  id: string;
+  nombre: string;
+  secciones: readonly Seccion[];
+}
+
+const GRUPOS: readonly Grupo[] = [
   {
-    id: 'personal',
-    nombre: 'Personal',
-    to: '/personal',
-    icono: 'user',
-    permiso: 'manage_personal',
+    id: 'operacion',
+    nombre: 'Operación',
+    secciones: [
+      { id: 'inicio', nombre: 'Inicio', to: '/', icono: 'home' },
+      { id: 'ventas', nombre: 'Ventas', to: '/ventas', icono: 'cart' },
+      { id: 'clientes', nombre: 'Clientes', to: '/clientes', icono: 'users' },
+    ],
   },
   {
-    id: 'config',
-    nombre: 'Configuración',
-    to: '/config',
-    icono: 'settings',
-    permiso: 'view_kpis',
+    id: 'datos',
+    nombre: 'Datos',
+    secciones: [
+      { id: 'zonas', nombre: 'Zonas', to: '/zonas', icono: 'map' },
+      { id: 'catalogo', nombre: 'Catálogo', to: '/catalogo', icono: 'package' },
+    ],
+  },
+  {
+    id: 'admin',
+    nombre: 'Administración',
+    secciones: [
+      {
+        id: 'personal',
+        nombre: 'Personal',
+        to: '/personal',
+        icono: 'user',
+        permiso: 'manage_personal',
+      },
+      {
+        id: 'config',
+        nombre: 'Configuración',
+        to: '/config',
+        icono: 'settings',
+        permiso: 'view_kpis',
+      },
+    ],
   },
 ];
 
@@ -63,13 +88,17 @@ export default function NavSidebar({
 }: NavSidebarProps) {
   const { pathname } = useLocation();
   const { username, email, onLogout } = useSesion();
-  const visibles = SECCIONES.filter((s) => !s.permiso || hasPermission(s.permiso, roles));
+  const gruposVisibles = GRUPOS.map((g) => ({
+    ...g,
+    secciones: g.secciones.filter((s) => !s.permiso || hasPermission(s.permiso, roles)),
+  })).filter((g) => g.secciones.length > 0);
 
   // Gana la sección con el prefijo más largo (p. ej. `/personal/nuevo` activa
   // Personal y no una sección padre más corta).
   const coincide = (to: string) =>
     to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`);
-  const activoId = visibles
+  const activoId = gruposVisibles
+    .flatMap((g) => g.secciones)
     .filter((s) => coincide(s.to))
     .sort((a, b) => b.to.length - a.to.length)[0]?.id;
 
@@ -94,27 +123,32 @@ export default function NavSidebar({
         </Link>
       </div>
 
-      <nav aria-label="Secciones" className="flex flex-1 flex-col gap-1 overflow-y-auto px-2">
-        {visibles.map((s) => {
-          const activo = s.id === activoId;
-          return (
-            <Link
-              key={s.id}
-              to={s.to}
-              onClick={onMobileClose}
-              aria-current={activo ? 'page' : undefined}
-              title={collapsed ? s.nombre : undefined}
-              className={`flex min-h-11 items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
-                activo
-                  ? 'bg-ink-800 text-fog-100'
-                  : 'text-fog-300 hover:bg-ink-800/60 hover:text-fog-100'
-              } ${collapsed ? 'justify-center' : ''}`}
-            >
-              <Icon name={s.icono} className="size-4 shrink-0" />
-              {!collapsed && <span className="truncate">{s.nombre}</span>}
-            </Link>
-          );
-        })}
+      <nav aria-label="Secciones" className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 pb-2">
+        {gruposVisibles.map((g) => (
+          <div key={g.id} className="flex flex-col gap-1">
+            {!collapsed && <p className={`px-2.5 ${label}`}>{g.nombre}</p>}
+            {g.secciones.map((s) => {
+              const activo = s.id === activoId;
+              return (
+                <Link
+                  key={s.id}
+                  to={s.to}
+                  onClick={onMobileClose}
+                  aria-current={activo ? 'page' : undefined}
+                  title={collapsed ? s.nombre : undefined}
+                  className={`flex min-h-11 items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
+                    activo
+                      ? 'bg-ink-800 text-fog-100'
+                      : 'text-fog-300 hover:bg-ink-800/60 hover:text-fog-100'
+                  } ${collapsed ? 'justify-center' : ''}`}
+                >
+                  <Icon name={s.icono} className="size-4 shrink-0" />
+                  {!collapsed && <span className="truncate">{s.nombre}</span>}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-ink-700/60 p-2">

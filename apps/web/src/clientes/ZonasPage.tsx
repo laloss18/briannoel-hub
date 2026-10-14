@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { listZonas } from './zonasRepo';
 import PageShell from '../app/PageShell';
 import { useSesion } from '../app/sesion';
+import { label as labelCls } from '../ui/section';
 
 export default function ZonasPage() {
   const { roles } = useSesion();
@@ -28,7 +29,7 @@ export default function ZonasPage() {
           : undefined
       }
     >
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         <p className="font-mono text-xs tabular-nums text-fog-500">
           {total} zona{total === 1 ? '' : 's'} · {conGeo} con ubicación
         </p>
@@ -49,11 +50,11 @@ export default function ZonasPage() {
                     </span>
                   </span>
                   <span
-                    className={`shrink-0 font-mono text-2xs uppercase tracking-wider ${
+                    className={`shrink-0 ${labelCls} ${
                       z.lat !== null && z.lng !== null ? 'text-ok' : 'text-fog-600'
                     }`}
                   >
-                    {z.lat !== null && z.lng !== null ? 'ubicación' : 'manual'}
+                    {z.lat !== null && z.lng !== null ? 'Ubicación' : 'Manual'}
                   </span>
                 </Link>
               ) : (
@@ -67,11 +68,11 @@ export default function ZonasPage() {
                     </span>
                   </span>
                   <span
-                    className={`shrink-0 font-mono text-2xs uppercase tracking-wider ${
+                    className={`shrink-0 ${labelCls} ${
                       z.lat !== null && z.lng !== null ? 'text-ok' : 'text-fog-600'
                     }`}
                   >
-                    {z.lat !== null && z.lng !== null ? 'ubicación' : 'manual'}
+                    {z.lat !== null && z.lng !== null ? 'Ubicación' : 'Manual'}
                   </span>
                 </div>
               )}
